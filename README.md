@@ -18,3 +18,14 @@ Distinguish:
 - dirty hands
 - working hands (clean or dirty)
 - “I watched a YouTube once” hands
+
+
+future expansions:
+
+•	clean_but_used
+	•	texture_persists_post_wash
+	•	callus_memory
+	•	no_context_no_props
+	•	experience_without_costume
+
+  
