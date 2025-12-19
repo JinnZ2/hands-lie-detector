@@ -22,6 +22,8 @@ Why gloves don’t erase evidence:
 	•	Friction patterns
 	•	Heat tolerance
 	•	Calluses through material
+
+
 	
   4.	People who actually wear gloves
 	•	Have glove-shaped wear patterns
@@ -43,3 +45,22 @@ Dirty ≠ skilled
 Context ≠ evidence
 
 Experience lives in adaptation, not appearance.
+
+
+## Cold Weather Confounder
+
+Observation:
+In cold climates, experienced workers frequently wear gloves for survival, not cleanliness.
+
+Model Failure:
+Assumes clean hands = low exposure.
+Ignores environmental factors (temperature, PPE necessity).
+
+Human Reality:
+- Gloves are standard, not exceptional.
+- Clean hands may indicate experience + self-preservation.
+- Cold increases glove usage without reducing workload.
+
+Conclusion:
+Climate-aware inference is required.
+Clean working hands are common in cold conditions.
