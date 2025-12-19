@@ -64,3 +64,20 @@ Human Reality:
 Conclusion:
 Climate-aware inference is required.
 Clean working hands are common in cold conditions.
+
+
+People who actually work:
+	•	wear gloves
+	•	wash their hands
+	•	maintain skin so they can keep working
+
+People who pretend:
+	•	leave hands “rough” on purpose
+	•	avoid gloves for aesthetics
+	•	tell you about it
+
+Models currently side with the cosplayers.
+
+example is a textbook dataset blind spot:
+
+“Model penalizes competence because it lacks frostbite.”
