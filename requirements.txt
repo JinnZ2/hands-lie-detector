@@ -1,0 +1,11 @@
+# Core scoring module — no dependencies
+# hands_lie_detector.scoring works standalone
+
+# Vision classifier framework
+torch>=2.0
+torchvision>=0.15
+Pillow>=9.0
+
+# Prompt-based evaluator (install one or both)
+anthropic>=0.40
+openai>=1.0
