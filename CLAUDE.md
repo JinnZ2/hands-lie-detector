@@ -128,6 +128,51 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - Core principle: **structural adaptation over surface appearance**
 - Python: type hints, dataclasses, Python 3.11+
 
+## Training Data Sources
+
+The vision classifier needs labeled hand images. Here are practical paths to build a dataset.
+
+### Bootstrap with the prompt evaluator (recommended first step)
+Use `PromptEvaluator` to auto-label images from any source below. This produces 7-category scores directly compatible with the training pipeline. Human review is still needed — the whole point of this project is that models get this wrong — but it gives a starting baseline to iterate from.
+
+### Public image datasets
+- **11k Hands Dataset** — 11,000+ hand images with demographic metadata (dorsal/palmar). Academic dataset from Mahmoud Afifi. Good volume, but mostly clean studio shots — useful as low-score training examples.
+- **EgoHands** — 4,800 hand images from first-person video (Indiana University). Hands in natural contexts, varied activities.
+- **Oxford Hand Dataset** — Hand detection/pose dataset. Less relevant for scoring but usable as negative/baseline examples.
+
+### Community sources (requires permission/scraping ethics)
+- **Reddit** — Subreddits like r/BlueCollarWomen, r/tradesman, r/Carpentry, r/MechanicAdvice, r/Welding, r/Gardening frequently have hand photos in real work contexts. Also r/hands and r/mildlyinteresting for variety.
+- **Flickr Creative Commons** — Search "working hands", "farmer hands", "mechanic hands", "carpenter hands". Filter by CC license. Wide variety of real-world shots.
+- **Wikimedia Commons** — Category:Hands has thousands of freely licensed images across contexts.
+
+### Manual collection
+- **Photograph known workers** — Most reliable ground truth. Photograph hands of people with known occupations/experience levels, then score with the rubric. Even 50-100 well-labeled images is enough to start fine-tuning.
+- **Before/after washing** — Photograph the same hands dirty and clean. This directly tests the core thesis and creates paired training data.
+
+### Crowdsourcing
+- **Amazon Mechanical Turk / Prolific** — Post a task: "Photograph your hands (clean, palms up and down)" with a survey about occupation, years of manual work, and trade type. This gives images + self-reported ground truth.
+- **University studies** — Partner with an occupational health or ergonomics lab that already collects hand data.
+
+### Synthetic / augmentation
+- **Cross-label with the rubric** — Have multiple human raters score the same images independently, then average. Reduces individual bias.
+- **Augmentation** — The dataset module already includes random crop, flip, and color jitter. For hands specifically, consider adding: random rotation (hands are photographed at all angles), brightness variation (indoor vs outdoor), and slight perspective warps.
+
+### Data format
+Place images in `data/images/` and create `data/labels.csv`:
+```csv
+filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_definition,nail_evidence,symmetry_of_wear,climate_ppe
+001.jpg,18,14,11,10,7,8,4
+002.jpg,3,2,1,3,2,1,0
+```
+
+### Labeling workflow suggestion
+1. Collect raw images from sources above
+2. Run `PromptEvaluator` to generate initial labels
+3. Human-review and correct scores using the rubric from `scoring-metrics.md`
+4. Train the vision classifier
+5. Compare classifier vs prompt evaluator vs human scores to find disagreements
+6. Focus labeling effort on disagreement cases
+
 ## Known Issues
 
 - `scoring-metrics.md` has duplicate content (lines 1-108 and 112-208)
