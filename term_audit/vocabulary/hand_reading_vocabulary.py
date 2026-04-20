@@ -21,8 +21,9 @@ CC0. Stdlib only.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Set
+from typing import Any, Dict, List, Optional
 from enum import Enum
+import json
 
 
 # ===========================================================================
@@ -119,6 +120,22 @@ class HandSizeAndShape(Enum):
     UNKNOWN = "unknown"
 
 
+class GloveUsage(Enum):
+    """
+    Reported glove-wearing history.
+
+    Context that changes how cleanliness and texture should be read.
+    A constant-glove worker with callus evidence is still a worker;
+    a 'never wears gloves' claim in a cold climate is a red flag.
+    See gloves-debunk.md.
+    """
+    NEVER = "never"                        # 'I never wear gloves' (often defensive)
+    OCCASIONAL = "occasional"              # Gloves for dirty/chemical tasks only
+    TASK_APPROPRIATE = "task_appropriate"  # Gloves when the task calls for them
+    CONSTANT = "constant"                  # Gloves for nearly all work
+    UNKNOWN = "unknown"
+
+
 # ===========================================================================
 # Part 2. Structured hand description
 # ===========================================================================
@@ -148,8 +165,42 @@ class HandDescription:
     grip_asymmetry: GripAsymmetry = GripAsymmetry.UNKNOWN
     hand_shape: HandSizeAndShape = HandSizeAndShape.UNKNOWN
 
+    # Glove / PPE history — reframes how cleanliness is read
+    glove_usage: GloveUsage = GloveUsage.UNKNOWN
+    years_gloved_work: Optional[float] = None
+
     # Free text for details the vocabulary doesn't capture
     notes: str = ""
+
+    # ----- Missingness / confidence -----
+
+    _ENUM_SLOTS = (
+        "cleanliness", "callus_pattern", "scarring", "knuckles",
+        "nails", "skin_texture", "grip_asymmetry", "hand_shape", "glove_usage",
+    )
+
+    @property
+    def observation_confidence(self) -> float:
+        """
+        Fraction of vocabulary slots that were actually observed (not UNKNOWN).
+
+        AI consumers should treat inferences below ~0.5 as insufficient
+        evidence rather than as a low score.
+        """
+        observed = sum(
+            1 for slot in self._ENUM_SLOTS
+            if getattr(self, slot).value != "unknown"
+        )
+        # callus_zones is a list; presence counts as one extra observation
+        total = len(self._ENUM_SLOTS) + 1
+        if self.callus_zones:
+            observed += 1
+        return observed / total
+
+    @property
+    def has_sufficient_evidence(self) -> bool:
+        """Heuristic gate: refuse strong inferences below this."""
+        return self.observation_confidence >= 0.5
 
     # Inferred from the description
     def inferred_domains(self) -> List[str]:
@@ -235,6 +286,16 @@ class HandDescription:
         if self.grip_asymmetry == GripAsymmetry.TASK_SPECIFIC_ASYMMETRY:
             score += 0.1
 
+        # Glove context: constant-glove wearers with callus evidence are still
+        # workers — do not hold clean cleanliness against them. Defensive
+        # 'never wear gloves' claims don't add to E_X on their own.
+        if (
+            self.glove_usage == GloveUsage.CONSTANT
+            and self.callus_pattern not in (CallusPattern.NONE_VISIBLE, CallusPattern.UNKNOWN)
+            and self.cleanliness in (CleanlinessLevel.CLEAN_UNWORKED, CleanlinessLevel.CLEAN_BUT_WORKED)
+        ):
+            score += 0.1
+
         return min(1.0, score)
 
     def inferred_specialist_probability(self) -> float:
@@ -268,14 +329,27 @@ class HandDescription:
         specialist = self.inferred_specialist_probability()
         domains = self.inferred_domains()
 
-        if e_x > 0.6:
+        obs_conf = self.observation_confidence
+
+        if not self.has_sufficient_evidence:
+            capacity_type = "INSUFFICIENT EVIDENCE"
+            confidence = "LOW"
+            recommendation = (
+                f"Only {obs_conf:.0%} of vocabulary slots were observed. "
+                "Do not issue a capacity judgment from this description — "
+                "ask the observer for more detail using OBSERVER_CHECKLIST."
+            )
+        elif e_x > 0.6:
             capacity_type = "CROSS-DOMAIN CLOSER (E_X)"
-            confidence = "HIGH"
+            confidence = "HIGH" if obs_conf >= 0.75 else "MODERATE"
             recommendation = "This person likely closes coupled systems. Route accordingly."
         elif specialist > 0.6:
             capacity_type = "SINGLE-DOMAIN SPECIALIST"
-            confidence = "HIGH"
-            recommendation = f"Likely deep in {', '.join(domains) if domains else 'specific domain'}. Handoff may be required for other domains."
+            confidence = "HIGH" if obs_conf >= 0.75 else "MODERATE"
+            recommendation = (
+                f"Likely deep in {', '.join(domains) if domains else 'specific domain'}. "
+                "Handoff may be required for other domains."
+            )
         else:
             capacity_type = "UNCERTAIN"
             confidence = "LOW"
@@ -286,6 +360,7 @@ HAND SUBSTRATE ASSESSMENT
 ========================
 Observer: {self.observer_relationship}
 Practitioner context: {self.practitioner_context or 'not specified'}
+Observation confidence: {obs_conf:.0%} of vocabulary slots filled
 
 OBSERVED FEATURES:
 - Cleanliness: {self.cleanliness.value}
@@ -296,6 +371,7 @@ OBSERVED FEATURES:
 - Nails: {self.nails.value}
 - Skin texture: {self.skin_texture.value}
 - Grip asymmetry: {self.grip_asymmetry.value}
+- Glove usage: {self.glove_usage.value}{f' (~{self.years_gloved_work:g} yrs)' if self.years_gloved_work else ''}
 
 INFERRED CAPACITY:
 - Capacity type: {capacity_type} (confidence: {confidence})
@@ -313,9 +389,229 @@ visible in the hands. Substrate evidence cannot be forged quickly and
 is a reliable signal of operational history.
 """
 
+    # ----- Serialization -----
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize to a JSON-friendly dict."""
+        return {
+            "observer_relationship": self.observer_relationship,
+            "observation_date": self.observation_date,
+            "practitioner_context": self.practitioner_context,
+            "cleanliness": self.cleanliness.value,
+            "callus_pattern": self.callus_pattern.value,
+            "callus_zones": [z.value for z in self.callus_zones],
+            "scarring": self.scarring.value,
+            "knuckles": self.knuckles.value,
+            "nails": self.nails.value,
+            "skin_texture": self.skin_texture.value,
+            "grip_asymmetry": self.grip_asymmetry.value,
+            "hand_shape": self.hand_shape.value,
+            "glove_usage": self.glove_usage.value,
+            "years_gloved_work": self.years_gloved_work,
+            "notes": self.notes,
+        }
+
+    def to_json(self, indent: int = 2) -> str:
+        return json.dumps(self.to_dict(), indent=indent)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "HandDescription":
+        """Rehydrate from a dict produced by to_dict(). Unknown values degrade to UNKNOWN."""
+
+        def _enum(enum_cls, value, default):
+            if value is None:
+                return default
+            try:
+                return enum_cls(value)
+            except ValueError:
+                return default
+
+        return cls(
+            observer_relationship=data.get("observer_relationship", "unknown"),
+            observation_date=data.get("observation_date"),
+            practitioner_context=data.get("practitioner_context"),
+            cleanliness=_enum(CleanlinessLevel, data.get("cleanliness"), CleanlinessLevel.UNKNOWN),
+            callus_pattern=_enum(CallusPattern, data.get("callus_pattern"), CallusPattern.UNKNOWN),
+            callus_zones=[
+                z for z in (
+                    _enum(CallusZone, v, None) for v in data.get("callus_zones", []) or []
+                ) if z is not None
+            ],
+            scarring=_enum(ScarringType, data.get("scarring"), ScarringType.UNKNOWN),
+            knuckles=_enum(KnuckleCondition, data.get("knuckles"), KnuckleCondition.UNKNOWN),
+            nails=_enum(NailCondition, data.get("nails"), NailCondition.UNKNOWN),
+            skin_texture=_enum(SkinTexture, data.get("skin_texture"), SkinTexture.UNKNOWN),
+            grip_asymmetry=_enum(GripAsymmetry, data.get("grip_asymmetry"), GripAsymmetry.UNKNOWN),
+            hand_shape=_enum(HandSizeAndShape, data.get("hand_shape"), HandSizeAndShape.UNKNOWN),
+            glove_usage=_enum(GloveUsage, data.get("glove_usage"), GloveUsage.UNKNOWN),
+            years_gloved_work=data.get("years_gloved_work"),
+            notes=data.get("notes", ""),
+        )
+
+    # ----- Bridge to the 7-category scoring rubric -----
+
+    def to_rubric_scores(self) -> Dict[str, float]:
+        """
+        Map this description to the 7 categories defined in
+        hands_lie_detector.scoring.rubric (v0.1). Output is directly
+        usable as input to ScoreEvaluator.evaluate().
+
+        UNKNOWN slots score 0 (treated as 'not observed' rather than 'absent').
+        """
+        texture = {
+            SkinTexture.SMOOTH_UNWORKED: 3,
+            SkinTexture.THICKENED: 12,
+            SkinTexture.CALLUSED_BUT_CLEAN: 20,
+            SkinTexture.EMBEDDED_STAINING: 18,
+            SkinTexture.LEATHERY: 22,
+            SkinTexture.UNKNOWN: 0,
+        }[self.skin_texture]
+
+        wear = {
+            CallusPattern.NONE_VISIBLE: 0,
+            CallusPattern.SINGLE_DEEP: 16,
+            CallusPattern.DISTRIBUTED_MODERATE: 14,
+            CallusPattern.DISTRIBUTED_VARIED: 18,
+            CallusPattern.HEAVY_GENERAL: 10,  # generalized ≠ task-specific
+            CallusPattern.UNKNOWN: 0,
+        }[self.callus_pattern]
+        if len(self.callus_zones) >= 3 and self.callus_pattern != CallusPattern.HEAVY_GENERAL:
+            wear = min(20, wear + 2)
+
+        injury = {
+            ScarringType.NONE_VISIBLE: 0,
+            ScarringType.FEW_SMALL: 4,
+            ScarringType.MULTIPLE_SMALL: 10,
+            ScarringType.DISTRIBUTED_VARIED: 14,
+            ScarringType.SEVERE_FEW: 8,
+            ScarringType.UNKNOWN: 0,
+        }[self.scarring]
+
+        tendon = {
+            KnuckleCondition.NORMAL_RANGE: 5,
+            KnuckleCondition.THICKENED: 10,
+            KnuckleCondition.REDUCED_EXTENSION: 12,
+            KnuckleCondition.ENLARGED_AND_STIFF: 14,
+            KnuckleCondition.UNKNOWN: 0,
+        }[self.knuckles]
+        if self.hand_shape == HandSizeAndShape.LEAN_FUNCTIONAL:
+            tendon = min(15, tendon + 1)
+
+        nail = {
+            NailCondition.NORMAL: 3,
+            NailCondition.THICKENED: 8,
+            NailCondition.RIDGED: 9,
+            NailCondition.SEPARATED: 7,
+            NailCondition.DAMAGED_IRREGULAR: 8,
+            NailCondition.CLEAN_PROFESSIONAL: 2,  # manicured band
+            NailCondition.UNKNOWN: 0,
+        }[self.nails]
+
+        symmetry = {
+            GripAsymmetry.SYMMETRICAL: 5,
+            GripAsymmetry.MODERATE_ASYMMETRY: 6,
+            GripAsymmetry.MARKED_ASYMMETRY: 7,
+            GripAsymmetry.TASK_SPECIFIC_ASYMMETRY: 9,
+            GripAsymmetry.UNKNOWN: 0,
+        }[self.grip_asymmetry]
+
+        # PPE: intelligent use = clean hands + visible adaptation
+        has_adaptation = self.callus_pattern not in (CallusPattern.NONE_VISIBLE, CallusPattern.UNKNOWN)
+        ppe = {
+            GloveUsage.TASK_APPROPRIATE: 5 if has_adaptation else 3,
+            GloveUsage.CONSTANT: 4 if has_adaptation else 1,
+            GloveUsage.OCCASIONAL: 3,
+            GloveUsage.NEVER: 1,  # defensive claim — rubric red flag
+            GloveUsage.UNKNOWN: 0,
+        }[self.glove_usage]
+
+        return {
+            "Texture Persistence": float(texture),
+            "Wear Localization": float(wear),
+            "Micro-Injury History": float(injury),
+            "Tendon & Vein Definition": float(tendon),
+            "Nail Evidence": float(nail),
+            "Symmetry of Wear": float(symmetry),
+            "Climate & PPE Intelligence": float(ppe),
+        }
+
 
 # ===========================================================================
-# Part 3. Example descriptions for training AI interpretation
+# Part 3. Observer checklist — used when there are no photos
+# ===========================================================================
+
+OBSERVER_CHECKLIST = """
+HAND OBSERVATION CHECKLIST (no-photo interview script)
+=======================================================
+
+Ask the observer (or the person themselves) to go through these slots
+in order. Short answers are fine. Say UNKNOWN for anything they can't
+see or aren't sure about — never guess.
+
+1. OBSERVER RELATIONSHIP
+   self / peer_practitioner / router / beneficiary
+
+2. PRACTITIONER CONTEXT (free text, one line)
+   e.g. "rural generalist, 30 years", "office worker, gym 4x/week"
+
+3. CLEANLINESS (right now, this moment)
+   - embedded_dirt       dirt/oil/grease in creases that won't wash out
+   - work_stained        currently dirty from recent work
+   - clean_but_worked    clean skin, but wear patterns still visible
+   - clean_unworked      clean, no wear patterns
+
+4. CALLUS PATTERN (overall distribution)
+   - none_visible        no calluses at all
+   - single_deep         one dominant callus zone (specialist pattern)
+   - distributed_moderate  multiple moderate zones
+   - distributed_varied    multiple zones, different depths (closer pattern)
+   - heavy_general       whole palm thickened (decades of everything)
+
+5. CALLUS ZONES (check all that apply — touch the hand if permitted)
+   [ ] thumb crotch (between thumb and index) — pliers/wrench/stripping
+   [ ] index side — knife work, fine tools
+   [ ] palm below index — shovel, rake, long handles
+   [ ] heel of palm — hammer, impact tools
+   [ ] fingertip pads — screwdriver, precision grip
+   [ ] across palm crease — rope, carrying, pulling
+   [ ] base of fingers — general gripping
+   [ ] thumb pad — pushing, pressure
+   [ ] outer palm edge — buckets, odd loads
+
+6. SCARRING (healed, not current)
+   none_visible / few_small / multiple_small / distributed_varied / severe_few
+
+7. KNUCKLES (ask them to make a fist, then fully extend)
+   normal_range / thickened / reduced_extension / enlarged_and_stiff
+
+8. NAILS
+   normal / thickened / ridged / separated / damaged_irregular / clean_professional
+
+9. SKIN TEXTURE (overall)
+   smooth_unworked / thickened / leathery / callused_but_clean / embedded_staining
+
+10. GRIP ASYMMETRY (compare left vs right palm)
+    symmetrical / moderate_asymmetry / marked_asymmetry / task_specific_asymmetry
+
+11. HAND SHAPE
+    average / large_thick / lean_functional / slender
+
+12. GLOVE USAGE (important — reframes cleanliness)
+    never / occasional / task_appropriate / constant
+    Optional: approximate years of gloved work.
+
+13. NOTES (free text)
+    Anything the vocabulary doesn't capture — burn scars, staining color,
+    specific tools mentioned, etc.
+
+RULE: If fewer than ~7 of slots 3–12 are filled, do not ask an AI for a
+capacity inference. Collect more detail first. Substrate evidence is
+only as trustworthy as the observation is complete.
+"""
+
+
+# ===========================================================================
+# Part 4. Example descriptions for training AI interpretation
 # ===========================================================================
 
 EXAMPLE_DESCRIPTIONS = [
@@ -339,6 +635,7 @@ EXAMPLE_DESCRIPTIONS = [
             skin_texture=SkinTexture.CALLUSED_BUT_CLEAN,
             grip_asymmetry=GripAsymmetry.TASK_SPECIFIC_ASYMMETRY,
             hand_shape=HandSizeAndShape.LEAN_FUNCTIONAL,
+            glove_usage=GloveUsage.TASK_APPROPRIATE,
             notes="Hands are clean but clearly worked. Multiple callus zones across tool families. Small scars on knuckles and between fingers. Presents as clean but you can see the work history in the tissue.",
         ),
         "expected_e_x": 0.85,
@@ -361,6 +658,7 @@ EXAMPLE_DESCRIPTIONS = [
             skin_texture=SkinTexture.SMOOTH_UNWORKED,
             grip_asymmetry=GripAsymmetry.MODERATE_ASYMMETRY,
             hand_shape=HandSizeAndShape.AVERAGE,
+            glove_usage=GloveUsage.TASK_APPROPRIATE,
             notes="Deep callus in thumb crotch from wire stripping. Fingertip pads from screwdrivers. Not much else. Hands are clean enough but not the 'clean but worked' of the rural closer.",
         ),
         "expected_e_x": 0.25,
@@ -384,6 +682,7 @@ EXAMPLE_DESCRIPTIONS = [
             skin_texture=SkinTexture.THICKENED,
             grip_asymmetry=GripAsymmetry.MODERATE_ASYMMETRY,
             hand_shape=HandSizeAndShape.AVERAGE,
+            glove_usage=GloveUsage.OCCASIONAL,
             notes="Developing callus pattern. Shows work but not the decades of varied wear. Cleanliness is still 'work stained' not 'clean but worked'—hasn't developed the discipline or the embedded patterns yet.",
         ),
         "expected_e_x": 0.40,
@@ -410,6 +709,7 @@ EXAMPLE_DESCRIPTIONS = [
             skin_texture=SkinTexture.LEATHERY,
             grip_asymmetry=GripAsymmetry.TASK_SPECIFIC_ASYMMETRY,
             hand_shape=HandSizeAndShape.LARGE_THICK,
+            glove_usage=GloveUsage.NEVER,
             notes="Embedded dirt in every crease. Whole palm is thickened. Multiple old scars. Knuckles won't fully straighten. This is decades of everything. Cleanliness is not the point here—this hand has done more work than most people will ever do.",
         ),
         "expected_e_x": 0.95,
@@ -429,6 +729,7 @@ EXAMPLE_DESCRIPTIONS = [
             skin_texture=SkinTexture.SMOOTH_UNWORKED,
             grip_asymmetry=GripAsymmetry.SYMMETRICAL,
             hand_shape=HandSizeAndShape.AVERAGE,
+            glove_usage=GloveUsage.UNKNOWN,
             notes="Clean, symmetrical, no wear patterns. Gym callus at base of fingers from barbell but that's not tool work and the vocabulary distinguishes it.",
         ),
         "expected_e_x": 0.05,
@@ -438,7 +739,7 @@ EXAMPLE_DESCRIPTIONS = [
 
 
 # ===========================================================================
-# Part 4. Text-to-inference function for AI systems
+# Part 5. Text-to-inference function for AI systems
 # ===========================================================================
 
 def parse_hand_description_text(text: str) -> Optional[HandDescription]:
@@ -455,29 +756,32 @@ def parse_hand_description_text(text: str) -> Optional[HandDescription]:
 
     text_lower = text.lower()
 
+    def _any(keywords):
+        return any(k in text_lower for k in keywords)
+
     # Cleanliness
-    if "clean but" in text_lower or "clean yet" in text_lower:
+    if _any(["clean but", "clean yet", "clean however", "clean and callused", "clean and calloused"]):
         cleanliness = CleanlinessLevel.CLEAN_BUT_WORKED
-    elif "embedded" in text_lower or "won't wash" in text_lower:
+    elif _any(["embedded", "won't wash", "wont wash", "ground in", "ingrained", "grease in the creases", "dirt in the creases"]):
         cleanliness = CleanlinessLevel.EMBEDDED_DIRT
-    elif "stained" in text_lower or "dirty" in text_lower:
+    elif _any(["stained", "grease-stained", "dirty", "grimy", "oil on"]):
         cleanliness = CleanlinessLevel.WORK_STAINED
-    elif "clean" in text_lower and "no" in text_lower and "callus" in text_lower:
+    elif ("clean" in text_lower and ("no callus" in text_lower or "no calluses" in text_lower or "unworked" in text_lower)):
         cleanliness = CleanlinessLevel.CLEAN_UNWORKED
     else:
         cleanliness = CleanlinessLevel.UNKNOWN
 
     # Callus pattern
-    if "multiple" in text_lower and "callus" in text_lower:
-        if "different" in text_lower or "various" in text_lower:
+    if ("multiple" in text_lower and _any(["callus", "callous"])):
+        if _any(["different", "various", "varied"]):
             callus_pattern = CallusPattern.DISTRIBUTED_VARIED
         else:
             callus_pattern = CallusPattern.DISTRIBUTED_MODERATE
-    elif "single" in text_lower and "callus" in text_lower:
+    elif _any(["single callus", "one callus", "one deep callus"]):
         callus_pattern = CallusPattern.SINGLE_DEEP
-    elif "heavy" in text_lower or "whole palm" in text_lower:
+    elif _any(["whole palm", "entire palm", "heavy callus", "thickened all over", "callused all over"]):
         callus_pattern = CallusPattern.HEAVY_GENERAL
-    elif "no callus" in text_lower or "no calluses" in text_lower:
+    elif _any(["no callus", "no calluses", "no callous", "smooth palm"]):
         callus_pattern = CallusPattern.NONE_VISIBLE
     else:
         callus_pattern = CallusPattern.UNKNOWN
@@ -487,22 +791,31 @@ def parse_hand_description_text(text: str) -> Optional[HandDescription]:
     zone_keywords = {
         "thumb crotch": CallusZone.THUMB_CROTCH,
         "between thumb": CallusZone.THUMB_CROTCH,
+        "web of the thumb": CallusZone.THUMB_CROTCH,
         "pliers": CallusZone.THUMB_CROTCH,
         "wrench": CallusZone.THUMB_CROTCH,
+        "wire stripper": CallusZone.THUMB_CROTCH,
         "index side": CallusZone.INDEX_SIDE,
+        "knife": CallusZone.INDEX_SIDE,
         "shovel": CallusZone.PALM_BELOW_INDEX,
         "rake": CallusZone.PALM_BELOW_INDEX,
         "palm below": CallusZone.PALM_BELOW_INDEX,
+        "long handle": CallusZone.PALM_BELOW_INDEX,
         "heel of palm": CallusZone.HEEL_OF_PALM,
+        "heel of the palm": CallusZone.HEEL_OF_PALM,
         "hammer": CallusZone.HEEL_OF_PALM,
         "fingertip": CallusZone.FINGERTIP_PADS,
+        "finger pad": CallusZone.FINGERTIP_PADS,
         "screwdriver": CallusZone.FINGERTIP_PADS,
         "across palm": CallusZone.ACROSS_PALM_CREASE,
+        "palm crease": CallusZone.ACROSS_PALM_CREASE,
         "rope": CallusZone.ACROSS_PALM_CREASE,
         "carrying": CallusZone.ACROSS_PALM_CREASE,
         "base of fingers": CallusZone.BASE_OF_FINGERS,
+        "base of the fingers": CallusZone.BASE_OF_FINGERS,
         "thumb pad": CallusZone.THUMB_PAD,
         "outer palm": CallusZone.OUTER_PALM_EDGE,
+        "edge of the palm": CallusZone.OUTER_PALM_EDGE,
         "bucket": CallusZone.OUTER_PALM_EDGE,
     }
     for keyword, zone in zone_keywords.items():
@@ -555,7 +868,7 @@ def parse_hand_description_text(text: str) -> Optional[HandDescription]:
     # Skin texture
     if "leathery" in text_lower:
         skin_texture = SkinTexture.LEATHERY
-    elif "callused but clean" in text_lower or "calloused but clean" in text_lower:
+    elif _any(["callused but clean", "calloused but clean", "clean but callused", "clean but calloused"]):
         skin_texture = SkinTexture.CALLUSED_BUT_CLEAN
     elif "thickened" in text_lower:
         skin_texture = SkinTexture.THICKENED
@@ -565,6 +878,18 @@ def parse_hand_description_text(text: str) -> Optional[HandDescription]:
         skin_texture = SkinTexture.SMOOTH_UNWORKED
     else:
         skin_texture = SkinTexture.UNKNOWN
+
+    # Glove usage
+    if _any(["never wear", "never wears", "don't wear gloves", "no gloves"]):
+        glove_usage = GloveUsage.NEVER
+    elif _any(["always in gloves", "always wears gloves", "gloves for everything", "constant glove"]):
+        glove_usage = GloveUsage.CONSTANT
+    elif _any(["gloves when", "gloves for dirty", "gloves for chemical", "appropriate gloves", "proper gloves"]):
+        glove_usage = GloveUsage.TASK_APPROPRIATE
+    elif _any(["sometimes gloves", "occasional gloves", "gloves occasionally"]):
+        glove_usage = GloveUsage.OCCASIONAL
+    else:
+        glove_usage = GloveUsage.UNKNOWN
 
     return HandDescription(
         observer_relationship="parsed_from_text",
@@ -576,12 +901,13 @@ def parse_hand_description_text(text: str) -> Optional[HandDescription]:
         nails=nails,
         skin_texture=skin_texture,
         grip_asymmetry=GripAsymmetry.UNKNOWN,
+        glove_usage=glove_usage,
         notes=text,
     )
 
 
 # ===========================================================================
-# Part 5. Main: demonstrate the vocabulary
+# Part 6. Main: demonstrate the vocabulary
 # ===========================================================================
 
 if __name__ == "__main__":
@@ -600,10 +926,13 @@ if __name__ == "__main__":
     for example in EXAMPLE_DESCRIPTIONS:
         desc = example["description"]
         print(f"\n{example['name'].upper()}:")
+        print(f"  Observation confidence: {desc.observation_confidence:.0%}")
         print(f"  E_X probability: {desc.inferred_e_x_probability():.2f} (expected {example['expected_e_x']})")
         print(f"  Specialist probability: {desc.inferred_specialist_probability():.2f} (expected {example['expected_specialist']})")
         print(f"  Domains: {desc.inferred_domains()}")
         print(f"  Experience: {desc.inferred_experience_level():.2f}")
+        print(f"  Rubric scores: {desc.to_rubric_scores()}")
+        print(f"  Rubric total: {sum(desc.to_rubric_scores().values()):.1f} / 100")
 
     print("\n" + "=" * 80)
     print("EXAMPLE AI CONTEXT (for Dale)")
@@ -618,10 +947,36 @@ if __name__ == "__main__":
     Clean hands but you can see the calluses. He's got that shovel callus
     and the pliers callus and the hammer callus. Multiple small scars on
     the knuckles. Knuckles are thick. Nails are ridged. Skin is callused
-    but clean. You can tell he's done everything.
+    but clean. Wears gloves when the task calls for it. You can tell he's
+    done everything.
     """
     print(f"Input text: {sample_text}")
     parsed = parse_hand_description_text(sample_text)
     if parsed:
-        print(f"\nParsed E_X probability: {parsed.inferred_e_x_probability():.2f}")
+        print(f"\nParsed observation confidence: {parsed.observation_confidence:.0%}")
+        print(f"Parsed E_X probability: {parsed.inferred_e_x_probability():.2f}")
         print(f"Parsed domains: {parsed.inferred_domains()}")
+        print(f"Parsed glove usage: {parsed.glove_usage.value}")
+
+    print("\n" + "=" * 80)
+    print("SERIALIZATION ROUND-TRIP")
+    print("=" * 80)
+    payload = dale_desc.to_json()
+    print(payload[:400] + "...")
+    restored = HandDescription.from_dict(json.loads(payload))
+    assert restored.to_dict() == dale_desc.to_dict(), "round-trip failed"
+    print("\nRound-trip OK. from_dict(to_dict(...)) is identity.")
+
+    print("\n" + "=" * 80)
+    print("LOW-CONFIDENCE REFUSAL")
+    print("=" * 80)
+    sparse = HandDescription(
+        observer_relationship="router",
+        cleanliness=CleanlinessLevel.CLEAN_UNWORKED,
+    )
+    print(sparse.to_ai_context())
+
+    print("=" * 80)
+    print("OBSERVER CHECKLIST (for no-photo interviews)")
+    print("=" * 80)
+    print(OBSERVER_CHECKLIST)
