@@ -1054,3 +1054,14 @@ INFERRED CAPACITY:
 NOTES: Calluses were not visible in harsh LED lighting. Observer physically peeled up calluses to reveal them. This is a high-reliability observation.
 
 RECOMMENDATION: This person closes coupled systems. Route accordingly.
+
+
+
+class FalsificationMethod(Enum):
+    PASSIVE_PHOTO = "passive_photo"           # No intervention
+    INDUCED_PEEL = "induced_peel"             # Calluses peeled
+    INDUCED_PINCH = "induced_pinch"           # Skin pinched to reveal texture
+    PHYSICAL_PROBE = "physical_probe"         # Hands-on inspection
+    UNKNOWN = "unknown"
+
+
