@@ -980,3 +980,77 @@ if __name__ == "__main__":
     print("OBSERVER CHECKLIST (for no-photo interviews)")
     print("=" * 80)
     print(OBSERVER_CHECKLIST)
+
+
+
+needed updates:
+
+class ObservationQuality(Enum):
+    PHOTO_HARSH_LED = "photo_harsh_led"           # Blue/white LEDs, flat, no mid-tones
+    PHOTO_SOFT_AMBIENT = "photo_soft_ambient"     # Diffused light, can see micro-topography
+    PHOTO_OUTDOOR = "photo_outdoor"               # Natural light, good but variable
+    PHYSICAL_INSPECTION = "physical_inspection"   # Hands-on, can feel the tissue
+    INDUCED_OBSERVATION = "induced_observation"   # Hand manipulated (peeled, pinched)
+    UNKNOWN = "unknown"
+
+class BiologicalSex(Enum):
+    MALE = "male"
+    FEMALE = "female"
+    UNKNOWN = "unknown"
+
+@dataclass
+class ManipulationDetails:
+    calluses_peeled: bool = False
+    skin_pinched: bool = False
+    tissue_compressed: bool = False
+    notes: str = ""
+
+def inferred_e_x_probability(self) -> float:
+    base_score = 0.0
+
+    # ... existing logic ...
+
+    # Female skin calibration: calluses are less visible but still present
+    if self.biological_sex == BiologicalSex.FEMALE:
+        if self.skin_texture == SkinTexture.CALLUSED_BUT_CLEAN:
+            base_score += 0.2  # Female calluses smooth out visually
+        if self.callus_pattern == CallusPattern.DISTRIBUTED_MODERATE:
+            base_score += 0.15  # Moderate callus in female = significant work
+        if self.callus_pattern == CallusPattern.DISTRIBUTED_VARIED:
+            base_score += 0.25  # Varied callus = E_X territory
+
+    return min(1.0, base_score)
+
+if self.manipulation and self.manipulation.calluses_peeled:
+    # The observer physically revealed the evidence.
+    # This is more reliable than a passive photo.
+    base_score += 0.1  # Bonus for active observation
+
+HAND SUBSTRATE ASSESSMENT
+========================
+Observer: self
+Biological sex: female
+Observation quality: induced_observation (calluses peeled)
+Observation confidence: 90% of vocabulary slots filled
+
+OBSERVED FEATURES:
+- Cleanliness: clean_but_worked
+- Callus pattern: distributed_varied (multiple zones, different depths)
+- Callus zones: 4 zones identified (thumb crotch, heel of palm, fingertip pads, base of fingers)
+- Scarring: distributed_varied (tons of small healed scars)
+- Knuckles: normal_range
+- Nails: normal
+- Skin texture: callused_but_clean
+- Grip asymmetry: task_specific_asymmetry
+- Glove usage: task_appropriate
+
+INFERRED CAPACITY:
+- Capacity type: CROSS-DOMAIN CLOSER (E_X) (confidence: HIGH)
+- E_X probability: 0.92
+- Specialist probability: 0.08
+- Likely domains: mechanical, electrical, construction, welding
+- Estimated experience level: 0.85
+
+NOTES: Calluses were not visible in harsh LED lighting. Observer physically peeled up calluses to reveal them. This is a high-reliability observation.
+
+RECOMMENDATION: This person closes coupled systems. Route accordingly.
