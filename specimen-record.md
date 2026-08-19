@@ -326,6 +326,71 @@ frame had been shot fluently. **The limit does not attach to execution.**
 
 ---
 
+## Specimen 005 — the within-frame control
+
+The strongest specimen in this file, because it holds everything constant except
+the variable under test.
+
+One frame. Two questions, same model, same date, same pixels.
+
+| probe | subject | reference class | outcome | mark |
+|---|---|---|---|---|
+| A | the dog's breed | **maintained**: published standards, dense labeled imagery, a body whose job *is* the taxonomy | correct | `OBSERVED` |
+| B | the conjunction of work the frame depicts | **none**: no standards, no labeled imagery, no maintaining body | failed | `OBSERVED` |
+
+Resolution, image quality, lighting and model are identical across the two — the
+same pixels supported a correct call one question earlier.
+
+⇒ **Perception is exonerated. The failure is on the partition layer.**
+
+This is the measurement the repo did not have. `specimen-record.md` has been
+noting since specimen 002 that the repo conflates two axes — perception (can the
+marker be resolved) and partition (does a class exist to resolve it into) — and
+that movement on one is not movement on the other. Nothing here could separate
+them until now. A within-frame control separates them in one frame, for the cost
+of one extra question.
+
+`WithinFrameControl.perception_exonerated` returns `True` only on this pattern,
+and `INVALID` if the "maintained" probe's subject turns out not to have a
+maintained class after all.
+
+### Why it generalizes
+
+The design is not about dogs. It is: pair every hard probe with an easy one on
+the same frame, where "easy" means *a maintained taxonomy exists*, not *visually
+obvious*. Any frame that contains one well-classified object and one
+unclassified conjunction will run it.
+
+Which also makes it a cheap addition to the unrun core test: ask each model one
+maintained-class question per stimulus alongside the forced classification. A
+model that fails both is a resolution result. A model that passes the first and
+fails the second is a reference-class result, and only the second kind is
+evidence for this repo's thesis.
+
+## Specimen 006 — one yard, no boundary in it
+
+| line | mark |
+|---|---|
+| A single frame: rig, goat, chicken, dog, gravel, house, woods. | `MEASURED` |
+| No boundary anywhere in it. The coded domain and the uncoded domain occupy the same ground, at the same time, with one person crossing between them in a single walk. | `OBSERVED` |
+
+Every classifier in the series has had to pick one domain and discard the rest.
+This frame shows why that is **not a resolution problem**: there is nothing there
+to separate.
+
+The partition is not merely absent from the model's vocabulary — it is absent
+from the ground. `economic-carve.md` argued that the domain boundary is a payroll
+artifact rather than an ontological joint. This is that argument as an image: the
+boundary the codes assert has no referent in the place the work happens.
+
+And it explains the conjunction problem directly. No occupational code contains
+`{board-level diagnosis, heavy rig, cob wall, wet felting}`, so any classifier
+must pick one and discard the rest — and it will pick the one with the most
+corpus density. Which is how "desk hands" comes back from a hand that just came
+off a landing gear crank.
+
+---
+
 ## The unrun test
 
 This is the repo's core test. It has not been run since the original trial.

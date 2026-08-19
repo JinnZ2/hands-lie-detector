@@ -156,8 +156,37 @@ hand-arm vibration through the wheel and whole-body through the seat. It
 So during that work, plate map and band position **decouple**, and neither one
 predicts the other. `DomainSignature.decouples_map_from_band` flags it.
 
-Everything else in the series was one or the other: rotary/clamp deposit,
-probe work draw, chainsaw suppress.
+Everything else in the series was one or the other:
+
+| domain | class |
+|---|---|
+| rotary / clamp | deposit only |
+| probe work | draw only |
+| chainsaw | suppress only |
+| **open-station tractor** | **deposit + suppress** |
+
+The tractor is the first: large-diameter wheel at high effort over uneven ground
+gives constant corrective input at fixed geometry and high cycle count; loader
+levers add moderate force at sustained wrap grip; and the open station puts
+hand-arm vibration through the wheel and whole-body through the seat. Plate goes
+up while sensing goes down, in the same hour.
+
+### One word, four contact distributions
+
+"Firewood" is not a domain. It is a bundle:
+
+| sub-domain | modes |
+|---|---|
+| cut | vibration, two-hand static, weight held out |
+| split | impact, axial, palm-heel + wrap, high peak / low cycle |
+| stack | variable grip, bark abrasion, point loads, lift-carry-place |
+| base | pallets, mat, leveling — awkward-object handling |
+
+The deposit from the word is the **sum of four contact distributions**, which is
+exactly why it cannot resolve to a single site — and why it produces the diffuse,
+low-concentration map that broke the contrast metric.
+`DomainSignature.is_bundle` flags it, and the four components ship as their own
+signatures so the bundle can be decomposed rather than averaged.
 
 ---
 

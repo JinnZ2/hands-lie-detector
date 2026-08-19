@@ -66,6 +66,7 @@ class EventLog:
     carrier: str = ""
     marks: list[DorsalMark] = field(default_factory=list)
     sampling_gate: str = ""
+    baseline_frames: int = 0   # frames taken on a schedule, nothing wrong
 
     # Stated as a property so it cannot be argued away in prose.
     @property
@@ -81,6 +82,18 @@ class EventLog:
         record is not absence of event.
         """
         return bool(self.sampling_gate) and "request" not in self.sampling_gate.lower()
+
+    @property
+    def has_baseline_coverage(self) -> bool:
+        """False when every frame exists because something went wrong.
+
+        The narrative gate (see `economic-carve.md`) fires at event level and
+        inside every population: heavy documenters still document the anomaly,
+        not the Tuesday. So steady state is missing from EVERY arm, and a log
+        with no scheduled frames shows wounds and hides the band — the opposite
+        of what the band readout needs.
+        """
+        return self.baseline_frames > 0
 
     def zones_marked(self) -> dict[Zone, int]:
         counts: dict[Zone, int] = {}
@@ -123,6 +136,18 @@ class EventLog:
                 "few marks does not mean few events; it means few occasions to "
                 "record. no frequency or severity-distribution claim is available "
                 "from this log, permanently."
+            )
+        lines += [
+            "",
+            f"  baseline frames: {self.baseline_frames}"
+            f"{'' if self.has_baseline_coverage else '  <- none scheduled'}",
+        ]
+        if not self.has_baseline_coverage:
+            lines.append(
+                "    every frame here exists because something went wrong. the "
+                "maintained baseline lives in the boring frames, and no incentive "
+                "in any population produces those — bind capture to something "
+                "already recurring instead of to noticing."
             )
         lines += [
             "",

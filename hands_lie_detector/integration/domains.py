@@ -174,8 +174,21 @@ class DomainSignature:
     zone_modes: dict[Zone, LoadMode]
     channel_demand: dict[Channel, float] = field(default_factory=dict)
     load_classes: frozenset[LoadClass] = frozenset({LoadClass.DEPOSIT})
+    components: tuple[str, ...] = ()
     provenance: str = STIPULATED
     notes: str = ""
+
+    @property
+    def is_bundle(self) -> bool:
+        """True when one word covers several distinct contact distributions.
+
+        "Firewood" is cut, split, stack and base — four sub-domains with
+        different modes, geometries and load classes. The deposit from the word
+        is the SUM of four contact distributions, which is why it cannot resolve
+        to a single site, and why a low-concentration map is what it should
+        produce.
+        """
+        return bool(self.components)
 
     @property
     def deposits(self) -> bool:
@@ -204,6 +217,7 @@ def _sig(
     name: str,
     zone_modes: dict[Zone, LoadMode],
     load_classes: frozenset[LoadClass] = frozenset({LoadClass.DEPOSIT}),
+    components: tuple[str, ...] = (),
     **demand: float,
 ) -> DomainSignature:
     return DomainSignature(
@@ -211,6 +225,7 @@ def _sig(
         zone_modes=zone_modes,
         channel_demand={Channel(k): v for k, v in demand.items()},
         load_classes=load_classes,
+        components=components,
     )
 
 
@@ -230,7 +245,7 @@ DEFAULT_DOMAINS: dict[str, DomainSignature] = {
                 Zone.PALM_BELOW_INDEX: LoadMode.VIBRATION,
                 Zone.BASE_OF_FINGERS: LoadMode.COMPRESSION,
             },
-            DEPOSIT_AND_SUPPRESS,
+            DEPOSIT,
             contact_geometry=0.8, timing=0.4, recovery_budget=0.5, attention=0.6,
         ),
         _sig(
@@ -301,8 +316,48 @@ DEFAULT_DOMAINS: dict[str, DomainSignature] = {
                 Zone.BASE_OF_FINGERS: LoadMode.VIBRATION,
                 Zone.THUMB_CROTCH: LoadMode.COMPRESSION,
             },
-            DEPOSIT_AND_SUPPRESS,
+            SUPPRESS,
             contact_geometry=0.4, timing=0.6, recovery_budget=0.8, attention=0.7,
+        ),
+        _sig(
+            "tractor_open_station",
+            {
+                Zone.ACROSS_PALM_CREASE: LoadMode.COMPRESSION,
+                Zone.BASE_OF_FINGERS: LoadMode.VIBRATION,
+                Zone.PALM_BELOW_INDEX: LoadMode.COMPRESSION,
+                Zone.THUMB_CROTCH: LoadMode.VIBRATION,
+            },
+            DEPOSIT_AND_SUPPRESS,
+            contact_geometry=0.3, timing=0.7, recovery_budget=0.7, attention=0.6,
+        ),
+        _sig(
+            "firewood_cut",
+            {Zone.ACROSS_PALM_CREASE: LoadMode.VIBRATION,
+             Zone.BASE_OF_FINGERS: LoadMode.VIBRATION},
+            SUPPRESS,
+            contact_geometry=0.4, timing=0.5, recovery_budget=0.8, attention=0.7,
+        ),
+        _sig(
+            "firewood_split",
+            {Zone.HEEL_OF_PALM: LoadMode.IMPACT,
+             Zone.ACROSS_PALM_CREASE: LoadMode.COMPRESSION},
+            DEPOSIT,
+            contact_geometry=0.6, timing=0.4, recovery_budget=0.7, attention=0.3,
+        ),
+        _sig(
+            "firewood_stack",
+            {Zone.BASE_OF_FINGERS: LoadMode.ABRASION,
+             Zone.PALM_BELOW_INDEX: LoadMode.ABRASION,
+             Zone.FINGERTIP_PADS: LoadMode.COMPRESSION},
+            DEPOSIT,
+            contact_geometry=0.1, timing=0.5, recovery_budget=0.8, attention=0.3,
+        ),
+        _sig(
+            "firewood_base",
+            {Zone.OUTER_PALM_EDGE: LoadMode.ABRASION,
+             Zone.THUMB_CROTCH: LoadMode.COMPRESSION},
+            DEPOSIT,
+            contact_geometry=0.2, timing=0.3, recovery_budget=0.6, attention=0.3,
         ),
         _sig(
             "firewood_handling",
@@ -313,7 +368,8 @@ DEFAULT_DOMAINS: dict[str, DomainSignature] = {
                 Zone.OUTER_PALM_EDGE: LoadMode.ABRASION,
                 Zone.PALM_BELOW_INDEX: LoadMode.SHEAR,
             },
-            DEPOSIT,
+            frozenset({LoadClass.DEPOSIT, LoadClass.DRAW_SUPPRESS}),
+            ("firewood_cut", "firewood_split", "firewood_stack", "firewood_base"),
             contact_geometry=0.2, timing=0.5, recovery_budget=0.8, attention=0.4,
         ),
         _sig(

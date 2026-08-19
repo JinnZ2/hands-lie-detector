@@ -248,7 +248,31 @@ not on what people do. It is on **documentation propensity**, and propensity
 correlates with exactly the occupations already over-represented under gates 1
 and 2.
 
-Three filters, same direction, compounding.
+### The fourth gate — narrative, and it is worse than the third
+
+```
+3  DISPOSITION   person-level.  who narrates at all.
+4  NARRATIVE     event-level.   what WITHIN a life gets narrated.
+```
+
+Gate 4 fires **inside the narrating population too**. Heavy documenters still
+document the anomaly, not the Tuesday.
+
+⇒ **Steady state is missing from both arms.** The corpus is not merely thin on
+the multi-domain condition — it is thin on ordinary operation, universally.
+Every arm has its baseline cut out and its exceptions kept.
+
+That is a different hole from the first three, and it runs orthogonal to them.
+Gates 1–3 shape *which conditions* appear. Gate 4 removes *the middle of every
+condition*, including the well-represented ones.
+
+Which is why the boring frame is the expensive one to get. Nobody's incentive
+produces it, in any population — so it has to be produced by a trigger rather
+than by a decision. `EventLog.has_baseline_coverage` returns `False` for any log
+with no scheduled frames, and says so.
+
+Four filters. The first three point the same direction and compound. The fourth
+cuts across all of them.
 
 ---
 

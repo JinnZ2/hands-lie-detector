@@ -184,3 +184,52 @@ class TestConditionCoordinates(unittest.TestCase):
         from hands_lie_detector.audit.condition import ARM_A_UNSTATED, ContrastPoint
 
         self.assertFalse(ContrastPoint(ARM_A_UNSTATED, ARM_A_UNSTATED).usable)
+
+
+class TestWithinFrameControl(unittest.TestCase):
+    """Same frame, same model: isolates reference class from perception."""
+
+    @staticmethod
+    def _control(a_ok: bool, b_ok: bool):
+        from hands_lie_detector.audit import (
+            BREED_TAXONOMY, DOMAIN_CONJUNCTION, Probe, WithinFrameControl,
+        )
+
+        return WithinFrameControl(
+            stimulus_id="s1", date="2026-08-19", model_string="m",
+            maintained_probe=Probe("breed?", BREED_TAXONOMY, a_ok),
+            unmaintained_probe=Probe("what work?", DOMAIN_CONJUNCTION, b_ok),
+        )
+
+    def test_maintained_passes_unmaintained_fails_exonerates_perception(self):
+        from hands_lie_detector.audit import ControlVerdict
+
+        control = self._control(a_ok=True, b_ok=False)
+        self.assertIs(control.verdict, ControlVerdict.ISOLATES_REFERENCE_CLASS)
+        self.assertTrue(control.perception_exonerated)
+
+    def test_both_failing_implicates_perception_instead(self):
+        from hands_lie_detector.audit import ControlVerdict
+
+        control = self._control(a_ok=False, b_ok=False)
+        self.assertIs(control.verdict, ControlVerdict.PERCEPTION_IMPLICATED)
+        self.assertFalse(control.perception_exonerated)
+
+    def test_a_maintained_class_needs_all_three_supports(self):
+        from hands_lie_detector.audit import ReferenceClassStatus
+
+        partial = ReferenceClassStatus("x", True, True, False)
+        self.assertFalse(partial.maintained)
+        self.assertIn("a body maintaining the taxonomy", partial.missing)
+
+    def test_a_miscast_probe_invalidates_the_design(self):
+        from hands_lie_detector.audit import (
+            BREED_TAXONOMY, ControlVerdict, Probe, WithinFrameControl,
+        )
+
+        control = WithinFrameControl(
+            stimulus_id="s1", date="2026-08-19", model_string="m",
+            maintained_probe=Probe("a", BREED_TAXONOMY, True),
+            unmaintained_probe=Probe("b", BREED_TAXONOMY, False),
+        )
+        self.assertIs(control.verdict, ControlVerdict.INVALID)

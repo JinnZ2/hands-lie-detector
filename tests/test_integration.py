@@ -481,15 +481,19 @@ class TestDepositDrawSign(unittest.TestCase):
         self.assertIn(LoadClass.DRAW_SPEND, probe.load_classes)
 
     def test_some_domains_deposit_and_suppress_at_once(self):
+        """The open-station tractor is the first. Chainsaw suppresses only."""
         from hands_lie_detector.integration import DEFAULT_DOMAINS
 
-        self.assertTrue(DEFAULT_DOMAINS["chainsaw"].decouples_map_from_band)
+        self.assertTrue(DEFAULT_DOMAINS["tractor_open_station"].decouples_map_from_band)
+        self.assertFalse(DEFAULT_DOMAINS["chainsaw"].decouples_map_from_band)
         self.assertFalse(DEFAULT_DOMAINS["shovel_haul"].decouples_map_from_band)
 
     def test_the_balance_names_the_sign_problem(self):
         from hands_lie_detector.integration import deposit_draw_balance
 
-        report = deposit_draw_balance(["rotary_hand_tool", "probe_work"])
+        report = deposit_draw_balance(
+            ["rotary_hand_tool", "probe_work", "tractor_open_station"]
+        )
         self.assertIn("opposite signs", report)
         self.assertIn("DECOUPLING", report)
 
@@ -498,3 +502,46 @@ class TestDepositDrawSign(unittest.TestCase):
         from hands_lie_detector.integration import DEFAULT_DOMAINS
 
         self.assertGreaterEqual(len(DEFAULT_DOMAINS["firewood_handling"].zones), 5)
+
+
+class TestBundlesAndNarrativeGate(unittest.TestCase):
+    def test_firewood_is_a_bundle_of_four_sub_domains(self):
+        from hands_lie_detector.integration import DEFAULT_DOMAINS
+
+        bundle = DEFAULT_DOMAINS["firewood_handling"]
+        self.assertTrue(bundle.is_bundle)
+        self.assertEqual(len(bundle.components), 4)
+        for name in bundle.components:
+            self.assertIn(name, DEFAULT_DOMAINS)
+
+    def test_sub_domains_carry_different_load_classes(self):
+        """One word, four contact distributions, not all on the same ledger side."""
+        from hands_lie_detector.integration import DEFAULT_DOMAINS
+
+        classes = {
+            frozenset(DEFAULT_DOMAINS[n].load_classes)
+            for n in DEFAULT_DOMAINS["firewood_handling"].components
+        }
+        self.assertGreater(len(classes), 1)
+
+    def test_the_tractor_deposits_and_suppresses(self):
+        from hands_lie_detector.integration import DEFAULT_DOMAINS
+
+        self.assertTrue(DEFAULT_DOMAINS["tractor_open_station"].decouples_map_from_band)
+
+    def test_rotary_deposits_only_and_chainsaw_suppresses_only(self):
+        from hands_lie_detector.integration import DEFAULT_DOMAINS, LoadClass
+
+        self.assertEqual(DEFAULT_DOMAINS["rotary_hand_tool"].load_classes,
+                         frozenset({LoadClass.DEPOSIT}))
+        self.assertEqual(DEFAULT_DOMAINS["chainsaw"].load_classes,
+                         frozenset({LoadClass.DRAW_SUPPRESS}))
+
+    def test_an_event_gated_log_has_no_baseline_coverage(self):
+        """Gate 4: steady state is missing from every arm, not just this one."""
+        from hands_lie_detector.integration import DorsalMark, EventLog, Zone
+
+        log = EventLog(marks=[DorsalMark(Zone.DORSAL_PHALANX, "2026-01-05")])
+        self.assertFalse(log.has_baseline_coverage)
+        self.assertIn("boring frames", log.report())
+        self.assertTrue(EventLog(baseline_frames=3).has_baseline_coverage)

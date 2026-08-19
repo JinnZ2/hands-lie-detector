@@ -29,6 +29,7 @@ hands-lie-detector/
 │   │   ├── crosssection.py       # Cross-sections; envelope, never slope
 │   │   ├── specimen.py           # Specimen records, per-line provenance
 │   │   ├── condition.py          # Condition coordinates; what n=1 supports
+│   │   ├── reference_class.py    # Within-frame control; isolates the layer
 │   │   └── leakage.py            # Vocabulary provenance; held-out commitment
 │   ├── band/                     # Pure Python — no dependencies
 │   │   └── contrast.py           # Map states; concentration, NOT skill
@@ -205,6 +206,13 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - `Provenance` marks each specimen line OBSERVED / RECONSTRUCTED / TESTIMONY /
   MEASURED. Only MEASURED is stable across an interval — a model's account of its
   own reasoning is RECONSTRUCTED, since there is no readout of its own vectors
+- `reference_class.WithinFrameControl` is the instrument that separates the two
+  axes the repo had been conflating. Two probes on ONE frame, same model, same
+  pixels: one subject with a maintained reference class (standards + dense
+  labeled imagery + a body whose job is the taxonomy), one without. A pass on the
+  first and a failure on the second exonerates perception and locates the failure
+  on the partition layer. `perception_exonerated` returns True only on that
+  pattern
 - `condition.ConditionSpec` requires provision, rate, duration and cadence per
   need; `is_plottable` is False while any is unstated. `ARM_A_UNSTATED` ships
   with all eight coordinates unstated, so the dense baseline fails the same
@@ -291,6 +299,13 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   photographed alongside hands
 - `event_log.EventLog.supports_rate_claims` is False when the sampling gate is
   external request. Documentation density tracks who asked, not what happened
+- `event_log.EventLog.has_baseline_coverage` is False without scheduled frames.
+  The narrative gate fires inside every population — heavy documenters record the
+  anomaly, not the Tuesday — so steady state is missing from ALL arms and the
+  boring frame is the expensive one
+- `DomainSignature.is_bundle` marks one word covering several contact
+  distributions. "Firewood" is cut/split/stack/base, which is why its deposit
+  cannot resolve to a single site
 - `strip.strip()` is the cheapest diagnostic here and should be reached for
   first: render a category noun into force / displacement / cycles / duty cycle.
   Same units on both sides means the category carried no physical information;

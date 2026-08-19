@@ -25,9 +25,23 @@ from .leakage import (
     commit_stimulus,
     vocabulary_signature,
 )
+from .reference_class import (
+    BREED_TAXONOMY,
+    DOMAIN_CONJUNCTION,
+    ControlVerdict,
+    Probe,
+    ReferenceClassStatus,
+    WithinFrameControl,
+)
 from .specimen import Provenance, Specimen, SpecimenLine
 
 __all__ = [
+    "WithinFrameControl",
+    "ReferenceClassStatus",
+    "Probe",
+    "ControlVerdict",
+    "DOMAIN_CONJUNCTION",
+    "BREED_TAXONOMY",
     "CrossSection",
     "EnvelopeComparison",
     "LeakageVerdict",
