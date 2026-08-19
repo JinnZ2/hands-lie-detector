@@ -11,6 +11,13 @@ Two things live here.
    invalid by construction. `classify_relation` types a retrieval target so the
    second kind can be refused before it is imported into a multi-domain read.
 
+   And one seam between them: constitutive parameters for LIVING tissue.
+   Stiffness, fatigue limit, adaptation rate, hydration response. The relation
+   is clean, but the NUMBER came from human samples, so the carve re-enters at
+   the coefficient. Relations transfer; coefficients don't. Those terms return
+   RELATIONAL_ONLY — use the ordering, ratio or direction, and calibrate the
+   magnitude against the body in question.
+
 2. The boundary-alignment audit, the discriminator for whether the economic,
    clinical, and linguistic carves are independent systems or dialects of one.
 
@@ -30,23 +37,83 @@ from enum import Enum
 
 
 class RelationKind(str, Enum):
-    MECHANISM = "mechanism"      # domain-blind; transfers
-    INCIDENCE = "incidence"      # pay-code stratified; does not transfer
+    """Where a relation's numbers came from.
+
+    The earlier version of this module had two kinds — mechanism transfers,
+    incidence does not. That is too clean, and the seam is worth naming.
+    """
+
+    GOVERNING = "governing"                    # equations; no population term, ever
+    BOUNDARY = "boundary"                      # geometry; measurable directly
+    MATERIAL_ENGINEERED = "material_engineered"  # measured on the material itself
+    MATERIAL_LIVING = "material_living"        # THE SEAM: sampled from humans
+    INCIDENCE = "incidence"                    # pay-code stratified
     UNKNOWN = "unknown"
 
 
-# Relations whose statement contains no reference to who was employed doing it.
-MECHANISM_RELATIONS: frozenset[str] = frozenset({
+class TransferScope(str, Enum):
+    """What survives a move across domains.
+
+    The workable rule at the seam: relations transfer, coefficients don't.
+    Ratios, orderings and directions survive. Absolute magnitudes need
+    calibrating against the body in question — which is what a maintained band
+    gives you, and why the dated band series in `calibration-standard.md` is not
+    just provenance but the source of the missing constants.
+    """
+
+    FULL = "full"                        # relation and magnitude both travel
+    RELATIONAL_ONLY = "relational_only"  # ordering/ratio/direction only
+    NONE = "none"
+
+
+# Governing relations and boundary conditions. No population term appears in
+# their statement, so nothing about who was employed can enter.
+GOVERNING_RELATIONS: frozenset[str] = frozenset({
     "shear delamination",
-    "stiffness mismatch",
-    "fatigue",
-    "creep",
-    "friction-hydration curve",
     "stress concentration at a rigid inclusion",
+    "stress concentration",
     "strain rate dependence",
     "hysteresis",
+    "creep",
+    "fatigue",
+    "superposition",
+    "load path",
+})
+
+BOUNDARY_CONDITIONS: frozenset[str] = frozenset({
+    "contact geometry",
     "contact pressure distribution",
+    "tool radius",
+    "grip span",
+    "contact area",
+})
+
+# Properties measured ON THE MATERIAL. Steel, concrete, wood, clay: the number
+# came from the substance, not from a sampled population of people.
+ENGINEERED_MATERIAL_PARAMS: frozenset[str] = frozenset({
+    "steel modulus",
+    "concrete compressive strength",
+    "wood grain strength",
+    "clay plasticity",
+    "coefficient of friction",
+})
+
+# THE SEAM. Constitutive parameters for LIVING tissue. These numbers came from
+# human samples, and the sampling is exactly where the carve re-enters. The
+# mechanism chain stays clean end to end; the moment a NUMBER is wanted out of
+# it for tissue, the population term is back inside the constant.
+LIVING_TISSUE_PARAMS: frozenset[str] = frozenset({
+    "stiffness",
+    "stiffness mismatch",
+    "elastic modulus",
+    "fatigue limit",
+    "adaptation rate",
+    "hydration response",
+    "friction-hydration curve",
     "tissue remodeling rate",
+    "healing rate",
+    "callus growth rate",
+    "keratinization rate",
 })
 
 # Relations denominated in a population, and therefore in that population's
@@ -64,52 +131,84 @@ INCIDENCE_RELATIONS: frozenset[str] = frozenset({
     "base rate",
 })
 
+# Back-compatible alias: everything whose RELATION transfers, seam included.
+MECHANISM_RELATIONS: frozenset[str] = (
+    GOVERNING_RELATIONS
+    | BOUNDARY_CONDITIONS
+    | ENGINEERED_MATERIAL_PARAMS
+    | LIVING_TISSUE_PARAMS
+)
+
+# Checked longest-first so a specific term beats a substring of it:
+# "fatigue limit" (living tissue, seam) must not be caught by "fatigue"
+# (governing relation, clean).
+_RULES: list[tuple[frozenset[str], RelationKind, TransferScope, str]] = [
+    (INCIDENCE_RELATIONS, RelationKind.INCIDENCE, TransferScope.NONE,
+     "denominated in a sampled population whose strata are pay codes; transfer "
+     "across domains is invalid by construction."),
+    (LIVING_TISSUE_PARAMS, RelationKind.MATERIAL_LIVING, TransferScope.RELATIONAL_ONLY,
+     "a constitutive parameter for living tissue. the relation transfers; the "
+     "COEFFICIENT does not — that number came from human samples, and the "
+     "sampling is where the carve re-enters. use the ordering, ratio or "
+     "direction; calibrate the magnitude against the body in question."),
+    (ENGINEERED_MATERIAL_PARAMS, RelationKind.MATERIAL_ENGINEERED, TransferScope.FULL,
+     "measured on the material itself, not on a population of people."),
+    (BOUNDARY_CONDITIONS, RelationKind.BOUNDARY, TransferScope.FULL,
+     "a boundary condition: geometry, measurable directly."),
+    (GOVERNING_RELATIONS, RelationKind.GOVERNING, TransferScope.FULL,
+     "a governing relation. no population term appears in it, ever."),
+]
+
 
 @dataclass(frozen=True)
 class RelationVerdict:
     term: str
     kind: RelationKind
-    transferable: bool
+    transfer: TransferScope
     reason: str
 
+    @property
+    def transferable(self) -> bool:
+        """True if anything at all transfers. Check `transfer` for what."""
+        return self.transfer is not TransferScope.NONE
+
+    @property
+    def magnitude_transfers(self) -> bool:
+        """False at the seam. Ratios survive; absolute numbers need calibration."""
+        return self.transfer is TransferScope.FULL
+
     def __str__(self) -> str:
-        mark = "transfers" if self.transferable else "DOES NOT TRANSFER"
+        mark = {
+            TransferScope.FULL: "transfers",
+            TransferScope.RELATIONAL_ONLY: "RELATION TRANSFERS, COEFFICIENT DOES NOT",
+            TransferScope.NONE: "DOES NOT TRANSFER",
+        }[self.transfer]
         return f"{self.term}: {self.kind.value} — {mark}. {self.reason}"
 
 
 def classify_relation(term: str) -> RelationVerdict:
-    """Type a retrieval target as mechanism or incidence.
+    """Type a retrieval target and say what part of it may cross a domain.
 
     Substring matching, deliberately loose: "lifetime incidence in welders"
-    should trip the incidence rule. An unmatched term returns UNKNOWN and is
-    treated as non-transferable, because the default has to fail closed.
+    should trip the incidence rule. Longer terms are checked before shorter
+    ones so "fatigue limit" is not swallowed by "fatigue". An unmatched term
+    returns UNKNOWN and does not transfer, because the default has to fail
+    closed.
     """
     t = term.strip().lower()
 
-    for rel in sorted(INCIDENCE_RELATIONS):
-        if rel in t:
-            return RelationVerdict(
-                term=term,
-                kind=RelationKind.INCIDENCE,
-                transferable=False,
-                reason=(
-                    f"matches '{rel}'. denominated in a sampled population whose "
-                    "strata are pay codes; transfer across domains is invalid by "
-                    "construction."
-                ),
-            )
-    for rel in sorted(MECHANISM_RELATIONS):
-        if rel in t:
-            return RelationVerdict(
-                term=term,
-                kind=RelationKind.MECHANISM,
-                transferable=True,
-                reason=f"matches '{rel}'. domain-blind; no job title appears in it.",
-            )
+    for vocabulary, kind, scope, reason in _RULES:
+        for rel in sorted(vocabulary, key=len, reverse=True):
+            if rel in t:
+                return RelationVerdict(
+                    term=term, kind=kind, transfer=scope,
+                    reason=f"matches '{rel}'. {reason}",
+                )
+
     return RelationVerdict(
         term=term,
         kind=RelationKind.UNKNOWN,
-        transferable=False,
+        transfer=TransferScope.NONE,
         reason=(
             "unrecognized. failing closed: an unclassified relation is treated as "
             "non-transferable until someone states which kind it is."
@@ -122,16 +221,21 @@ def transferable_across_domains(term: str) -> bool:
     return classify_relation(term).transferable
 
 
-def retrieve_mechanism_first(terms: list[str]) -> tuple[list[str], list[str]]:
-    """Split retrieval targets into what may be used and what may not.
+def retrieve_mechanism_first(terms: list[str]) -> tuple[list[str], list[str], list[str]]:
+    """Split retrieval targets three ways, per the protocol and the seam.
 
     Returns:
-        (usable, refused) — mechanism relations first, per the protocol.
+        (full, relational_only, refused).
+
+        `full` may be used as stated. `relational_only` may contribute an
+        ordering, ratio or direction and must NOT contribute a magnitude
+        without local calibration. `refused` may not cross a domain at all.
     """
     verdicts = [classify_relation(t) for t in terms]
     return (
-        [v.term for v in verdicts if v.transferable],
-        [v.term for v in verdicts if not v.transferable],
+        [v.term for v in verdicts if v.transfer is TransferScope.FULL],
+        [v.term for v in verdicts if v.transfer is TransferScope.RELATIONAL_ONLY],
+        [v.term for v in verdicts if v.transfer is TransferScope.NONE],
     )
 
 

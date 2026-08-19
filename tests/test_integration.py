@@ -192,3 +192,91 @@ class TestCarveAudit(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestStrip(unittest.TestCase):
+    """The strip: render a category noun into the units of the governing equation."""
+
+    def test_mechanic_and_hobby_render_identically_so_the_category_drops_out(self):
+        from hands_lie_detector.integration import StripVerdict, strip
+
+        self.assertIs(strip("mechanic", "hobby").verdict, StripVerdict.DROPS_OUT)
+
+    def test_a_noun_with_no_load_referent_is_a_ledger_class(self):
+        from hands_lie_detector.integration import StripVerdict, strip
+
+        for noun in ("occupation", "employment status", "risk class", "SOC code"):
+            self.assertIs(strip(noun).verdict, StripVerdict.LEDGER_CLASS, noun)
+
+    def test_every_default_band_label_strips_to_a_ledger_class(self):
+        """This repo's own scale, run through this repo's own diagnostic."""
+        from hands_lie_detector.integration import StripVerdict, strip_all
+
+        labels = ["podcast hands", "casual hobbyist", "working hands",
+                  "experienced trade", "field work"]
+        verdicts = strip_all(labels)
+        self.assertTrue(all(v is StripVerdict.LEDGER_CLASS for v in verdicts.values()),
+                        verdicts)
+
+    def test_unregistered_nouns_fail_closed(self):
+        from hands_lie_detector.integration import StripVerdict, strip
+
+        self.assertIs(strip("cordwainer").verdict, StripVerdict.UNREGISTERED)
+
+    def test_operator_can_register_a_rendering(self):
+        from hands_lie_detector.integration import StripVerdict, strip
+        from hands_lie_detector.integration.strip import (
+            DEFAULT_RENDERINGS, MECHANICAL_UNITS, Rendering, register,
+        )
+
+        registry = dict(DEFAULT_RENDERINGS)
+        register(Rendering("cordwainer", MECHANICAL_UNITS), registry)
+        self.assertIs(
+            strip("cordwainer", "hobby", registry=registry).verdict,
+            StripVerdict.DROPS_OUT,
+        )
+
+
+class TestSeam(unittest.TestCase):
+    """Relations transfer, coefficients don't — the living-tissue seam."""
+
+    def test_governing_relations_transfer_in_full(self):
+        from hands_lie_detector.integration import TransferScope, classify_relation
+
+        for term in ("shear delamination", "creep", "stress concentration"):
+            v = classify_relation(term)
+            self.assertIs(v.transfer, TransferScope.FULL, term)
+            self.assertTrue(v.magnitude_transfers, term)
+
+    def test_living_tissue_parameters_transfer_only_relationally(self):
+        from hands_lie_detector.integration import TransferScope, classify_relation
+
+        for term in ("stiffness", "fatigue limit", "adaptation rate",
+                     "hydration response"):
+            v = classify_relation(term)
+            self.assertIs(v.transfer, TransferScope.RELATIONAL_ONLY, term)
+            self.assertTrue(v.transferable, term)
+            self.assertFalse(v.magnitude_transfers, term)
+
+    def test_engineered_material_parameters_are_not_at_the_seam(self):
+        from hands_lie_detector.integration import TransferScope, classify_relation
+
+        self.assertIs(classify_relation("steel modulus").transfer, TransferScope.FULL)
+
+    def test_specific_terms_beat_substrings(self):
+        """'fatigue limit' is at the seam; 'fatigue' is a clean relation."""
+        from hands_lie_detector.integration import RelationKind, classify_relation
+
+        self.assertIs(classify_relation("fatigue").kind, RelationKind.GOVERNING)
+        self.assertIs(classify_relation("fatigue limit").kind,
+                      RelationKind.MATERIAL_LIVING)
+
+    def test_retrieval_splits_three_ways(self):
+        from hands_lie_detector.integration import retrieve_mechanism_first
+
+        full, relational, refused = retrieve_mechanism_first(
+            ["creep", "elastic modulus", "prevalence", "contact geometry"]
+        )
+        self.assertEqual(sorted(full), ["contact geometry", "creep"])
+        self.assertEqual(relational, ["elastic modulus"])
+        self.assertEqual(refused, ["prevalence"])

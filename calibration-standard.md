@@ -132,6 +132,16 @@ The record this repo needs, and does not have:
 - **band state, dated** — thickness map by zone, from which `read_band()` gives
   state, dispersion and sharpest boundary. A dated series is what makes the
   standard a standard rather than a snapshot.
+
+  This series is doing more work than provenance. Per the living-tissue seam in
+  `economic-carve.md`, mechanism relations transfer across domains but their
+  **coefficients** do not — stiffness, fatigue limit, adaptation rate and
+  hydration response are all numbers that came from sampled human populations,
+  which is precisely where the carve re-enters. Ratios and orderings survive the
+  transfer; absolute magnitudes must be calibrated against the body in question.
+  A dated band series **is** that calibration. It is the only source in this
+  repo for the constants the mechanism chain otherwise has to borrow from the
+  carved literature.
 - **maintenance practice** — the acts that hold the band: paring before
   saturation, hydration timing, tool radius, load spacing, glove timing.
   Enumerated as `MANAGEMENT_ACTS`, unnamed and uncertified, and therefore

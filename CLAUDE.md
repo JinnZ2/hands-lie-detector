@@ -37,7 +37,8 @@ hands-lie-detector/
 │       ├── dissociation.py       # Double-dissociation discriminator (Test A)
 │       ├── load_weight.py        # Mechanical load weighting; no payment term
 │       ├── partition.py          # Inverted null: partition must be argued for
-│       └── carve_audit.py        # Retrieval protocol, boundary-alignment audit
+│       ├── strip.py              # Render category nouns into mechanical units
+│       └── carve_audit.py        # Retrieval protocol, seam, boundary audit
 ├── scoring-metrics.md            # Main 100-point hand scoring rubric (v0.1)
 ├── feet-lie-detector.md          # Parallel scoring system for feet
 ├── gloves-debunk.md              # Addresses the "I wore gloves" excuse
@@ -226,8 +227,17 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   permutation test against same-grain random splits. Against the current
   8-domain stipulated registry **nothing earns a partition**; that is a statement
   about the registry, not about any split
-- `carve_audit.classify_relation()` fails closed: unrecognized relations are
-  treated as non-transferable across domains
+- `strip.strip()` is the cheapest diagnostic here and should be reached for
+  first: render a category noun into force / displacement / cycles / duty cycle.
+  Same units on both sides means the category carried no physical information;
+  unrenderable means it is a ledger class wearing a physical one. All five
+  `DEFAULT_BANDS` labels strip to `LEDGER_CLASS`
+- `carve_audit.classify_relation()` fails closed, and types relations five ways.
+  **The seam: constitutive parameters for living tissue** (stiffness, fatigue
+  limit, adaptation rate, hydration response) return `RELATIONAL_ONLY` — the
+  relation transfers, the coefficient does not, because that number came from
+  sampled human populations. Ratios, orderings and directions survive a domain
+  move; absolute magnitudes need calibrating against the body being read
 - `carve_audit.SYSTEM_REGISTRY` ships empty. The boundary audit is a harness for
   documentation work that has not been done, and returns `INSUFFICIENT_DATA`
 
@@ -242,6 +252,9 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - Scoring rubrics use bullet-point ranges (e.g., "0-5:", "6-15:", "16-25:")
 - Documentation tone: direct, practical, slightly irreverent
 - Core principle: **structural adaptation over surface appearance**
+- Method: run the strip first. Render every category noun into force,
+  displacement, cycles and duty cycle before reasoning about it. A noun that
+  will not render is a ledger class and must not be weighted
 - Python: type hints, dataclasses, Python 3.11+
 
 ## Training Data Sources
@@ -309,7 +322,8 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
   not movement on the other. See `specimen-record.md`
 - **The calibration standard is undocumented.** Load history, dated band-state
   series, maintenance practice and held-out stimuli are the standard, and they
-  exist only in the operator's head. The schemas are in code (`LoadBlock`,
+  exist only in the operator's head. The band series is also the only local
+  source for the tissue coefficients the seam refuses to import. The schemas are in code (`LoadBlock`,
   `read_band`, `MANAGEMENT_ACTS`, `commit_stimulus`) and the fields are empty.
   This cannot be authored from inside the repo — writing a plausible load history
   would manufacture the calibration artifact itself

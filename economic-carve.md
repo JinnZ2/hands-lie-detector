@@ -77,6 +77,48 @@ unpaid hour deposit the same callus. Only one of them is countable.
 
 ---
 
+## The strip — the one-line diagnostic
+
+Before anything else, render every category noun into the units of the governing
+equation.
+
+```
+"mechanic"  →  N, m, cycles/hr, duty cycle
+"hobby"     →  N, m, cycles/hr, duty cycle
+```
+
+Two outcomes, both diagnostic:
+
+- **Both sides render to the same units** → the category was carrying no
+  physical information. The distinction drops out cleanly and must not be
+  weighted.
+- **A category cannot be rendered into those units at all** → it is not a
+  physical class. It is a **ledger class wearing one**.
+
+One line, and it runs on anything. It is the cheapest instrument here and should
+be reached for first, because it settles in a single step what the rest of this
+document argues at length.
+
+Run on this repo's own interpretation bands, via `strip_all()`:
+
+```
+podcast hands       ledger_class
+casual hobbyist     ledger_class
+working hands       ledger_class
+experienced trade   ledger_class
+field work          ledger_class
+```
+
+Five for five. The scale that reports a physical measurement is denominated
+entirely in classes that cannot be stated in force, displacement, cycles or duty
+cycle. That was flagged as an open problem earlier in this document on the
+strength of an argument; the strip settles it mechanically.
+
+`strip()` fails closed on nouns it has no rendering for, and `register()` is how
+an operator adds their own.
+
+---
+
 ## Where the carve doesn't reach
 
 This is the exploitable part.
@@ -86,8 +128,12 @@ incidence, prevalence, risk ratio, exposure limit, population norm.
 The strata are pay codes. Transfer is invalid by construction.
 
 **Physically carved — transfers freely:**
-shear delamination, stiffness mismatch, fatigue, creep, μ-hydration curve,
-stress concentration at a rigid inclusion.
+
+- **governing equations** — no population term, ever
+- **boundary conditions** — geometry, measurable directly
+- **engineered materials** — steel, concrete, wood, clay: properties measured on
+  the *material*
+
 No conservation law knows what a job title is.
 
 **Protocol:** for any multi-domain read, retrieve **mechanism** first, never
@@ -97,6 +143,35 @@ accounting artifacts wearing physics costumes.
 **Checkable signature:** if the domain boundaries in a literature align with pay
 codes rather than with force and geometry, the carve is economic. Cheap to test
 on any given body of work.
+
+### The seam — where the carve re-enters
+
+The clean/carved split above is one category short, and the missing one matters
+because this repo lives inside it.
+
+**Constitutive parameters for LIVING tissue.** Stiffness, fatigue limit,
+adaptation rate, hydration response. Those numbers came from human samples, and
+the sampling is exactly where the carve re-enters.
+
+So the mechanism chain stays clean end to end — right up until you want a
+**number** out of it for tissue, at which point the population term is back
+inside the constant.
+
+Which is workable, and the rule is one line:
+
+> **Relations transfer. Coefficients don't.**
+
+Ratios, orderings and directions survive the move across domains. Absolute
+magnitudes need calibrating against the body in question — which is exactly what
+a maintained band gives you, and which promotes the dated band-state series in
+`calibration-standard.md` from provenance housekeeping to **the source of the
+missing constants**.
+
+`classify_relation()` implements this as a third transfer scope.
+`RELATIONAL_ONLY` terms are usable for ordering and refused for magnitude, and
+`retrieve_mechanism_first()` splits a retrieval list three ways rather than two.
+Longest match wins, so `fatigue limit` lands at the seam while `fatigue` stays a
+clean governing relation.
 
 ---
 

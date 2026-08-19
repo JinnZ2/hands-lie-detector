@@ -89,8 +89,15 @@ of the claims:
 |---|---|
 | this hand carries an integrated load of roughly this magnitude | this fraction of it came from that domain |
 | here is the mechanism by which wet-then-abrasive load delaminates | here is the incidence of that pattern in a population |
+| zone A adapts faster than zone B under this load (an ordering) | zone A's adaptation rate is *x* per week (a coefficient) |
 | here is a convention for reading a thickness map | here is a trained classifier's verdict |
 | this model misread in this direction, on this specimen | this is how models in general perform |
+| these models differed this much on one date | this model improved between two dates |
+
+The third row is the living-tissue seam from `economic-carve.md`. Relations
+transfer, coefficients don't: the ordering is derivable from mechanism, the
+magnitude came from a sampled population and has to be recalibrated against the
+body being read. The last row is `calibration-standard.md`.
 
 The right-hand column requires a reference class. It is empty
 (`reference-class-empty.md`), and it is empty for structural reasons that no
