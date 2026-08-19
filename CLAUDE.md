@@ -28,6 +28,7 @@ hands-lie-detector/
 │   ├── audit/                    # Pure Python — no dependencies
 │   │   ├── crosssection.py       # Cross-sections; envelope, never slope
 │   │   ├── specimen.py           # Specimen records, per-line provenance
+│   │   ├── condition.py          # Condition coordinates; what n=1 supports
 │   │   └── leakage.py            # Vocabulary provenance; held-out commitment
 │   ├── band/                     # Pure Python — no dependencies
 │   │   └── contrast.py           # Three states; contrast replaces mean
@@ -51,6 +52,7 @@ hands-lie-detector/
 ├── specimen-record.md            # Misreads as the measurement; the unrun test
 ├── calibration-standard.md       # Hand as standard, model as drifting sample
 ├── gated-not-summed.md           # Wrong form, not wrong number (x3)
+├── contrast-case.md              # What n=1 does; show vs describe; coordinates
 ├── tests/                        # unittest suite (zero deps)
 ├── README.md                     # Mission statement and project premise
 ├── requirements.txt              # All dependencies
@@ -122,6 +124,12 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - **feet-lie-detector.md** — Analogous rubric for feet.
 - **gloves-debunk.md** — Why gloves don't erase structural adaptation.
 - **known_failure_cases.md** — Specific vision model failure modes.
+- **contrast-case.md** — What one characterized point against a dense
+  distribution can do (falsify no-axis, give direction, give rough magnitude)
+  and cannot (variance, prevalence). Why the measurement must be SHOWN while the
+  convention must be WRITTEN, reconciling the two halves. And the scope-line
+  correction: arm A's data is not wrong, it is unscoped — every "the literature
+  is carved" phrasing in this repo should be read that narrower way.
 - **gated-not-summed.md** — The weighting question had the wrong functional form.
   environment → capacity → job is a gate chain, and a weighted sum cannot express
   a gate at any coefficient. Also indexes the same error class three times in this
@@ -188,6 +196,11 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - `Provenance` marks each specimen line OBSERVED / RECONSTRUCTED / TESTIMONY /
   MEASURED. Only MEASURED is stable across an interval — a model's account of its
   own reasoning is RECONSTRUCTED, since there is no readout of its own vectors
+- `condition.ConditionSpec` requires provision, rate, duration and cadence per
+  need; `is_plottable` is False while any is unstated. `ARM_A_UNSTATED` ships
+  with all eight coordinates unstated, so the dense baseline fails the same
+  check the sparse arm is asked to pass — the missing scope line as a failing
+  check rather than an accusation
 - `vocabulary_signature()` types an output as CONTAMINATED / DERIVED /
   INCONCLUSIVE and reports corpus penetration. A contaminated output is unusable
   as an experiment result and usable as a penetration measurement
@@ -204,6 +217,10 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   `BandReadout.monotone_disagrees` flags the sign error and `report()` prints it
 - `interpret_acute_damage()` inverts the second sign error: a blister on a
   banded hand is the price of the band position, not a demerit
+- `Zone` gained five DORSAL zones after specimen 003; the vocabulary inherited
+  from `term_audit/` was palmar-only and could not record a strike. No shipped
+  `DomainSignature` predicts a dorsal zone, so dorsal markers are residual by
+  construction and return as `unexplained`
 - Reads the integrated map only. It does not attribute zones to domains — see
   the scope constraint in `readout-channel.md`
 - Thresholds are stipulated, and say so in their own output
@@ -354,6 +371,13 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
   would manufacture the calibration artifact itself
 - No cross-section has been recorded. The audit instruments have nothing to
   measure against until held-out stimuli exist
+- Arm B's condition coordinates are unwritten (`ConditionSpec` in
+  `audit/condition.py`). Same gap as the calibration standard and for the same
+  reason: plausible coordinates written from here would manufacture the contrast
+  point rather than record it
+- Reference photographs supplied in conversation are NOT committed, deliberately.
+  Publishing an image spends it as a stimulus — commit hashes with
+  `commit_stimulus()` and hold the files outside the repo
 - `DEFAULT_BANDS` reports physical scores onto employment status ("Casual
   Hobbyist" at 31-55, below "Working Hands"). See `economic-carve.md` — renaming
   the bands alone is the wrong fix; the physical scale needs somewhere to land

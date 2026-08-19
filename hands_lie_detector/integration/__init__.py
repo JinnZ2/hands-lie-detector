@@ -47,8 +47,11 @@ from .carve_audit import (
 )
 from .domains import (
     DEFAULT_DOMAINS,
+    DORSAL_ZONES,
+    PALMAR_ZONES,
     Channel,
     DomainSignature,
+    Surface,
     LoadMode,
     Zone,
     domain_names,
@@ -108,6 +111,9 @@ __all__ = [
     "DomainSignature",
     "GeometryConflict",
     "DEFAULT_RENDERINGS",
+    "DORSAL_ZONES",
+    "PALMAR_ZONES",
+    "Surface",
     "INCIDENCE_RELATIONS",
     "GatedStack",
     "LEDGER_SIGN",

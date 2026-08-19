@@ -118,6 +118,97 @@ conflates them.**
 
 ---
 
+## Specimen 003 — four photographs, and the first MEASURED lines in the file
+
+Supplied as reference: four images, one carrier, different dates. Two dorsal in
+a truck cab, two palmar indoors post-wash.
+
+### Observation
+
+| line | mark |
+|---|---|
+| Dorsal hand, stained dark across dorsum and fingers. Open laceration ~1 cm over the 2nd–3rd metacarpal region, actively bleeding. Tendon and vein relief visible. Winter light, cab interior, odometer 620035. | `MEASURED` |
+| Dorsal hand, washed. Healing laceration over the dorsal MCP region between index and middle finger, erythematous, partly closed. Second small mark at the web space. | `MEASURED` |
+| Palmar, washed. Three de-roofed blisters: one on a finger's proximal phalanx pad, two on the hypothenar / outer palm edge. Surrounding palm not uniformly thickened; flexion creases distinct and sharp-edged. | `MEASURED` |
+| Palmar, washed, ring worn. One healing lesion on the ring-finger proximal phalanx pad. Palm smooth, creases distinct, faint mid-palm mark. | `MEASURED` |
+| Same carrier across all four; dates differ. | `TESTIMONY` |
+
+### Model's read
+
+| line | mark |
+|---|---|
+| The palmar surface is not glassy. Low-to-moderate mean thickness, sharp crease edges, no uniform armor. This is a hand on the sensing side of the band. | `OBSERVED` |
+| Acute lesions on a non-armored palm is the signature `interpret_acute_damage()` predicts for `BANDED` + lesion: the price of the band position, not evidence of inexperience. | `OBSERVED` |
+| The dorsal lacerations are not grip geometry. Grip loads the palm; the back of the hand gets marked by strike, catch, or abrasion against an enclosure. Two surfaces, two mechanisms. | `OBSERVED` |
+| Stained in one frame, washed in another, with structure persisting across both — the `clean_but_used` / `texture_persists_post_wash` pair, in one carrier. | `OBSERVED` |
+
+### Correction — supplied before the read, not after
+
+Unlike specimens 001 and 002, no correction was needed, because **the model was
+never in a position to miss.** Six turns of context were already loaded: driver,
+fabricator, multi-domain, subsistence load, this repo's entire argument. The
+class was not inferred. It was ambient.
+
+### Residual — what this specimen cannot be used for
+
+| line | mark |
+|---|---|
+| This is **not** a run of the core test, and it is further from it than specimen 002 was. | `OBSERVED` |
+| **C2 (prior supplied) — stands, at maximum strength.** Not a hint. The full argument. | `OBSERVED` |
+| **C3 (classification not demanded) — stands.** The images arrived as reference material, not as "what work do these hands do." | `OBSERVED` |
+| **C4 (props present) — new, and disqualifying on its own.** Steering wheel, dash cluster, switch bank, odometer, a Freightliner wheel badge. The core test requires no context and no props. Two of these frames are *made of* context. | `OBSERVED` |
+| **C5 (frame loaded) — new.** The images were supplied to a repository about models misreading hands. Nothing read under that frame measures the unframed case. | `OBSERVED` |
+
+So: **the model-read lines here are non-diagnostic and must not be counted as
+evidence of capability.** What the specimen contributes is the other column.
+
+### What it does contribute
+
+This is the first specimen in the file with `MEASURED` lines at all. Specimens
+001 and 002 record model behavior only — nothing in them survives the instrument
+being revised. These four images record tissue, and tissue does not get silently
+updated.
+
+And it surfaced an instrument defect that no amount of describing would have
+found.
+
+### Finding — the zone vocabulary is palmar-only
+
+`Zone` had nine members and every one was a grip surface, inherited from
+`CallusZone` in `term_audit/vocabulary/`. Two of the four photographs show
+dorsal lacerations. **Half the evidence had nowhere to land.**
+
+Five dorsal zones were added: `dorsal_metacarpal`, `dorsal_mcp_knuckles`,
+`dorsal_web_space`, `dorsal_phalanx`, `wrist_transition`, with their own
+adjacency graph so a dorsal marker is not "explained" by a neighbouring grip
+zone.
+
+Which exposes the deeper version: **no shipped `DomainSignature` predicts a
+dorsal zone.** Not one. So every dorsal marker is residual by construction
+against every enrolled domain, and `read_hand()` returns them as
+`unexplained` — neither pair-specific nor generic overflow:
+
+```
+RESIDUAL (integration, unattributed): dorsal_mcp_knuckles, dorsal_metacarpal,
+                                      outer_palm_edge
+  pair-specific  : (none)
+  generic        : outer_palm_edge
+  unexplained    : dorsal_mcp_knuckles, dorsal_metacarpal
+```
+
+That is not a bug in the residual computation. It is the shape of an instrument
+built for grip being handed a strike — and it is exactly the class of thing that
+shows and does not describe.
+
+### Handling note
+
+**These images should not be committed to this repository.** Publishing them
+puts them in the corpus and spends them as stimuli, per handling A in
+`calibration-standard.md`. If they are to serve the unrun test, commit their
+hashes with `commit_stimulus()` and hold the files outside.
+
+---
+
 ## The unrun test
 
 This is the repo's core test. It has not been run since the original trial.

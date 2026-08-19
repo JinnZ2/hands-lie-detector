@@ -357,3 +357,41 @@ class TestGatedForm(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             StratumState(Stratum.CAPACITY, 1.5)
+
+
+class TestDorsalSurface(unittest.TestCase):
+    """The zone vocabulary was palmar-only. Specimen 003 found the gap."""
+
+    def test_dorsal_zones_exist_and_are_typed(self):
+        from hands_lie_detector.integration import DORSAL_ZONES, PALMAR_ZONES, Surface
+
+        self.assertTrue(DORSAL_ZONES)
+        self.assertFalse(DORSAL_ZONES & PALMAR_ZONES)
+        for z in DORSAL_ZONES:
+            self.assertIs(z.surface, Surface.DORSAL)
+
+    def test_no_shipped_domain_predicts_a_dorsal_zone(self):
+        """An instrument built for grip, handed a strike."""
+        from hands_lie_detector.integration import DEFAULT_DOMAINS, DORSAL_ZONES
+
+        predicted = set().union(*(s.zones for s in DEFAULT_DOMAINS.values()))
+        self.assertFalse(predicted & DORSAL_ZONES)
+
+    def test_dorsal_markers_come_back_unexplained_not_generic(self):
+        from hands_lie_detector.integration import Zone, read_hand
+
+        readout = read_hand(
+            ["base_of_fingers", "dorsal_metacarpal", "dorsal_mcp_knuckles"],
+            ["rotary_hand_tool"],
+        )
+        self.assertIn(Zone.DORSAL_METACARPAL, readout.unexplained_residual)
+        self.assertNotIn(Zone.DORSAL_METACARPAL, readout.generic_residual)
+
+    def test_dorsal_adjacency_does_not_leak_into_the_grip_graph(self):
+        from hands_lie_detector.integration import Zone
+        from hands_lie_detector.integration.domains import ADJACENCY, Surface
+
+        for zone in (Zone.DORSAL_MCP_KNUCKLES, Zone.DORSAL_WEB_SPACE,
+                     Zone.DORSAL_PHALANX):
+            for neighbour in ADJACENCY[zone]:
+                self.assertIs(neighbour.surface, Surface.DORSAL, f"{zone}->{neighbour}")

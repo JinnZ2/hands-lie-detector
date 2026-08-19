@@ -51,6 +51,13 @@ unbilled, unenrolled. It sits outside all four.
 
 This is the part that matters.
 
+> **Scope note, added later.** Nothing below says the cohort data is wrong. It
+> measures a real condition, accurately, and its findings hold for the
+> population it was taken in. The defect is a **missing scope line** — results
+> for an unnamed condition, read as universal. See `contrast-case.md`. Every
+> "the literature is carved" phrasing in this repo should be read as "the
+> literature is unscoped," which is the accurate and much narrower claim.
+
 The priors aren't **thin** on the multi-domain case. They're drawn from the
 **complement** of it. The generating population is defined by not being
 multi-domain.

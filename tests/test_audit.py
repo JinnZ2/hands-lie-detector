@@ -148,3 +148,39 @@ class TestStimulusCommitment(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestConditionCoordinates(unittest.TestCase):
+    """A contrast point needs its condition specified, or it plots nowhere."""
+
+    def test_the_dense_arm_ships_unstated_and_fails_its_own_check(self):
+        from hands_lie_detector.audit.condition import ARM_A_UNSTATED
+
+        self.assertFalse(ARM_A_UNSTATED.is_plottable)
+        self.assertEqual(len(ARM_A_UNSTATED.unstated), len(ARM_A_UNSTATED.coordinates))
+
+    def test_a_coordinate_needs_all_four_fields(self):
+        from hands_lie_detector.audit.condition import (
+            Cadence, NeedCoordinate, Provision,
+        )
+
+        partial = NeedCoordinate("heat", Provision.SELF_MET)
+        full = NeedCoordinate("heat", Provision.SELF_MET, "8 cord", 20, Cadence.SEASONAL)
+        self.assertFalse(partial.specified)
+        self.assertTrue(full.specified)
+
+    def test_n1_supports_direction_but_not_variance(self):
+        from hands_lie_detector.audit.condition import ARM_A_UNSTATED, ContrastPoint
+
+        point = ContrastPoint(ARM_A_UNSTATED, ARM_A_UNSTATED)
+        supported = " ".join(point.SUPPORTED)
+        not_supported = " ".join(point.NOT_SUPPORTED)
+        self.assertIn("direction", supported)
+        self.assertIn("magnitude", supported)
+        self.assertIn("variance", not_supported)
+        self.assertIn("prevalence", not_supported)
+
+    def test_an_unspecified_sparse_arm_is_not_usable(self):
+        from hands_lie_detector.audit.condition import ARM_A_UNSTATED, ContrastPoint
+
+        self.assertFalse(ContrastPoint(ARM_A_UNSTATED, ARM_A_UNSTATED).usable)

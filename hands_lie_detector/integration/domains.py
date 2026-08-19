@@ -15,9 +15,29 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 
-class Zone(str, Enum):
-    """Hand zones. Values match `CallusZone` in term_audit/vocabulary/."""
+class Surface(str, Enum):
+    PALMAR = "palmar"
+    DORSAL = "dorsal"
 
+
+class Zone(str, Enum):
+    """Hand zones.
+
+    The first nine match `CallusZone` in term_audit/vocabulary/ and are all
+    PALMAR. That vocabulary was built for grip, which is where load is carried —
+    and it therefore cannot record a marker on the back of the hand at all.
+
+    The dorsal zones below were added after photographs showed lacerations over
+    the metacarpals and MCP joints, on a hand whose palmar surface was
+    unremarkable. Half the evidence had no vocabulary to land in.
+
+    Note what follows: no shipped `DomainSignature` predicts a dorsal zone, so
+    every dorsal marker is residual by construction against every enrolled
+    domain. That is not a bug in the residual computation. It is the shape of an
+    instrument built for grip being handed a strike.
+    """
+
+    # Palmar — grip surface.
     THUMB_CROTCH = "thumb_crotch"
     INDEX_SIDE = "index_side"
     PALM_BELOW_INDEX = "palm_below_index"
@@ -27,6 +47,30 @@ class Zone(str, Enum):
     BASE_OF_FINGERS = "base_of_fingers"
     THUMB_PAD = "thumb_pad"
     OUTER_PALM_EDGE = "outer_palm_edge"
+
+    # Dorsal — not a grip surface. Markers here come from strike, catch,
+    # abrasion against an enclosure, or cold exposure, not from holding.
+    DORSAL_METACARPAL = "dorsal_metacarpal"
+    DORSAL_MCP_KNUCKLES = "dorsal_mcp_knuckles"
+    DORSAL_WEB_SPACE = "dorsal_web_space"
+    DORSAL_PHALANX = "dorsal_phalanx"
+    WRIST_TRANSITION = "wrist_transition"
+
+    @property
+    def surface(self) -> Surface:
+        return (
+            Surface.DORSAL
+            if self.value.startswith("dorsal_") or self is Zone.WRIST_TRANSITION
+            else Surface.PALMAR
+        )
+
+
+PALMAR_ZONES: frozenset[Zone] = frozenset(
+    z for z in Zone if z.surface is Surface.PALMAR
+)
+DORSAL_ZONES: frozenset[Zone] = frozenset(
+    z for z in Zone if z.surface is Surface.DORSAL
+)
 
 
 class LoadMode(str, Enum):
@@ -69,6 +113,15 @@ ADJACENCY: dict[Zone, set[Zone]] = {
     Zone.BASE_OF_FINGERS: {Zone.ACROSS_PALM_CREASE, Zone.FINGERTIP_PADS, Zone.PALM_BELOW_INDEX},
     Zone.THUMB_PAD: {Zone.THUMB_CROTCH, Zone.FINGERTIP_PADS},
     Zone.OUTER_PALM_EDGE: {Zone.HEEL_OF_PALM, Zone.BASE_OF_FINGERS},
+    # Dorsal adjacency is its own graph. It touches the palmar graph only at the
+    # hand's edges, which is why a dorsal marker does not get "explained" by a
+    # neighbouring grip zone.
+    Zone.DORSAL_METACARPAL: {Zone.DORSAL_MCP_KNUCKLES, Zone.WRIST_TRANSITION},
+    Zone.DORSAL_MCP_KNUCKLES: {Zone.DORSAL_METACARPAL, Zone.DORSAL_WEB_SPACE,
+                               Zone.DORSAL_PHALANX},
+    Zone.DORSAL_WEB_SPACE: {Zone.DORSAL_MCP_KNUCKLES, Zone.DORSAL_PHALANX},
+    Zone.DORSAL_PHALANX: {Zone.DORSAL_MCP_KNUCKLES, Zone.DORSAL_WEB_SPACE},
+    Zone.WRIST_TRANSITION: {Zone.DORSAL_METACARPAL, Zone.HEEL_OF_PALM},
 }
 
 # Where load goes when it exceeds any single domain's geometry, independent of
