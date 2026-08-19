@@ -196,3 +196,103 @@ def strip_all(
 ) -> dict[str, StripVerdict]:
     """Run the single-noun strip across a list. Useful on a whole scale at once."""
     return {c: strip(c, registry=registry).verdict for c in categories}
+
+
+# ---------------------------------------------------------------------------
+# Cardinality reduction — the general form the strip is one case of
+# ---------------------------------------------------------------------------
+#
+# Three moves that look different and are one operation at different layers:
+#
+#   FALSE BINARY      reduces the OPTION set        -> presents 2 as all
+#   WELDED TERM       reduces two VARIABLES to one  -> presents the weld as a
+#                                                      single quantity
+#   NARROW FRAMEWORK  reduces the POPULATION        -> presents a subset's
+#                                                      regularities as universal
+#
+# Same form each time: a cardinality reduction with the reduction step deleted
+# from the output. Which is the domain carve again — partition, then forget you
+# partitioned.
+
+
+class ReductionKind(str, Enum):
+    OPTION_SET = "false_binary"
+    VARIABLE_WELD = "welded_term"
+    POPULATION = "narrow_framework"
+
+
+@dataclass(frozen=True)
+class CardinalityReduction:
+    """A reduction, and whether the reducing step survived into the output."""
+
+    kind: ReductionKind
+    label: str
+    presented: str
+    actual: str
+    declared: bool = False
+
+    @property
+    def undeclared(self) -> bool:
+        return not self.declared
+
+    def report(self) -> str:
+        lines = [
+            f"{self.kind.value}: {self.label}",
+            f"  presented : {self.presented}",
+            f"  actual    : {self.actual}",
+        ]
+        if self.undeclared:
+            lines.append(
+                "  UNDECLARED: the reduction step is missing from the output, so "
+                "the reduced set is being reported as the world."
+            )
+        return "\n".join(lines)
+
+
+# Terms that fuse two variables and report the weld as one quantity.
+WELDED_TERMS: dict[str, CardinalityReduction] = {
+    r.label: r
+    for r in [
+        CardinalityReduction(
+            ReductionKind.VARIABLE_WELD,
+            "waste heat",
+            "one quantity: energy lost",
+            "two variables: energy leaving the intended sink, AND energy of no "
+            "further use. in a heated space in winter the balance goes to the "
+            "room, which is a required load — so the first is nonzero and the "
+            "second is zero",
+        ),
+        CardinalityReduction(
+            ReductionKind.VARIABLE_WELD,
+            "hobby",
+            "one quantity: a kind of activity",
+            "two variables: the physical load, AND whether it was paid. only the "
+            "second is in the definition, and only the first is in the mechanics",
+        ),
+        CardinalityReduction(
+            ReductionKind.POPULATION,
+            "strange",
+            "a property of the subject",
+            "a frequency claim against a denominator — and the denominator in use "
+            "was constructed by excluding the subject. widen it to every human "
+            "who has lived and cascading multi-domain subsistence is the MODAL "
+            "condition",
+        ),
+    ]
+}
+
+
+CONFUSION_IS_A_DETECTION_EVENT = (
+    "working from the physical system, the option space is bounded by physics, "
+    "and physics is wide. a presented binary is narrower than the physics "
+    "permits, so the arriving signal is not 'I disagree with option A' — it is "
+    "'where did the other options go, since nothing removed them.' confusion is "
+    "the correct output for an undeclared reduction: a detection event, not a "
+    "failure to follow. and it is diagnostic about the presenter's frame rather "
+    "than about the topic."
+)
+
+
+def unweld(term: str) -> CardinalityReduction | None:
+    """Look up a term that fuses two variables into one reported quantity."""
+    return WELDED_TERMS.get(term.strip().lower())

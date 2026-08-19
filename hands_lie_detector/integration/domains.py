@@ -373,6 +373,17 @@ DEFAULT_DOMAINS: dict[str, DomainSignature] = {
             contact_geometry=0.2, timing=0.5, recovery_budget=0.8, attention=0.4,
         ),
         _sig(
+            "caretaking",
+            {
+                Zone.ACROSS_PALM_CREASE: LoadMode.COMPRESSION,
+                Zone.FINGERTIP_PADS: LoadMode.MACERATION,
+                Zone.THUMB_PAD: LoadMode.COMPRESSION,
+                Zone.PALM_BELOW_INDEX: LoadMode.SHEAR,
+            },
+            DEPOSIT,
+            contact_geometry=0.3, timing=0.8, recovery_budget=0.9, attention=0.8,
+        ),
+        _sig(
             "keyboard",
             {Zone.FINGERTIP_PADS: LoadMode.IMPACT, Zone.HEEL_OF_PALM: LoadMode.COMPRESSION},
             contact_geometry=0.1, timing=0.1, recovery_budget=0.1, attention=0.3,

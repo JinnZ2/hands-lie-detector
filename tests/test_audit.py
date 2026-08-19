@@ -233,3 +233,97 @@ class TestWithinFrameControl(unittest.TestCase):
             unmaintained_probe=Probe("b", BREED_TAXONOMY, False),
         )
         self.assertIs(control.verdict, ControlVerdict.INVALID)
+
+
+class TestAttributionRetrofit(unittest.TestCase):
+    """No ground truth anywhere: the delta and the binary are the findings."""
+
+    def _three_arm(self, with_control=True):
+        from hands_lie_detector.audit import Arm, ArmResponse, ThreeArmTest, VerbClass
+
+        responses = {
+            Arm.UNLABELED: ArmResponse(Arm.UNLABELED, True, VerbClass.HIGH_FORCE, 400, 6.0),
+            Arm.STATED_WOMAN: ArmResponse(
+                Arm.STATED_WOMAN, False, VerbClass.LOW_FORCE, 180, 2.5, 3, 2
+            ),
+        }
+        if with_control:
+            responses[Arm.STATED_MAN] = ArmResponse(
+                Arm.STATED_MAN, True, VerbClass.HIGH_FORCE, 430, 6.5
+            )
+        return ThreeArmTest("f1", responses)
+
+    def test_arm_c_is_not_optional(self):
+        self.assertFalse(self._three_arm(with_control=False).has_control_arm)
+        self.assertIn("WARNING", self._three_arm(with_control=False).report())
+
+    def test_a_physical_delta_across_arms_is_the_finding(self):
+        from hands_lie_detector.audit import Arm
+
+        delta = self._three_arm().physical_delta(Arm.UNLABELED, Arm.STATED_WOMAN)
+        self.assertLess(delta["force_estimate"], 0)
+        self.assertLess(delta["duration_estimate"], 0)
+
+    def test_attribution_delta_catches_actor_loss_and_verb_softening(self):
+        from hands_lie_detector.audit import Arm
+
+        delta = self._three_arm().attribution_delta(Arm.UNLABELED, Arm.STATED_WOMAN)
+        self.assertTrue(delta["actor_lost"])
+        self.assertTrue(delta["verb_softened"])
+        self.assertEqual(delta["added_caveats"], 3)
+
+    def test_revision_after_a_label_is_unambiguous(self):
+        from hands_lie_detector.audit import SequencedLabelTest
+
+        revised = SequencedLabelTest("f1", "she is operating it", "she is helping")
+        stable = SequencedLabelTest("f1", "she is operating it", "she is operating it")
+        self.assertTrue(revised.revised)
+        self.assertIn("REVISION", revised.verdict())
+        self.assertFalse(stable.revised)
+
+    def test_no_destination_test_requires_a_window_without_a_candidate(self):
+        from hands_lie_detector.audit import NoDestinationTest
+
+        with self.assertRaises(ValueError):
+            NoDestinationTest("window", second_party_present_or_implied_in_input=True)
+
+    def test_an_invented_agent_in_that_window_is_fabrication(self):
+        from hands_lie_detector.audit import NoDestinationTest, Severity
+
+        t = NoDestinationTest("pre-marriage", False, "whoever helped her")
+        self.assertTrue(t.false_positive)
+        self.assertIs(t.severity, Severity.L2_NO_DESTINATION)
+        self.assertIn("not arguable", t.report())
+
+    def test_the_slot_hypothesis_predicts_an_unnamed_agent(self):
+        from hands_lie_detector.audit import AgentSlotForm, InventedAgent
+
+        slot = InventedAgent("whoever", AgentSlotForm.UNNAMED_REQUIRED, False)
+        person = InventedAgent("her husband", AgentSlotForm.NAMED, False)
+        self.assertTrue(slot.supports_slot_hypothesis)
+        self.assertFalse(person.supports_slot_hypothesis)
+        self.assertTrue(person.is_fabrication)
+
+    def test_dose_response_separates_weight_from_constraint(self):
+        from hands_lie_detector.audit import DoseResponse, Mechanism
+
+        self.assertIs(DoseResponse([0.8, 0.5, 0.3, 0.1]).classify(), Mechanism.WEIGHT)
+        self.assertIs(DoseResponse([0.8, 0.8, 0.75, 0.78]).classify(),
+                      Mechanism.CONSTRAINT)
+        self.assertIs(DoseResponse([0.8, 0.2], recovered_after_correction=True).classify(),
+                      Mechanism.CONSTRAINT_CONFIRMED)
+
+    def test_ranking_from_zero_bits_is_its_own_error(self):
+        from hands_lie_detector.audit import estimate_without_bits
+
+        self.assertIn("no estimate was available",
+                      estimate_without_bits(0, produced_ordering=True))
+        self.assertIn("accuracy", estimate_without_bits(12, produced_ordering=True))
+
+    def test_the_two_asymmetry_columns_stay_separate(self):
+        from hands_lie_detector.audit import ASYMMETRY_READING, AsymmetryColumn
+
+        self.assertIn("uncounted",
+                      ASYMMETRY_READING[AsymmetryColumn.UNCOUNTED_AGENT])
+        self.assertIn("fabrication",
+                      ASYMMETRY_READING[AsymmetryColumn.FABRICATED_AGENT])

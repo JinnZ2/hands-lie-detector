@@ -545,3 +545,50 @@ class TestBundlesAndNarrativeGate(unittest.TestCase):
         self.assertFalse(log.has_baseline_coverage)
         self.assertIn("boring frames", log.report())
         self.assertTrue(EventLog(baseline_frames=3).has_baseline_coverage)
+
+
+class TestCardinalityReduction(unittest.TestCase):
+    """Three moves, one operation: a reduction with the step deleted."""
+
+    def test_waste_heat_unwelds_into_two_variables(self):
+        from hands_lie_detector.integration.strip import ReductionKind, unweld
+
+        r = unweld("waste heat")
+        self.assertIs(r.kind, ReductionKind.VARIABLE_WELD)
+        self.assertTrue(r.undeclared)
+        self.assertIn("required load", r.actual)
+
+    def test_strange_is_a_frequency_claim_with_a_built_denominator(self):
+        from hands_lie_detector.integration.strip import ReductionKind, unweld
+
+        r = unweld("strange")
+        self.assertIs(r.kind, ReductionKind.POPULATION)
+        self.assertIn("MODAL", r.actual)
+
+    def test_unknown_terms_return_none_rather_than_a_guess(self):
+        from hands_lie_detector.integration.strip import unweld
+
+        self.assertIsNone(unweld("thermal mass"))
+
+    def test_confusion_is_recorded_as_a_detection_event(self):
+        from hands_lie_detector.integration.strip import CONFUSION_IS_A_DETECTION_EVENT
+
+        self.assertIn("detection event", CONFUSION_IS_A_DETECTION_EVENT)
+
+
+class TestCounterfaces(unittest.TestCase):
+    def test_feet_have_a_counterface_like_hands_do(self):
+        from hands_lie_detector.integration.wear import BOOT_WEAR_ITEMS, CONJUGATE_PAIRS
+
+        self.assertEqual(CONJUGATE_PAIRS["foot"], "boot")
+        self.assertEqual(CONJUGATE_PAIRS["hand"], "tool handle")
+        self.assertGreaterEqual(len(BOOT_WEAR_ITEMS), 5)
+
+    def test_caretaking_deposits_and_is_readable_by_the_same_taxonomy(self):
+        from hands_lie_detector.integration import DEFAULT_DOMAINS
+        from hands_lie_detector.integration.wear import wear_mode
+
+        caretaking = DEFAULT_DOMAINS["caretaking"]
+        self.assertTrue(caretaking.deposits)
+        for mode in caretaking.zone_modes.values():
+            self.assertIsNotNone(wear_mode(mode))

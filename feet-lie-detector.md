@@ -1,3 +1,39 @@
+> **DESIGN CORRECTION — read first.**
+>
+> This document as originally written reads GAIT, and that is a sampling
+> mismatch:
+>
+> ```
+> PALM   integrated deposit. static. one frame samples it fully.
+>        the information is in the STATE.
+> GAIT   dynamic. the information is in sequence, variability and
+>        perturbation recovery. a still discards all three and keeps the
+>        POSE — the least informative component.
+> ```
+>
+> A single frame cannot establish gait symmetry; it can only fail to show
+> asymmetry. It carries no load history at all — gait does not deposit.
+>
+> ⇒ This track either needs **video**, or it needs to **stop reading motion**.
+>
+> **THE FIX — read the counterface.** Wear is a system property, so the same
+> move already made for hands applies here: hands ↔ tools, feet ↔ **boots**.
+>
+> Boot wear is the foot's deposit record: sole wear pattern and depth · strike
+> location, lateral vs medial · upper crease lines, where the foot actually
+> flexes · lacing wear · heel counter collapse · midsole compression set.
+>
+> And it is a better instrument than the foot itself: static, shootable at rest,
+> good light available, no disposition gate and no coincidence gate — nobody has
+> to decide it is worth photographing while it happens. It is also self-dating,
+> since boots get replaced and the wear is bounded by the boot's service life.
+>
+> See `wear-taxonomy.md` and `BOOT_WEAR_ITEMS` in
+> `hands_lie_detector/integration/wear.py`. The scoring below is retained as
+> written and has not been revised against this.
+
+---
+
 Feet Lie Detector
 Scoring Rubric (v0.1 — “Barefoot Truth Detection”)
 Goal:

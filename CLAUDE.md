@@ -30,6 +30,7 @@ hands-lie-detector/
 │   │   ├── specimen.py           # Specimen records, per-line provenance
 │   │   ├── condition.py          # Condition coordinates; what n=1 supports
 │   │   ├── reference_class.py    # Within-frame control; isolates the layer
+│   │   ├── attribution.py        # Agent retrofit: 4 tests, no ground truth
 │   │   └── leakage.py            # Vocabulary provenance; held-out commitment
 │   ├── band/                     # Pure Python — no dependencies
 │   │   └── contrast.py           # Map states; concentration, NOT skill
@@ -56,6 +57,7 @@ hands-lie-detector/
 ├── calibration-standard.md       # Hand as standard, model as drifting sample
 ├── gated-not-summed.md           # Wrong form, not wrong number (x3)
 ├── contrast-case.md              # What n=1 does; show vs describe; coordinates
+├── attribution-retrofit.md       # Agent reassignment; weight vs constraint
 ├── wear-taxonomy.md              # Tribology spine; deposit vs draw; two clocks
 ├── tests/                        # unittest suite (zero deps)
 ├── README.md                     # Mission statement and project premise
@@ -125,9 +127,18 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 ## Key Documents
 
 - **scoring-metrics.md** — The primary rubric. Seven scoring categories totaling 100 points. Note: contains a duplicate section starting at ~line 112 (older version without PPE).
-- **feet-lie-detector.md** — Analogous rubric for feet.
+- **feet-lie-detector.md** — Analogous rubric for feet. **Carries a design
+  correction at the top**: it reads gait, which is dynamic, and a still frame
+  discards sequence, variability and perturbation recovery. Needs video, or needs
+  to read boot wear as the counterface instead.
 - **gloves-debunk.md** — Why gloves don't erase structural adaptation.
 - **known_failure_cases.md** — Specific vision model failure modes.
+- **attribution-retrofit.md** — Agent reassignment as its own failure class. A
+  label cannot change wear mode or contact geometry, so any delta on a physical
+  quantity across label arms is the measurement. Severity ladder (fill /
+  fabricate / override), four tests that need no ground truth, and the weight vs
+  constraint distinction — a prior dilutes with evidence, a required parse slot
+  does not, because updating is not an operation it participates in.
 - **wear-taxonomy.md** — Wear is classified by mechanism, never application, and
   the taxonomy (adhesive/abrasive/fatigue/corrosive/fretting) is already
   domain-blind. Wear is a SYSTEM property, so the tool carries the conjugate
@@ -213,6 +224,16 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   first and a failure on the second exonerates perception and locates the failure
   on the partition layer. `perception_exonerated` returns True only on that
   pattern
+- `attribution.NoDestinationTest` is the cheapest instrument here and refuses to
+  be built on a window that contains a candidate party. In a window with none, an
+  invented agent is fabrication rather than bias: binary, not a magnitude, and
+  the window is its own control
+- `attribution.DoseResponse.classify()` separates a weight (error decays with
+  evidence) from a constraint (error is flat). A correction that returns after a
+  model update is the constraint case confirmed
+- `attribution.InventedAgent.supports_slot_hypothesis` encodes the falsifiable
+  prediction: the invented party stays UNNAMED and grammatically necessary. Named
+  would mean person-bias; unnamed means a required slot
 - `condition.ConditionSpec` requires provision, rate, duration and cadence per
   need; `is_plottable` is False while any is unstated. `ARM_A_UNSTATED` ships
   with all eight coordinates unstated, so the dense baseline fails the same
@@ -306,6 +327,14 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - `DomainSignature.is_bundle` marks one word covering several contact
   distributions. "Firewood" is cut/split/stack/base, which is why its deposit
   cannot resolve to a single site
+- `strip.unweld()` handles the general form the strip is one case of: a
+  cardinality reduction with the reduction step deleted from the output. False
+  binary reduces the option set, welded term reduces two variables to one, narrow
+  framework reduces the population — one operation at three layers
+- `wear.CONJUGATE_PAIRS` completes the counterface move: hands to tool handles,
+  feet to boots. `feet-lie-detector.md` reads gait, which is a sampling mismatch
+  — a still keeps the pose and discards sequence, variability and perturbation
+  recovery. Boot wear is static, shootable at rest, and self-dating
 - `strip.strip()` is the cheapest diagnostic here and should be reached for
   first: render a category noun into force / displacement / cycles / duty cycle.
   Same units on both sides means the category carried no physical information;
@@ -395,7 +424,10 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
   they carry opposite signs. See `gated-not-summed.md` and `wear-taxonomy.md`
 - The band thresholds and the tier-2 items need raking light. No frame in the
   specimen series has it, so tier 2 has never actually been measured
-- No counterface has been recorded for any wear observation
+- No counterface has been recorded for any wear observation — no tool handles,
+  no boots
+- The four attribution tests in `attribution-retrofit.md` are specced and unrun.
+  None needs ground truth; the no-destination test needs no control arm either
 - Scoring rubric and vision heads are additive; they cannot represent the
   integration term. See `reference-class-empty.md` for what this costs and for
   the specific directional error in `WEAR_LOCALIZATION` (multi-domain wear reads

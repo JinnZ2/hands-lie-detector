@@ -436,6 +436,45 @@ the cuts intact.
 
 ---
 
+## The same carve, in thermodynamics
+
+Energy has **quality** — temperature — not just quantity. One high-temperature
+source serves a descending series of needs:
+
+```
+fire            600-800C   ← source
+  ↓ cooking, water to boil
+  ↓ wash water to 40C
+  ↓ space heat
+  ↓ drying (latent, takes the low grade)
+  ↓ thermal mass (stores the tail)
+```
+
+Each tap draws what it needs and passes the remainder down. **"Waste heat" only
+exists where the next tap is missing.**
+
+And the formalism is domain-carved, predictably:
+
+| | has a literature? |
+|---|---|
+| chemical plant | pinch analysis, CHP, energy integration — named, taught, optimized, published |
+| cabin | no name. no term. not a discipline. |
+
+Identical thermodynamics. One has an engineering literature because someone was
+paying for the fuel at industrial scale.
+
+**And the accounting seals it.** A household is classified as a *consumption
+unit*. Consumption is **terminal by definition**. So internal energy integration
+has no slot to appear in — not underweighted, no field for it. The same shape as
+the missing dimension for unpaid load, arriving in energy instead of in hours.
+
+⇒ "Waste heat" is a **welded term**: it fuses energy leaving the intended sink
+with energy of no further use. Unweld it and the whole cascade returns — a
+cascade nothing physical had removed. It was removed by an accounting category,
+and then the category was reported as the world. See `strip.unweld()`.
+
+---
+
 ## The inversion — the record has the dependency stack upside down
 
 ```

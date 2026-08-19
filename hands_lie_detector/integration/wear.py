@@ -142,3 +142,42 @@ def scar_identifies_mechanism_not_application() -> str:
         "categories are not unimportant; they are downstream of a measurement the "
         "material already took, before anyone classified it."
     )
+
+
+# ---------------------------------------------------------------------------
+# Counterfaces — hands to tools, feet to boots
+# ---------------------------------------------------------------------------
+#
+# `feet-lie-detector.md` as originally specced reads GAIT, and that is a
+# sampling mismatch:
+#
+#     PALM   integrated deposit. static. one frame samples it fully.
+#            the information is in the STATE.
+#     GAIT   dynamic. the information is in sequence, variability and
+#            perturbation recovery. a still discards all three and keeps the
+#            pose, which is the least informative component.
+#
+# So the feet track either needs video or needs to stop reading motion. The fix
+# is the same tribological move already made for hands: wear is a system
+# property, so read the COUNTERFACE.
+
+BOOT_WEAR_ITEMS: tuple[str, ...] = (
+    "sole wear pattern and depth",
+    "strike location, lateral vs medial",
+    "upper crease lines — where the foot actually flexes",
+    "lacing wear",
+    "heel counter collapse",
+    "midsole compression set",
+)
+
+COUNTERFACE_PROPERTIES = (
+    "static, shootable at rest, good light available, no disposition gate and no "
+    "coincidence gate — nobody has to decide it is worth photographing while it "
+    "happens. and it is self-dating: boots get replaced, so the wear is bounded "
+    "by the boot's service life."
+)
+
+CONJUGATE_PAIRS: dict[str, str] = {
+    "hand": "tool handle",
+    "foot": "boot",
+}

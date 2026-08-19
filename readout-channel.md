@@ -40,6 +40,43 @@ it was running the whole time.
 
 ---
 
+## The dynamics cannot be stripped. They can be bypassed.
+
+The sharpest version of this document's own thesis, and it settles a question
+that keeps recurring as "can we just get a cleaner image."
+
+**NOT STRIPPABLE from scene imagery:**
+
+- who is in the frame
+- who took it
+- what got photographed at all
+
+The composition **is** the dynamic. The image is already the gates' output; it
+was never raw data. **Cropping removes labels, not selection.**
+
+**BYPASSABLE — any channel that never routed through a documentation decision:**
+
+- tissue deposit
+- tool wear
+- boot wear
+- handle polish
+
+No photographer in the causal chain. No scene composition. Nobody decided it was
+worth recording — **it recorded itself**.
+
+⇒ So the answer to "see what is actually going on" is not a cleaner image. It is
+a **different instrument**.
+
+And the bypass generalizes past the domains this repo started with. Caretaking
+deposits too — transfer and lifting patterns, repeated hand positions, wet work
+with detergent and thermal cycling, sustained low-force holds. A different
+signature from rotary and clamp, equally physical, equally readable by the same
+wear taxonomy. Run the palmar read on caretaking-heavy hands and work-heavy
+hands and you get two deposit maps, and **neither one requires knowing who was
+in the room.**
+
+---
+
 ## Scope of the claim — three constraints, stated before anyone else states them
 
 ### 1. The sum, not the decomposition
