@@ -1,0 +1,194 @@
+"""
+Tests for hands_lie_detector.integration.
+
+These are mostly claim tests: each one asserts something the accompanying
+documents state in prose, so that the prose cannot drift away from the code.
+
+Run: python -m unittest discover tests
+"""
+
+import unittest
+from dataclasses import fields
+
+from hands_lie_detector.integration import (
+    ClassificationSystem,
+    LoadBlock,
+    LoadHistory,
+    PartitionVerdict,
+    Seam,
+    SeamKind,
+    Verdict,
+    Zone,
+    boundary_audit,
+    classify_relation,
+    discontinuity,
+    double_dissociation,
+    load_share,
+    propose_partition,
+    read_hand,
+    relabel,
+    transferable_across_domains,
+)
+from hands_lie_detector.integration.carve_audit import CarveVerdict
+
+
+# Illustrative parameters throughout. Not measurements.
+PAID = LoadBlock("driving_rotary_clamp", hours=70, force=1.0,
+                 shear_cycles_per_hour=40, geometry_mismatch=0.25)
+UNPAID = LoadBlock("cob_wet_abrasive", hours=12, force=1.4,
+                   shear_cycles_per_hour=120, geometry_mismatch=0.85)
+
+
+class TestLoadWeight(unittest.TestCase):
+    def test_load_block_has_no_payment_field(self):
+        """The absence is the claim, so it gets asserted rather than assumed."""
+        names = {f.name for f in fields(LoadBlock)}
+        for forbidden in ("paid", "payment", "wage", "employed", "occupational"):
+            self.assertNotIn(forbidden, names)
+
+    def test_weight_invariant_under_relabeling(self):
+        self.assertEqual(UNPAID.weight, relabel(UNPAID, "hobby").weight)
+        self.assertEqual(UNPAID.weight, relabel(UNPAID, "trade").weight)
+
+    def test_discontinuity_is_a_definitional_artifact(self):
+        """Mechanics held fixed, payment status varied: readout jumps, body doesn't."""
+        result = discontinuity([PAID, UNPAID], paid={PAID.name}, move=UNPAID.name)
+        self.assertEqual(result.delta_physical, 0.0)
+        self.assertNotEqual(result.delta_ledger, 0.0)
+        self.assertTrue(result.is_artifact)
+
+    def test_unpaid_block_can_dominate_the_physical_share(self):
+        """The 1:0 weighting is not merely wrong, it can be inverted."""
+        share = load_share([PAID, UNPAID])
+        self.assertGreater(share[UNPAID.name], share[PAID.name])
+
+
+class TestPartition(unittest.TestCase):
+    HISTORY = LoadHistory(
+        frozenset({Zone.THUMB_CROTCH, Zone.PALM_BELOW_INDEX, Zone.BASE_OF_FINGERS,
+                   Zone.FINGERTIP_PADS, Zone.HEEL_OF_PALM})
+    )
+
+    def test_unearned_partition_returns_unpartitioned_history(self):
+        claim = propose_partition(self.HISTORY, ["keyboard", "fine_manipulation"])
+        self.assertIs(claim.verdict, PartitionVerdict.NOT_EARNED)
+        self.assertIsInstance(claim.result(), LoadHistory)
+
+    def test_coarse_registry_reports_degenerate_not_a_verdict(self):
+        """With 8 domains, no single-domain split can reach alpha=0.05."""
+        claim = propose_partition(self.HISTORY, ["keyboard"])
+        self.assertIs(claim.verdict, PartitionVerdict.DEGENERATE)
+        self.assertIn("too coarse", claim.notes)
+        self.assertIsInstance(claim.result(), LoadHistory)
+
+    def test_full_registry_partition_is_degenerate(self):
+        from hands_lie_detector.integration import DEFAULT_DOMAINS
+
+        claim = propose_partition(self.HISTORY, sorted(DEFAULT_DOMAINS))
+        self.assertIs(claim.verdict, PartitionVerdict.DEGENERATE)
+
+    def test_verdict_is_reproducible(self):
+        a = propose_partition(self.HISTORY, ["rotary_hand_tool", "wet_task"])
+        b = propose_partition(self.HISTORY, ["rotary_hand_tool", "wet_task"])
+        self.assertEqual(a.p_value, b.p_value)
+        self.assertIs(a.verdict, b.verdict)
+
+    def test_unknown_domain_raises(self):
+        with self.assertRaises(KeyError):
+            propose_partition(self.HISTORY, ["blacksmithing_on_tuesdays"])
+
+
+class TestResidual(unittest.TestCase):
+    def test_residual_is_never_attributed_to_an_enrolled_domain(self):
+        readout = read_hand(
+            ["thumb_crotch", "palm_below_index", "fingertip_pads", "outer_palm_edge"],
+            ["rotary_hand_tool", "wet_task"],
+        )
+        self.assertIn(Zone.OUTER_PALM_EDGE, readout.residual_zones)
+        self.assertFalse(readout.residual_zones & readout.predicted)
+
+    def test_defaults_are_flagged_as_stipulated(self):
+        from hands_lie_detector.integration import DEFAULT_DOMAINS
+
+        self.assertTrue(DEFAULT_DOMAINS)
+        for name, sig in DEFAULT_DOMAINS.items():
+            self.assertFalse(sig.is_evidence_based, f"{name} claims evidence it lacks")
+
+    def test_systemic_conflicts_are_flagged_post_hoc(self):
+        readout = read_hand(["thumb_crotch"], ["rotary_hand_tool", "wet_task"])
+        systemic = [c for c in readout.conflicts if c.systemic]
+        self.assertTrue(systemic)
+        self.assertFalse(any(c.is_evidence_based for c in systemic))
+
+
+class TestDissociation(unittest.TestCase):
+    NOISE = {"thumb_crotch_depth": 0.4, "recovery_lag_days": 0.5}
+
+    def test_crossing_rejects_h1(self):
+        result = double_dissociation(
+            {"thumb_crotch_depth": 1.6, "recovery_lag_days": 0.1},
+            {"thumb_crotch_depth": 0.2, "recovery_lag_days": 2.4},
+            self.NOISE,
+        )
+        self.assertIs(result.verdict, Verdict.DOUBLE_DISSOCIATION)
+        self.assertTrue(result.rejects_h1)
+
+    def test_single_dissociation_is_not_support_for_h2(self):
+        result = double_dissociation(
+            {"thumb_crotch_depth": 1.6, "recovery_lag_days": 0.1},
+            {"thumb_crotch_depth": 0.1, "recovery_lag_days": 0.1},
+            self.NOISE,
+        )
+        self.assertIs(result.verdict, Verdict.SINGLE_DISSOCIATION)
+        self.assertFalse(result.rejects_h1)
+
+    def test_movement_is_judged_against_the_carriers_own_noise(self):
+        deltas = {"thumb_crotch_depth": 1.0, "recovery_lag_days": 1.0}
+        quiet = double_dissociation(deltas, deltas, {"thumb_crotch_depth": 0.1,
+                                                     "recovery_lag_days": 0.1})
+        noisy = double_dissociation(deltas, deltas, {"thumb_crotch_depth": 5.0,
+                                                    "recovery_lag_days": 5.0})
+        self.assertIs(quiet.verdict, Verdict.NO_DISSOCIATION)
+        self.assertIs(noisy.verdict, Verdict.INSUFFICIENT_MOVEMENT)
+
+
+class TestCarveAudit(unittest.TestCase):
+    def test_incidence_relations_do_not_transfer(self):
+        for term in ("incidence", "lifetime prevalence in welders", "exposure limit"):
+            self.assertFalse(transferable_across_domains(term), term)
+
+    def test_mechanism_relations_transfer(self):
+        for term in ("shear delamination", "stiffness mismatch", "creep"):
+            self.assertTrue(transferable_across_domains(term), term)
+
+    def test_unknown_relations_fail_closed(self):
+        self.assertFalse(transferable_across_domains("grip endurance"))
+        self.assertEqual(classify_relation("grip endurance").kind.value, "unknown")
+
+    def test_audit_ships_unrun(self):
+        from hands_lie_detector.integration import SYSTEM_REGISTRY
+
+        self.assertEqual(SYSTEM_REGISTRY, {})
+        result = boundary_audit(ClassificationSystem("SOC"), ClassificationSystem("ICD"))
+        self.assertIs(result.verdict, CarveVerdict.INSUFFICIENT_DATA)
+
+    def test_pay_seam_alignment_reads_as_co_authored(self):
+        seam = Seam("employment status", SeamKind.PAY_CODE, ("employed", "self"))
+        result = boundary_audit(
+            ClassificationSystem("SOC", seams=(seam,), roster=frozenset({"x"})),
+            ClassificationSystem("ICD", seams=(seam,), roster=frozenset({"x"})),
+        )
+        self.assertIs(result.verdict, CarveVerdict.CO_AUTHORED)
+
+    def test_physical_seam_alignment_reads_as_convergent_not_authorship(self):
+        """The correction to the discriminator: alignment alone is not authorship."""
+        seam = Seam("grip mode", SeamKind.FORCE_GEOMETRY, ("power", "precision"))
+        result = boundary_audit(
+            ClassificationSystem("A", seams=(seam,)),
+            ClassificationSystem("B", seams=(seam,)),
+        )
+        self.assertIs(result.verdict, CarveVerdict.CONVERGENT)
+
+
+if __name__ == "__main__":
+    unittest.main()

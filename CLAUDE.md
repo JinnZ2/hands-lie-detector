@@ -28,12 +28,17 @@ hands-lie-detector/
 │   └── integration/              # Pure Python — no dependencies
 │       ├── domains.py            # Domain zone/load-mode signatures, channels
 │       ├── residual.py           # Residual-zone readout (Test C), conflicts
-│       └── dissociation.py       # Double-dissociation discriminator (Test A)
+│       ├── dissociation.py       # Double-dissociation discriminator (Test A)
+│       ├── load_weight.py        # Mechanical load weighting; no payment term
+│       ├── partition.py          # Inverted null: partition must be argued for
+│       └── carve_audit.py        # Retrieval protocol, boundary-alignment audit
 ├── scoring-metrics.md            # Main 100-point hand scoring rubric (v0.1)
 ├── feet-lie-detector.md          # Parallel scoring system for feet
 ├── gloves-debunk.md              # Addresses the "I wore gloves" excuse
 ├── known_failure_cases.md        # Catalogues specific vision model failures
 ├── reference-class-empty.md      # Why multi-domain load has no reference class
+├── economic-carve.md             # Why the partition is payroll, not ontology
+├── tests/                        # unittest suite (zero deps)
 ├── README.md                     # Mission statement and project premise
 ├── requirements.txt              # All dependencies
 ├── setup.py                      # Package setup with optional extras
@@ -104,6 +109,12 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - **feet-lie-detector.md** — Analogous rubric for feet.
 - **gloves-debunk.md** — Why gloves don't erase structural adaptation.
 - **known_failure_cases.md** — Specific vision model failure modes.
+- **economic-carve.md** — Where the domain partition came from: job title →
+  SOC/NAICS → risk class → study stratum → literature → prior, with the
+  provenance lost by the last hop. Covers the unpaid-domain null, the
+  mechanism-vs-incidence retrieval protocol, the null inversion, the boundary-
+  alignment discriminator, and the discontinuity test. Escalates
+  `reference-class-empty.md` from "directional error" to "absent dimension."
 - **reference-class-empty.md** — Why the evidence base for multi-domain load is
   structurally empty (enrollment, confound control, combinatorics, sampling
   frame), why the resulting prior error is directional rather than noisy, and a
@@ -143,6 +154,19 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   data.** `is_evidence_based` returns `False` for every shipped default, and the
   provenance travels into printed reports. Do not let these harden into
   evidence — that is the failure the accompanying document is about
+- `load_weight.LoadBlock` has **no payment field**, deliberately: payment does
+  not appear in the governing equations, so it cannot appear in the weight.
+  `ledger_share()` implements the occupational-hour denomination as the artifact
+  under examination — do not use it to weight anything
+- `partition.propose_partition()` inverts the null: `LoadHistory` (one body, one
+  load history) is the default, and a proposed domain split must clear a
+  permutation test against same-grain random splits. Against the current
+  8-domain stipulated registry **nothing earns a partition**; that is a statement
+  about the registry, not about any split
+- `carve_audit.classify_relation()` fails closed: unrecognized relations are
+  treated as non-transferable across domains
+- `carve_audit.SYSTEM_REGISTRY` ships empty. The boundary audit is a harness for
+  documentation work that has not been done, and returns `INSUFFICIENT_DATA`
 
 ### Prompt evaluator (`hands_lie_detector.prompt`)
 - Sends the full rubric as a structured prompt to vision LLMs
@@ -212,6 +236,24 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
   the specific directional error in `WEAR_LOCALIZATION` (multi-domain wear reads
   as unlocalized and scores toward the cosplayer band)
 - H1 vs H2 in `reference-class-empty.md` is open; no discriminator has been run
+- `DEFAULT_BANDS` reports physical scores onto employment status ("Casual
+  Hobbyist" at 31-55, below "Working Hands"). See `economic-carve.md` — renaming
+  the bands alone is the wrong fix; the physical scale needs somewhere to land
+  that isn't a job title
+- The labeling workflow above collects "occupation, years of manual work, trade
+  type" — enrollment by pay code, which is the unit `economic-carve.md` argues
+  is wrong. Unpaid load enters as absent or as "hobby"
+
+## Tests
+
+```bash
+python -m unittest discover tests
+```
+
+Zero dependencies. The suite is mostly claim tests: each asserts something the
+documents state in prose, so the prose cannot drift from the code (no payment
+field on `LoadBlock`, residual never attributed to an enrolled domain, defaults
+flagged as stipulated, audit ships unrun).
 
 ## Git Workflow
 
