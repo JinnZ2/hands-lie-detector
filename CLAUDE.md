@@ -135,12 +135,14 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   to read boot wear as the counterface instead.
 - **gloves-debunk.md** — Why gloves don't erase structural adaptation.
 - **known_failure_cases.md** — Specific vision model failure modes.
-- **attribution-retrofit.md** — Agent reassignment as its own failure class. A
-  label cannot change wear mode or contact geometry, so any delta on a physical
-  quantity across label arms is the measurement. Severity ladder (fill /
-  fabricate / override), four tests that need no ground truth, and the weight vs
-  constraint distinction — a prior dilutes with evidence, a required parse slot
-  does not, because updating is not an operation it participates in.
+- **attribution-retrofit.md** — Agent reassignment as an **unmeasured
+  hypothesis**, not a documented failure class. Carries a provenance header: the
+  account was authored by a model describing its own behavior, which is
+  `RECONSTRUCTED` under this repo's own scheme — testimony, not observation, and
+  not the operator's claim. Specs a severity ladder (fill / fabricate /
+  override), four tests, and the weight vs constraint distinction. Three of the
+  four tests depend on scoring instruments that do not exist yet; only the
+  no-destination test is runnable today.
 - **sole-audit.md** — The cheapest instrument here and the first that scales past
   one operator. A job description is AUTHORED; sole wear is DEPOSITED, so the
   delta between the wear a title predicts and the wear a body left is the gap
@@ -446,8 +448,15 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
 - The sole audit has no denominator either, but unlike every other gap in this
   repo it is cheap to build: any worn boot with a stated job title is a data
   point
-- The four attribution tests in `attribution-retrofit.md` are specced and unrun.
-  None needs ground truth; the no-destination test needs no control arm either
+- The attribution-retrofit account is **model-authored testimony**, not a
+  measured phenomenon. Three of its four tests also depend on scoring
+  instruments with no operationalization and no inter-rater agreement, so their
+  deltas are marks rather than measurements — `results_are_interpretable`
+  returns False and the report says so above its own numbers. Only the
+  no-destination test is runnable today: binary, no scale, its own control
+- **Provenance convention for documents.** A claim originating in a model's
+  account of its own behavior is `RECONSTRUCTED` and must carry a header saying
+  so. Do not let a model's story about itself accumulate as a finding
 - Scoring rubric and vision heads are additive; they cannot represent the
   integration term. See `reference-class-empty.md` for what this costs and for
   the specific directional error in `WEAR_LOCALIZATION` (multi-domain wear reads

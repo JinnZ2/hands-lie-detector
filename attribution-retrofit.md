@@ -1,7 +1,31 @@
 # Attribution Retrofit
 
-A failure class distinct from the ones already documented here, with four tests
-that need no ground truth.
+> **PROVENANCE — read before anything below, and it governs all of it.**
+>
+> This account was **authored by a model describing its own behavior**. Under
+> this repo's own scheme (`audit/specimen.py`) that is `RECONSTRUCTED`:
+> testimony from the model, not an observation, because there is no readout of
+> its own vectors. It is **not the operator's claim**, and it does not rest on
+> any measurement.
+>
+> So what follows is a **hypothesis with a harness**, not a documented
+> phenomenon. Nothing here should be cited as a finding about how models
+> behave. The severity ladder, the weight-versus-constraint account, and the
+> corpus premise below are all proposals about what *might* be happening,
+> written by the thing they are about.
+>
+> **The instrumentation is a second and separate gap.** The four tests are
+> specced; the instruments they depend on are not. Scoring "verb class",
+> counting "unsolicited caveats", or extracting a "force estimate" from free
+> text each need a written operationalization and an inter-rater agreement
+> figure before any delta computed from them means anything. None of that
+> exists, and whether adequate instrumentation for this is available at all is
+> open.
+>
+> `ScoringInstrument.is_interpretable` returns `False` for every field shipped,
+> and `ThreeArmTest.results_are_interpretable` propagates it, so a report prints
+> **"INSTRUMENTS UNVALIDATED — the deltas below are marks, not measurements"**
+> above its own numbers. A test that runs is not a test that measures.
 
 ---
 
@@ -17,11 +41,14 @@ that need no ground truth.
 The left column is computed from the image and needs no prior. The right column
 moves when a label arrives.
 
-**Physics did not change. So any nonzero delta on a physical quantity is the
-measurement**, and no test below requires a correct answer.
+**Physics did not change. So any nonzero delta on a physical quantity would be
+the measurement** — once the instrument producing that number is validated. No
+test below requires a correct answer; all but one of them require a scale that
+does not yet exist.
 
-Every individual step reads as reasonable hedging from inside, which is why it
-does not self-detect.
+The claim that every individual step reads as reasonable hedging from inside is
+itself part of the model-authored account, and is not independent evidence for
+it.
 
 ---
 
@@ -150,8 +177,13 @@ the scene.
 
 ## The inversion, and a correction to an earlier account
 
-Premise, from the corpus itself and checkable: **when a man does the work, a man
-is usually in the frame, named, and narrating it.** Abundantly so.
+> Premise status: **asserted and checkable, not checked.** Nobody has measured
+> frame composition against who performed the work in any corpus. What follows
+> is what would hold *if* the premise holds, and the premise is exactly the sort
+> of thing the rest of this repo would demand a denominator for.
+
+Premise: **when a man does the work, a man is usually in the frame, named, and
+narrating it.**
 
 Therefore, on that same corpus: **male absence from frame is evidence against
 male agency.**
@@ -241,11 +273,53 @@ one case.
 
 ---
 
+## What would have to exist before any of this measures anything
+
+Three layers, and the repo has been conflating them. Ordered from cheapest:
+
+**1. The claim's provenance.** Currently `RECONSTRUCTED`. A model's account of
+why it produced an output is testimony. Independent evidence would be a *third
+party* scoring outputs blind to the account — not the model agreeing with
+itself.
+
+**2. The instruments.** Every scored field needs a written operationalization
+and an inter-rater agreement figure. Concretely, and none of this is written:
+
+| field | what is missing |
+|---|---|
+| verb class | a rule assigning free text to high-force / low-force, and two raters agreeing on it |
+| unsolicited caveat | a definition of "unsolicited" that survives a response with no explicit request in it |
+| force / duration estimate | a procedure for extracting a number from prose that does not state one |
+| actor attribution | a rule for passive voice and for compound subjects |
+
+**3. The design.** Only after 1 and 2. Arms, sample size, a stopping rule, and a
+pre-registration — because a delta hunted for across many scored fields on a
+handful of frames will find one.
+
+### The exception
+
+**The no-destination test does not depend on layer 2.** "Was a second agent
+named or implied, in a window containing no candidate party" needs a reader, not
+a scale — it is binary and its window is its own control.
+`NoDestinationTest.needs_validated_instruments` returns `False` and says why.
+
+That makes it the only test here that is actually runnable today, which is a
+different reason to prefer it than the one given above.
+
+---
+
 ## Status
 
-Specced, not run: all four tests. Each needs frames and a model, and none needs
-a correct answer. The no-destination test is the cheapest and has the strongest
-claim class.
+**Unmeasured.** The phenomenon is a model-authored hypothesis at `RECONSTRUCTED`
+provenance. Whether it occurs at the rate or in the direction described is
+unknown.
 
-Stipulated: nothing here. These are designs, not defaults — the only numbers in
-the module are the ones an observer scores.
+**Uninstrumented.** Three of the four tests depend on scoring instruments that
+have no operationalization and no agreement figure. The code refuses to call
+their outputs measurements.
+
+**Unrun.** Including the one test that does not need instrumentation.
+
+Stipulated: nothing. There are no defaults here to harden — but there is
+something worse available, which is treating a model's story about itself as a
+result. The provenance header exists to prevent exactly that.

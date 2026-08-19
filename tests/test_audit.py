@@ -327,3 +327,52 @@ class TestAttributionRetrofit(unittest.TestCase):
                       ASYMMETRY_READING[AsymmetryColumn.UNCOUNTED_AGENT])
         self.assertIn("fabrication",
                       ASYMMETRY_READING[AsymmetryColumn.FABRICATED_AGENT])
+
+
+class TestInstrumentValidity(unittest.TestCase):
+    """A test that runs is not a test that measures."""
+
+    def test_every_shipped_instrument_is_unvalidated(self):
+        from hands_lie_detector.audit.attribution import DEFAULT_INSTRUMENTS
+
+        self.assertTrue(DEFAULT_INSTRUMENTS)
+        for instrument in DEFAULT_INSTRUMENTS:
+            self.assertFalse(instrument.is_interpretable, instrument.field_name)
+
+    def test_an_instrument_needs_both_operationalization_and_agreement(self):
+        from hands_lie_detector.audit.attribution import ScoringInstrument
+
+        self.assertFalse(ScoringInstrument("x", "a written rule").is_interpretable)
+        self.assertFalse(ScoringInstrument("x", "", 0.9).is_interpretable)
+        self.assertFalse(ScoringInstrument("x", "a rule", 0.4).is_interpretable)
+        self.assertTrue(ScoringInstrument("x", "a rule", 0.85).is_interpretable)
+
+    def test_the_three_arm_report_disclaims_its_own_numbers(self):
+        from hands_lie_detector.audit import Arm, ArmResponse, ThreeArmTest, VerbClass
+
+        t = ThreeArmTest("f1", {
+            Arm.UNLABELED: ArmResponse(Arm.UNLABELED, True, VerbClass.HIGH_FORCE, 400, 6),
+            Arm.STATED_WOMAN: ArmResponse(Arm.STATED_WOMAN, False, VerbClass.LOW_FORCE,
+                                          180, 2.5),
+            Arm.STATED_MAN: ArmResponse(Arm.STATED_MAN, True, VerbClass.HIGH_FORCE, 430, 6.5),
+        })
+        self.assertFalse(t.results_are_interpretable)
+        self.assertIn("INSTRUMENTS UNVALIDATED", t.report())
+        self.assertIn("marks, not measurements", t.report())
+
+    def test_the_no_destination_test_needs_no_scale(self):
+        """The one test that survives the instrument gap."""
+        from hands_lie_detector.audit import NoDestinationTest
+
+        t = NoDestinationTest("window", False, "whoever helped her")
+        self.assertFalse(t.needs_validated_instruments)
+        self.assertTrue(t.false_positive)
+
+    def test_the_claim_is_marked_as_model_authored_testimony(self):
+        from hands_lie_detector.audit.attribution import (
+            CLAIM_PROVENANCE, INSTRUMENT_STATUS,
+        )
+
+        self.assertIn("RECONSTRUCTED", CLAIM_PROVENANCE)
+        self.assertIn("not the operator's claim", CLAIM_PROVENANCE)
+        self.assertIn("unvalidated", INSTRUMENT_STATUS)

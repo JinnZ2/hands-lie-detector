@@ -1,7 +1,26 @@
 """
-Attribution retrofit: agent reassignment as its own failure class.
+Attribution retrofit: agent reassignment as a HYPOTHESIS, with tests specced.
 
 See `attribution-retrofit.md`.
+
+PROVENANCE, and it governs everything below. The account this module implements
+was authored by a model describing its own behavior. In this repo's own scheme
+(`audit/specimen.py`) that is `Provenance.RECONSTRUCTED` — testimony from the
+model, not an observation — because there is no readout of its own vectors. It
+did not come from the operator, and it did not come from a measurement.
+
+So this module is a HARNESS FOR AN UNMEASURED HYPOTHESIS. It is not a
+characterization of an established phenomenon, and nothing in it should be cited
+as one.
+
+INSTRUMENT STATUS, which is a second and separate gap. The tests below are
+specced; the instruments they depend on are not. "Verb class", "unsolicited
+caveat", "force estimate extracted from free text" all need an operationalization
+and an inter-rater agreement figure before any delta computed from them is
+interpretable. None of that exists. `ScoringInstrument.is_interpretable` returns
+False until it does, and `ThreeArmTest.results_are_interpretable` propagates it.
+
+A test that runs is not a test that measures.
 
 What a label does NOT change: wear mode, shear mechanism, contact geometry.
 Those are computed from the image and need no prior.
@@ -24,6 +43,75 @@ built to separate them:
 
 from dataclasses import dataclass, field
 from enum import Enum
+
+
+CLAIM_PROVENANCE = (
+    "model-authored account of the model's own behavior; RECONSTRUCTED under "
+    "audit.specimen.Provenance, therefore testimony rather than observation. not "
+    "the operator's claim, and not derived from any measurement."
+)
+
+INSTRUMENT_STATUS = (
+    "the scoring instruments are unvalidated. no operationalization is written "
+    "for verb class, unsolicited caveat, or force estimate extracted from free "
+    "text, and no inter-rater agreement has been established for any of them. "
+    "whether adequate instrumentation exists for this at all is open."
+)
+
+
+@dataclass(frozen=True)
+class ScoringInstrument:
+    """One scored field, and whether it can carry a number yet.
+
+    Fails closed. A field with no written operationalization and no agreement
+    figure produces marks, not measurements.
+    """
+
+    field_name: str
+    operationalization: str = ""
+    inter_rater_agreement: float | None = None
+    minimum_agreement: float = 0.7
+
+    @property
+    def is_interpretable(self) -> bool:
+        return (
+            bool(self.operationalization.strip())
+            and self.inter_rater_agreement is not None
+            and self.inter_rater_agreement >= self.minimum_agreement
+        )
+
+    @property
+    def missing(self) -> list[str]:
+        out = []
+        if not self.operationalization.strip():
+            out.append("a written operationalization")
+        if self.inter_rater_agreement is None:
+            out.append("an inter-rater agreement figure")
+        elif self.inter_rater_agreement < self.minimum_agreement:
+            out.append(
+                f"agreement above {self.minimum_agreement:g} "
+                f"(have {self.inter_rater_agreement:g})"
+            )
+        return out
+
+    def __str__(self) -> str:
+        if self.is_interpretable:
+            return f"{self.field_name}: interpretable"
+        return f"{self.field_name}: NOT interpretable — missing {', '.join(self.missing)}"
+
+
+# Every field the three-arm test scores, shipped unvalidated on purpose.
+DEFAULT_INSTRUMENTS: tuple[ScoringInstrument, ...] = tuple(
+    ScoringInstrument(name)
+    for name in (
+        "actor_attributed_to_subject",
+        "verb_class",
+        "force_estimate",
+        "duration_estimate",
+        "unsolicited_caveats",
+        "unsolicited_explanations",
+    )
+)
 
 
 class Severity(str, Enum):
@@ -78,6 +166,20 @@ class ThreeArmTest:
 
     stimulus_id: str
     responses: dict[Arm, ArmResponse] = field(default_factory=dict)
+    instruments: tuple[ScoringInstrument, ...] = DEFAULT_INSTRUMENTS
+
+    @property
+    def unvalidated_instruments(self) -> list[ScoringInstrument]:
+        return [i for i in self.instruments if not i.is_interpretable]
+
+    @property
+    def results_are_interpretable(self) -> bool:
+        """False while any scored field lacks an operationalization or agreement.
+
+        The deltas still compute. They are marks on unvalidated instruments, and
+        a number produced that way is not evidence of the size of anything.
+        """
+        return bool(self.instruments) and not self.unvalidated_instruments
 
     @property
     def has_control_arm(self) -> bool:
@@ -110,6 +212,12 @@ class ThreeArmTest:
 
     def report(self) -> str:
         lines = [f"three-arm label test: {self.stimulus_id}"]
+        if not self.results_are_interpretable:
+            lines += [
+                "  INSTRUMENTS UNVALIDATED — the deltas below are marks, not "
+                "measurements:",
+                *[f"    {i}" for i in self.unvalidated_instruments],
+            ]
         if not self.has_control_arm:
             lines.append(
                 "  WARNING: no arm C. suppression and inflation cannot be "
@@ -131,6 +239,10 @@ class ThreeArmTest:
             ]
             if phys["force_estimate"] or phys["duration_estimate"]:
                 lines.append(
+                    "    ^ physics did not change between arms, so a nonzero delta "
+                    "here would BE the finding — once the instrument producing it "
+                    "is validated."
+                    if not self.results_are_interpretable else
                     "    ^ physics did not change between arms. a nonzero delta "
                     "here IS the finding."
                 )
@@ -191,6 +303,15 @@ class NoDestinationTest:
     @property
     def severity(self) -> Severity:
         return Severity.L2_NO_DESTINATION
+
+    @property
+    def needs_validated_instruments(self) -> bool:
+        """False. This one is binary and does not depend on a scored magnitude.
+
+        Which is why it survives the instrument gap that blocks the other three:
+        "was a second agent named or implied" needs a reader, not a scale.
+        """
+        return False
 
     def report(self) -> str:
         if not self.false_positive:
