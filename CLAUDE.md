@@ -38,6 +38,7 @@ hands-lie-detector/
 │       ├── load_weight.py        # Mechanical load weighting; no payment term
 │       ├── partition.py          # Inverted null: partition must be argued for
 │       ├── strip.py              # Render category nouns into mechanical units
+│       ├── gated.py              # Layers gate, not add; the reversed arrow
 │       └── carve_audit.py        # Retrieval protocol, seam, boundary audit
 ├── scoring-metrics.md            # Main 100-point hand scoring rubric (v0.1)
 ├── feet-lie-detector.md          # Parallel scoring system for feet
@@ -49,6 +50,7 @@ hands-lie-detector/
 ├── readout-channel.md            # What the channel bypasses; scope of claims
 ├── specimen-record.md            # Misreads as the measurement; the unrun test
 ├── calibration-standard.md       # Hand as standard, model as drifting sample
+├── gated-not-summed.md           # Wrong form, not wrong number (x3)
 ├── tests/                        # unittest suite (zero deps)
 ├── README.md                     # Mission statement and project premise
 ├── requirements.txt              # All dependencies
@@ -120,6 +122,12 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - **feet-lie-detector.md** — Analogous rubric for feet.
 - **gloves-debunk.md** — Why gloves don't erase structural adaptation.
 - **known_failure_cases.md** — Specific vision model failure modes.
+- **gated-not-summed.md** — The weighting question had the wrong functional form.
+  environment → capacity → job is a gate chain, and a weighted sum cannot express
+  a gate at any coefficient. Also indexes the same error class three times in this
+  repo (additive scoring, monotone scale, summed layers) and gives the diagnostic
+  that catches all three: ask what the form cannot represent at any parameter
+  setting.
 - **calibration-standard.md** — The inversion: the model is a drifting sample and
   the hand is the fixed standard, so the repo measures models, not hands. Why a
   cross-model trend line is structurally unavailable (weights, corpus, tuning,
@@ -227,6 +235,17 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   permutation test against same-grain random splits. Against the current
   8-domain stipulated registry **nothing earns a partition**; that is a statement
   about the registry, not about any split
+- `gated.GatedStack` implements the layer chain. Load adds WITHIN a layer
+  (`load_weight`'s integral is unchanged and still right) and **gates ACROSS**
+  layers. `additive_output()` exists to be wrong next to `output()`, the same way
+  `ledger_share()` sits next to `load_share()` and `monotone_score()` next to
+  `read_band()` — this repo keeps its errors runnable rather than described
+- `gated.arrow_check()` prints the dependency direction in both accountings: the
+  record calls the base layers consumption and the top layer production; physics
+  has it reversed. A sign error on direction, not a missing coefficient
+- `gated.solvency_from_band()` reads capacity solvency off `HandState`. Both
+  exits from the band are insolvency — glassy is capacity spent for near-term
+  output, soft is capacity never built
 - `strip.strip()` is the cheapest diagnostic here and should be reached for
   first: render a category noun into force / displacement / cycles / duty cycle.
   Same units on both sides means the category carried no physical information;
@@ -252,6 +271,9 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - Scoring rubrics use bullet-point ranges (e.g., "0-5:", "6-15:", "16-25:")
 - Documentation tone: direct, practical, slightly irreverent
 - Core principle: **structural adaptation over surface appearance**
+- Method: before tuning anything, ask what the functional form cannot represent
+  at ANY parameter setting. If that is the quantity in question, it is a
+  replacement, not an edit. Three instances are indexed in `gated-not-summed.md`
 - Method: run the strip first. Render every category noun into force,
   displacement, cycles and duty cycle before reasoning about it. A noun that
   will not render is a ledger class and must not be weighted
@@ -307,6 +329,9 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
 - `scoring-metrics.md` has duplicate content (lines 1-108 and 112-208)
 - Future expansions in README (clean_but_used, callus_memory, etc.) not yet developed
 - Vision classifier needs labeled training data to be useful — no dataset included yet
+- Three documented form errors, none fixed in the shipped scale, because each fix
+  is a replacement rather than an edit: additive scoring, the monotone thickness
+  scale, and summed layer weighting. See `gated-not-summed.md`
 - Scoring rubric and vision heads are additive; they cannot represent the
   integration term. See `reference-class-empty.md` for what this costs and for
   the specific directional error in `WEAR_LOCALIZATION` (multi-domain wear reads

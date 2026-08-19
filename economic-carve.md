@@ -333,6 +333,17 @@ instrument is reading the ledger, not the body.
 
 ### What the weight should be
 
+> **Correction, added later.** The subsection below poses the question as a
+> split between two parallel inputs — 60/40, which dominates, is it inverted.
+> That framing is itself the wrong functional form. Subsistence is not a
+> parallel input at the same layer as the job; it is the layer underneath, and
+> layers gate rather than add. See `gated-not-summed.md`. What survives here is
+> the *within-layer* statement: the integral below is the right form for
+> comparing two blocks of load at the same stratum, and the illustrative numbers
+> stand as that. What does not survive is treating the resulting share as the
+> answer to "how much does subsistence matter."
+
+
 ```
 w_domain  ∝  ∫ (force × shear-cycles × geometry-mismatch) dt
 ```

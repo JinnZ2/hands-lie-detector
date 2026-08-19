@@ -13,6 +13,8 @@ Two conventions, from the two documents:
   (`reference-class-empty.md`)
 - one body, one load history is the null; the partition must be argued for, and
   load is weighted by mechanism with no payment term (`economic-carve.md`)
+- load adds WITHIN a layer and gates ACROSS layers; a weighted sum cannot
+  express a gate at any coefficient (`gated-not-summed.md`)
 """
 
 from .dissociation import (
@@ -51,6 +53,16 @@ from .domains import (
     Zone,
     domain_names,
     get_domain,
+)
+from .gated import (
+    LEDGER_SIGN,
+    ORDER,
+    PHYSICS_SIGN,
+    GatedStack,
+    Stratum,
+    StratumState,
+    arrow_check,
+    solvency_from_band,
 )
 from .load_weight import (
     NO_PAYMENT_TERM,
@@ -97,6 +109,8 @@ __all__ = [
     "GeometryConflict",
     "DEFAULT_RENDERINGS",
     "INCIDENCE_RELATIONS",
+    "GatedStack",
+    "LEDGER_SIGN",
     "LIVING_TISSUE_PARAMS",
     "MECHANICAL_UNITS",
     "IntegrationReadout",
@@ -108,11 +122,15 @@ __all__ = [
     "M_TIME",
     "Manipulation",
     "NO_PAYMENT_TERM",
+    "ORDER",
+    "PHYSICS_SIGN",
     "PartitionClaim",
     "PartitionVerdict",
     "RelationKind",
     "RelationVerdict",
     "Rendering",
+    "Stratum",
+    "StratumState",
     "StripResult",
     "StripVerdict",
     "TransferScope",
@@ -121,6 +139,7 @@ __all__ = [
     "SeamKind",
     "Verdict",
     "Zone",
+    "arrow_check",
     "boundary_audit",
     "classify_relation",
     "compare_readouts",
@@ -133,6 +152,7 @@ __all__ = [
     "load_share",
     "moved_markers",
     "propose_partition",
+    "solvency_from_band",
     "read_hand",
     "relabel",
     "retrieve_mechanism_first",

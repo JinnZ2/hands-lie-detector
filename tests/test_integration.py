@@ -280,3 +280,80 @@ class TestSeam(unittest.TestCase):
         self.assertEqual(sorted(full), ["contact geometry", "creep"])
         self.assertEqual(relational, ["elastic modulus"])
         self.assertEqual(refused, ["prevalence"])
+
+
+class TestGatedForm(unittest.TestCase):
+    """Layers gate; they do not add. Wrong form, not wrong number."""
+
+    @staticmethod
+    def _stack(env=0.9, cap=1.0, draw=70.0):
+        from hands_lie_detector.integration import GatedStack, Stratum, StratumState
+
+        return GatedStack({
+            Stratum.ENVIRONMENT: StratumState(Stratum.ENVIRONMENT, env),
+            Stratum.CAPACITY: StratumState(Stratum.CAPACITY, cap),
+            Stratum.JOB: StratumState(Stratum.JOB, 1.0, draw=draw),
+        })
+
+    def test_a_failed_lower_layer_zeroes_the_whole_product(self):
+        self.assertEqual(self._stack(cap=0.0).output(), 0.0)
+        self.assertTrue(self._stack(cap=0.0).collapsed)
+
+    def test_the_additive_form_cannot_reach_zero(self):
+        """No coefficient assignment repairs this. That is the claim."""
+        stack = self._stack(cap=0.0)
+        self.assertEqual(stack.output(), 0.0)
+        self.assertGreater(stack.additive_output(), 0.0)
+
+    def test_sensitivity_is_multiplicative_not_constant(self):
+        from hands_lie_detector.integration import Stratum
+
+        low = self._stack(env=0.5).sensitivity(Stratum.CAPACITY)
+        high = self._stack(env=1.0).sensitivity(Stratum.CAPACITY)
+        self.assertNotAlmostEqual(low, high)
+
+    def test_the_ledger_reverses_the_arrow_on_the_base_layers(self):
+        from hands_lie_detector.integration import LEDGER_SIGN, PHYSICS_SIGN, Stratum
+
+        self.assertEqual(LEDGER_SIGN[Stratum.CAPACITY], "consumption")
+        self.assertIn("production", PHYSICS_SIGN[Stratum.CAPACITY])
+        self.assertEqual(LEDGER_SIGN[Stratum.JOB], "production")
+        self.assertIn("draw", PHYSICS_SIGN[Stratum.JOB])
+
+    def test_band_maintenance_is_capacity_solvency(self):
+        """Both exits from the band are insolvency, for different reasons."""
+        from hands_lie_detector.band import HandState
+        from hands_lie_detector.integration import solvency_from_band
+
+        banded = solvency_from_band(HandState.BANDED).solvency
+        glassy = solvency_from_band(HandState.GLASSY).solvency
+        soft = solvency_from_band(HandState.SOFT).solvency
+        self.assertGreater(banded, glassy)
+        self.assertGreater(banded, soft)
+
+    def test_saturation_spends_capacity_to_fund_near_term_output(self):
+        from hands_lie_detector.band import HandState
+        from hands_lie_detector.integration import GatedStack, Stratum, StratumState
+        from hands_lie_detector.integration import solvency_from_band
+
+        def stack_for(state):
+            return GatedStack({
+                Stratum.ENVIRONMENT: StratumState(Stratum.ENVIRONMENT, 1.0),
+                Stratum.CAPACITY: solvency_from_band(state),
+                Stratum.JOB: StratumState(Stratum.JOB, 1.0, draw=70.0),
+            })
+
+        self.assertGreater(stack_for(HandState.BANDED).output(),
+                           stack_for(HandState.GLASSY).output())
+
+    def test_missing_strata_are_rejected(self):
+        from hands_lie_detector.integration import GatedStack, Stratum, StratumState
+
+        with self.assertRaises(KeyError):
+            GatedStack({Stratum.JOB: StratumState(Stratum.JOB, 1.0, draw=1.0)})
+
+    def test_solvency_outside_unit_range_is_rejected(self):
+        from hands_lie_detector.integration import Stratum, StratumState
+
+        with self.assertRaises(ValueError):
+            StratumState(Stratum.CAPACITY, 1.5)
