@@ -44,6 +44,7 @@ hands-lie-detector/
 │       ├── gated.py              # Layers gate, not add; the reversed arrow
 │       ├── event_log.py          # Dorsal marks: events, not load history
 │       ├── wear.py               # Tribology taxonomy; counterface required
+│       ├── sole.py               # Sole wear audits the job description
 │       └── carve_audit.py        # Retrieval protocol, seam, boundary audit
 ├── scoring-metrics.md            # Main 100-point hand scoring rubric (v0.1)
 ├── feet-lie-detector.md          # Parallel scoring system for feet
@@ -59,6 +60,7 @@ hands-lie-detector/
 ├── contrast-case.md              # What n=1 does; show vs describe; coordinates
 ├── attribution-retrofit.md       # Agent reassignment; weight vs constraint
 ├── wear-taxonomy.md              # Tribology spine; deposit vs draw; two clocks
+├── sole-audit.md                 # Boot wear vs stated job title; four gates bypassed
 ├── tests/                        # unittest suite (zero deps)
 ├── README.md                     # Mission statement and project premise
 ├── requirements.txt              # All dependencies
@@ -139,6 +141,11 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   fabricate / override), four tests that need no ground truth, and the weight vs
   constraint distinction — a prior dilutes with evidence, a required parse slot
   does not, because updating is not an operation it participates in.
+- **sole-audit.md** — The cheapest instrument here and the first that scales past
+  one operator. A job description is AUTHORED; sole wear is DEPOSITED, so the
+  delta between the wear a title predicts and the wear a body left is the gap
+  between the category and the work. Bypasses all four gates at once, needs no
+  consent, and already exists on every working person's feet.
 - **wear-taxonomy.md** — Wear is classified by mechanism, never application, and
   the taxonomy (adhesive/abrasive/fatigue/corrosive/fretting) is already
   domain-blind. Wear is a SYSTEM property, so the tool carries the conjugate
@@ -331,6 +338,15 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   cardinality reduction with the reduction step deleted from the output. False
   binary reduces the option set, welded term reduces two variables to one, narrow
   framework reduces the population — one operation at three layers
+- `sole.audit()` refuses a job title with no stipulated `CategoryPrediction` on
+  file: a category has to make a falsifiable claim about wear before it can be
+  audited, and writing that claim down is the first step of the protocol
+- `sole.SoleReading.inverted_signature` detects heel-preserved / forefoot-
+  destroyed — the inverse of the gait signature, so not walking
+- `sole.SoleReading.time_to_failure_supports_distance_claim` is False when the
+  failure is fatigue-dominant. A short service life is not a mileage reading;
+  treating it as one is the same error shape as reading few photographs as few
+  events
 - `wear.CONJUGATE_PAIRS` completes the counterface move: hands to tool handles,
   feet to boots. `feet-lie-detector.md` reads gait, which is a sampling mismatch
   — a still keeps the pose and discards sequence, variability and perturbation
@@ -424,8 +440,12 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
   they carry opposite signs. See `gated-not-summed.md` and `wear-taxonomy.md`
 - The band thresholds and the tier-2 items need raking light. No frame in the
   specimen series has it, so tier 2 has never actually been measured
-- No counterface has been recorded for any wear observation — no tool handles,
-  no boots
+- No counterface has been recorded for any wear observation — no tool handles.
+  One boot is on record (specimen 007) and it falsifies one category prediction;
+  `CATEGORY_PREDICTIONS` holds exactly one entry
+- The sole audit has no denominator either, but unlike every other gap in this
+  repo it is cheap to build: any worn boot with a stated job title is a data
+  point
 - The four attribution tests in `attribution-retrofit.md` are specced and unrun.
   None needs ground truth; the no-destination test needs no control arm either
 - Scoring rubric and vision heads are additive; they cannot represent the

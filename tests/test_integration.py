@@ -592,3 +592,75 @@ class TestCounterfaces(unittest.TestCase):
         self.assertTrue(caretaking.deposits)
         for mode in caretaking.zone_modes.values():
             self.assertIsNotNone(wear_mode(mode))
+
+
+class TestSoleAudit(unittest.TestCase):
+    """Sole wear audits the job description, because only one of them is authored."""
+
+    @staticmethod
+    def _boot(**kw):
+        from hands_lie_detector.integration import SoleReading, SoleZone, ZoneWear
+        from hands_lie_detector.integration.sole import FailureMode, Severity
+
+        defaults = dict(
+            boot_id="b1",
+            zones={
+                SoleZone.TOE: ZoneWear(SoleZone.TOE, Severity.STRUCTURAL,
+                                       FailureMode.FATIGUE),
+                SoleZone.FOREFOOT_LUGS: ZoneWear(SoleZone.FOREFOOT_LUGS,
+                                                 Severity.HEAVY, FailureMode.ABRASIVE),
+                SoleZone.FLEX_LINE: ZoneWear(SoleZone.FLEX_LINE, Severity.STRUCTURAL,
+                                             FailureMode.FATIGUE),
+                SoleZone.LATERAL_HEEL: ZoneWear(SoleZone.LATERAL_HEEL, Severity.LIGHT,
+                                                FailureMode.ABRASIVE),
+                SoleZone.MEDIAL_HEEL: ZoneWear(SoleZone.MEDIAL_HEEL, Severity.LIGHT,
+                                               FailureMode.ABRASIVE),
+            },
+            service_months=4.0,
+            chemical_exposure=("diesel", "de-icer"),
+            separate_work_footwear=True,
+        )
+        return SoleReading(**{**defaults, **kw})
+
+    def test_heel_preserved_forefoot_destroyed_is_not_walking(self):
+        self.assertTrue(self._boot().inverted_signature)
+        self.assertFalse(self._boot().matches_gait_signature)
+
+    def test_a_walking_pattern_reads_as_walking(self):
+        from hands_lie_detector.integration import SoleZone, ZoneWear
+        from hands_lie_detector.integration.sole import FailureMode, Severity
+
+        walked = self._boot(zones={
+            SoleZone.LATERAL_HEEL: ZoneWear(SoleZone.LATERAL_HEEL, Severity.HEAVY,
+                                            FailureMode.ABRASIVE),
+            SoleZone.FOREFOOT_LUGS: ZoneWear(SoleZone.FOREFOOT_LUGS, Severity.LIGHT,
+                                             FailureMode.ABRASIVE),
+        })
+        self.assertTrue(walked.matches_gait_signature)
+
+    def test_fatigue_dominance_blocks_the_distance_inference(self):
+        boot = self._boot()
+        self.assertFalse(boot.time_to_failure_supports_distance_claim)
+        self.assertIn("fatigued out", boot.mechanism_note())
+
+    def test_the_category_prediction_is_falsified(self):
+        from hands_lie_detector.integration import audit
+
+        result = audit(self._boot(), "driver (as the category describes it)")
+        self.assertTrue(result.category_falsified)
+        self.assertIn("CATEGORY FALSIFIED", result.report())
+        self.assertEqual(result.service_life_shortfall, 20.0)
+
+    def test_a_title_with_no_stated_prediction_cannot_be_audited(self):
+        """The category has to make a falsifiable claim first."""
+        from hands_lie_detector.integration import audit
+
+        with self.assertRaises(KeyError):
+            audit(self._boot(), "welder")
+
+    def test_shared_footwear_is_not_work_attributable(self):
+        self.assertFalse(self._boot(separate_work_footwear=False).work_attributable)
+        self.assertIn("NOT ESTABLISHED",
+                      __import__("hands_lie_detector.integration", fromlist=["audit"])
+                      .audit(self._boot(separate_work_footwear=False),
+                             "driver (as the category describes it)").report())

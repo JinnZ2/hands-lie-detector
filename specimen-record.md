@@ -391,6 +391,47 @@ off a landing gear crank.
 
 ---
 
+## Specimen 007 — the boot, and the category it falsifies
+
+The first specimen in this file read off a **counterface** rather than off
+tissue.
+
+### Observation
+
+| line | mark |
+|---|---|
+| Forefoot and toe: lugs torn and chunked; a transverse crack through the flex line — material split, not merely abraded. | `MEASURED` |
+| Midfoot: shank waffle intact (non-contact in any gait). | `MEASURED` |
+| Heel: lugs defined, edges still present, comparatively fine. | `MEASURED` |
+| Service life to structural failure: four months. Exposure to diesel, hydraulic fluid, de-icer; thermal cycling to a −50°F extreme. | `TESTIMONY` |
+| Separate work footwear, so the record is work-attributable. | `TESTIMONY` |
+| Contact sources: cab rungs, pedal work, catwalk climbing, landing-gear cranking, gravel and diamond plate. | `TESTIMONY` |
+
+### Model's read
+
+| line | mark |
+|---|---|
+| Heel preserved, forefoot destroyed — the **inverse** of the gait signature, which wears lateral heel first at strike and medial forefoot at toe-off. | `OBSERVED` |
+| Therefore not walking: repeated deep flexion under load plus edge loading on narrow surfaces. | `OBSERVED` |
+| Fatigue-dominant, not abrasion-dominant. Four months is fast for abrasion alone; it is not fast for high-cycle flex on a compound whose crack-initiation threshold has been dropped by solvent swelling and cold embrittlement. **The boot did not wear out. It fatigued out.** | `OBSERVED` |
+| Same two-channel structure as the palm — removal versus delamination — on the other end of the body. | `OBSERVED` |
+
+### Residual — and this one is a finding, not a limitation
+
+The category "driver" predicts a nearly unworn sole. That prediction is on the
+record and this boot falsifies it in four months.
+
+Which turns the specimen into an **instrument**: the delta between the wear a
+job title predicts and the wear a body deposited is the gap between what the
+category claims and what happened. See `sole-audit.md`.
+
+It is also the first instrument here that bypasses all four gates at once — no
+transaction, no authorship, no disposition, no narrative — and the first that
+does not need this carrier's own body. Any worn boot with a stated job title is
+a data point.
+
+---
+
 ## The unrun test
 
 This is the repo's core test. It has not been run since the original trial.

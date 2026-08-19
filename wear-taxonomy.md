@@ -109,6 +109,22 @@ declines to emit a load estimate. `DorsalMark` raises on a palmar zone, and
 `ThicknessReading` raises on a dorsal one — the two instruments refuse each
 other's inputs.
 
+### The same two channels on the other end of the body
+
+The palm's pair — material removal versus delamination — is the sole's pair too:
+
+| | palm | sole |
+|---|---|---|
+| removal channel | abrasion of the stratum corneum | lug height loss |
+| separation channel | blister: fatigue delamination | crack initiation at the flex line |
+| driver of the fast one | shear cycles at a fixed contact | flex cycles at the same line |
+
+Which is why a boot can reach structural failure in four months without high
+mileage: the fast channel is fatigue, not abrasion, and solvent exposure plus
+cold cycling lowers its initiation threshold. See `sole-audit.md` — and note
+that this makes time-to-failure useless as a distance proxy, which
+`SoleReading.time_to_failure_supports_distance_claim` enforces.
+
 ### Why dorsal marks cluster in cold work
 
 ```

@@ -90,6 +90,19 @@ from .load_weight import (
     load_share,
     relabel,
 )
+from .sole import (
+    ACTUAL_CONTACT_SOURCES,
+    CATEGORY_PREDICTIONS,
+    CHEMICAL_AGENTS,
+    GAIT_SIGNATURE,
+    CategoryPrediction,
+    FailureMode,
+    JobDescriptionAudit,
+    SoleReading,
+    SoleZone,
+    ZoneWear,
+    audit,
+)
 from .strip import (
     DEFAULT_RENDERINGS,
     MECHANICAL_UNITS,
@@ -113,6 +126,17 @@ from .residual import (
 )
 
 __all__ = [
+    "audit",
+    "ZoneWear",
+    "SoleZone",
+    "SoleReading",
+    "JobDescriptionAudit",
+    "FailureMode",
+    "CategoryPrediction",
+    "GAIT_SIGNATURE",
+    "CHEMICAL_AGENTS",
+    "CATEGORY_PREDICTIONS",
+    "ACTUAL_CONTACT_SOURCES",
     "scar_identifies_mechanism_not_application",
     "deposit_draw_balance",
     "wear_mode",
