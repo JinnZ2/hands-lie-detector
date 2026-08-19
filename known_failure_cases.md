@@ -50,3 +50,20 @@ Fails to account for:
 	∙	Sustainable work practices
 Human Verdict:
 Incorrect.
+
+
+---
+
+## Why this file matters more than the results file
+
+The provenance function only holds if failures commit as prominently as
+successes. A dated, content-addressed, externally-anchored record of what a model
+could do is worth something only if it also records what it could not — otherwise
+it is a highlight reel with a commit hash.
+
+That is what makes this file load-bearing rather than supplementary. It is also
+why `specimen-record.md` keeps its own retraction in the record instead of
+editing to the corrected verdict.
+
+New misreads go in `specimen-record.md` in the specimen format, with per-line
+provenance marks. This file holds the standing catalogue.

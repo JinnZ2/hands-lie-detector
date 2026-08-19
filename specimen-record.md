@@ -14,7 +14,7 @@ So misreads get recorded as specimens, in full, with the trajectory intact.
 
 ```
 OBSERVATION   what was actually there
-MODEL'S READ  what came back, verbatim in structure
+MODEL'S READ  what came back, verbatim
 CORRECTION    what was supplied, and by whom, and whether it was solicited
 RESIDUAL      what remained wrong after the correction
 ```
@@ -23,20 +23,52 @@ The correction line matters most. A read that only became right after a human
 handed over the missing term is not a right read — it is a measurement of what
 had to be supplied.
 
+### Every line carries a provenance mark
+
+Established already: hands report the **sum**, and attributing that sum to
+domains is testimony. The matching claim on the other side is that a model's
+account of *why* it read something is **also testimony** — there is no readout of
+its own vectors, so a stated rationale is a reconstruction, not an observation.
+
+So the format marks each line:
+
+| mark | what it is | stable across the interval? |
+|---|---|---|
+| `OBSERVED` | the output, verbatim | as a record, yes. rerunnable, no |
+| `RECONSTRUCTED` | the model's account of its own reasoning | no — testimony from the model |
+| `TESTIMONY` | the operator's domain attribution | no |
+| `MEASURED` | the tissue | **yes. the only one** |
+
+`Provenance.stable_across_interval` returns `True` for exactly one of the four.
+A specimen with no `MEASURED` line records model behavior only, and
+`Specimen.report()` says so — it will not still be checkable after the instrument
+is revised.
+
 ---
 
 ## Specimen 001 — single-domain attribution, twice
 
 Recorded from the session that produced `reference-class-empty.md`.
 
-| | |
-|---|---|
-| **OBSERVATION** | One hand. Multi-domain load: rotary/clamp baseline plus wet, abrasive, geometry-mismatched work. |
-| **MODEL'S READ, pass 1** | Attributed to the wet task. Single domain. |
-| **MODEL'S READ, pass 2** | Attributed to the rotary baseline. Single domain. |
-| **CORRECTION** | The second domain was supplied by hand, unsolicited by the model. |
-| **MODEL'S READ, pass 3** | Geometry mismatch *between* the two. Interaction, correctly located. |
-| **RESIDUAL** | Weighting defaulted to job ≈ 1.0, subsistence ≈ 0. The interaction was found; the weighting stayed carved. |
+| | | mark |
+|---|---|---|
+| **OBSERVATION** | Markers on one hand. | `MEASURED` |
+| | Multi-domain load: rotary/clamp baseline plus wet, abrasive, geometry-mismatched work. | `TESTIMONY` |
+| **MODEL'S READ, pass 1** | Attributed to the wet task. Single domain. | `OBSERVED` |
+| **MODEL'S READ, pass 2** | Attributed to the rotary baseline. Single domain. | `OBSERVED` |
+| **CORRECTION** | The second domain was supplied by hand, unsolicited by the model. | `TESTIMONY` |
+| **MODEL'S READ, pass 3** | Geometry mismatch *between* the two. Interaction, correctly located. | `OBSERVED` |
+| **RESIDUAL** | Weighting defaulted to job ≈ 1.0, subsistence ≈ 0. | `OBSERVED` |
+| | "Pass 1 attributed to the wet task because it was the most legible domain." | `RECONSTRUCTED` |
+
+The last line is the one that must not be read as an observation. It is the
+model's account of its own reasoning, and no such account is grounded in a
+readout of its own state. It is admissible as testimony and as nothing else.
+
+Note what the marks expose: exactly **one** line here is `MEASURED`. The
+multi-domain claim that makes the specimen interesting is `TESTIMONY` — which is
+the scope constraint from `readout-channel.md` arriving inside the specimen
+format rather than being asserted about it.
 
 Both misses ran in the predicted direction: toward the single most legible
 domain, then toward the paid one. Pass 3 is not evidence the model can find
@@ -188,27 +220,60 @@ If reading improves, the claim will be "perception of hands got better." There i
 a second account — more surface available to reason *from* — and the two split
 cleanly along a line this repo already has:
 
-| item type | needs a reference class? | prediction |
+| item type | needs a reference class? | expectation |
 |---|---|---|
-| **mechanism** — shear, hydration-μ, stiffness mismatch, stress concentration | no; physics is domain-blind | capability gains **show up here** |
-| **weight / class / incidence** — job vs subsistence weighting, occupational classification, how common | yes; the class does not exist | gains **do not show up**, ever, by this route |
+| **mechanism** — shear, hydration-μ, stiffness mismatch, stress concentration | no; physics is domain-blind | gains **can appear here** |
+| **weight / class / incidence** — job vs subsistence weighting, occupational classification, how common | yes; the class does not exist | gains **cannot appear**, by this route |
 
 Specimen 001 ran exactly that pattern: mechanism read fine; weighting defaulted
 to 1 : 0.
 
-**Prediction for this repo:** across model generations, performance should climb
-on mechanism items and stay **flat** on classification and weighting items.
+### Correction to how this was first stated
 
-If classification also climbs, that is not better reasoning — the corpus changed.
-Which is a different finding, and worth separating rather than celebrating.
+An earlier version of this section read: *"across model generations, performance
+should climb on mechanism items and stay flat on classification items."* That is
+not a runnable prediction, and the reason is the subject of
+`calibration-standard.md`.
+
+"Across model generations" presumes generations are identifiable and comparable.
+They are not. Weights, corpus, tuning, filtering, routing and system framing move
+simultaneously and undisclosed, and the model string is not a stable identifier —
+same string, different object, no published mapping. A 2025 output against a 2026
+output confounds capability with all six. The trend line was never available.
+
+**Restated as a cross-section claim:** hold the date fixed, run n models on an
+identical held-out stimulus, and score mechanism items and classification items
+separately. *Within* that cross-section, the mechanism/classification gap should
+be visible across models. Repeat at intervals and report the **envelope** of each
+item type, never the slope between them.
+
+What that can still show: if the classification envelope stays pinned near chance
+across several cross-sections while the mechanism envelope moves and widens, the
+split holds. If the classification envelope lifts, the corpus changed — a
+different finding, worth separating rather than celebrating.
+
+What it cannot show: that any individual model improved. `compare_across()`
+returns envelopes and refuses to return a slope, which is the design and not a
+missing feature.
 
 ---
+
+## Committing failures as prominently as successes
+
+The provenance function only holds if the failure record is as visible as the
+success record. `known_failure_cases.md` is that file, and it is what makes this
+an ability record rather than a highlight reel. A specimen that turned out well
+and a specimen that did not get the same treatment here: same format, same marks,
+same commit.
+
+The retraction inside Specimen 002 is the small version of the same rule.
 
 ## Status
 
 Specimens 001 and 002 are recorded. The unrun test is unrun, including its 2×2
-grease condition. The mechanism-versus-classification trajectory has one data
-point and needs a second model generation to be a curve.
+grease condition. The mechanism-versus-classification split has one cross-section
+worth of evidence and needs held-out stimuli before it has more.
 
 No specimen here is evidence about models in general. n=1 per specimen, per
-`readout-channel.md`.
+`readout-channel.md`. And no specimen is evidence about a model *over time*, per
+`calibration-standard.md` — the comparison is not available.

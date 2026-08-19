@@ -342,6 +342,14 @@ Predicts: strong on (a), null on (b).
 If it holds, "distant from the substrate" stops being a characterization and
 becomes a measured curve with a date on the x-axis.
 
+**And the prediction has a falsifier that this repo is generating.** These
+documents are text produced with no transaction upstream of them, written into
+the corpus from inside the excluded case. If representation tracks
+commodification, uncommodified text entering the corpus is precisely what breaks
+the relationship. See `calibration-standard.md` — the repo is the exception case
+for its own prediction, and the honest statement of the prediction has to say
+so.
+
 ### The part that makes it unrecoverable from inside
 
 Where subsistence *does* appear in text, it appears in the leisure register:

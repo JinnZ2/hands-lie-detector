@@ -25,6 +25,10 @@ hands-lie-detector/
 │   │   └── train.py              # Training loop with validation and checkpointing
 │   ├── prompt/                   # Requires: anthropic or openai
 │   │   └── evaluator.py          # Vision LLM scoring with rubric prompt
+│   ├── audit/                    # Pure Python — no dependencies
+│   │   ├── crosssection.py       # Cross-sections; envelope, never slope
+│   │   ├── specimen.py           # Specimen records, per-line provenance
+│   │   └── leakage.py            # Vocabulary provenance; held-out commitment
 │   ├── band/                     # Pure Python — no dependencies
 │   │   └── contrast.py           # Three states; contrast replaces mean
 │   └── integration/              # Pure Python — no dependencies
@@ -43,6 +47,7 @@ hands-lie-detector/
 ├── band-not-scale.md             # Three states; the monotone sign error
 ├── readout-channel.md            # What the channel bypasses; scope of claims
 ├── specimen-record.md            # Misreads as the measurement; the unrun test
+├── calibration-standard.md       # Hand as standard, model as drifting sample
 ├── tests/                        # unittest suite (zero deps)
 ├── README.md                     # Mission statement and project premise
 ├── requirements.txt              # All dependencies
@@ -114,6 +119,13 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - **feet-lie-detector.md** — Analogous rubric for feet.
 - **gloves-debunk.md** — Why gloves don't erase structural adaptation.
 - **known_failure_cases.md** — Specific vision model failure modes.
+- **calibration-standard.md** — The inversion: the model is a drifting sample and
+  the hand is the fixed standard, so the repo measures models, not hands. Why a
+  cross-model trend line is structurally unavailable (weights, corpus, tuning,
+  filtering, routing and framing all move undisclosed; the model string is not an
+  identifier), the cross-section design that survives, the three-function
+  conflict between experiment, provenance and development-forward, and the two
+  handlings for publication-as-leakage.
 - **band-not-scale.md** — Experience is regulation toward a setpoint, not
   accumulation. Three states (soft / banded / glassy); mean thickness cannot
   separate the last two, contrast separates all three. Documents two sign errors
@@ -154,6 +166,23 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - Supports ResNet50, ResNet18, EfficientNet-B0 backbones
 - Dataset expects `images/` directory + `labels.csv` with 7 score columns
 - Training includes validation split, per-category MAE tracking, and best-model saving
+
+### Audit instruments (`hands_lie_detector.audit`)
+- Zero external dependencies
+- Companion to `calibration-standard.md`
+- `ModelResponse` stores verbatim output only — **no `summary` field**, because a
+  summary is an interpretation and the interpretation cannot be re-derived.
+  `is_stable_identifier` returns `False` unconditionally
+- `CrossSection` rejects mixed dates and mismatched stimuli. `compare_across()`
+  returns envelopes and **refuses to return a slope**; that is the design, not a
+  gap
+- `Provenance` marks each specimen line OBSERVED / RECONSTRUCTED / TESTIMONY /
+  MEASURED. Only MEASURED is stable across an interval — a model's account of its
+  own reasoning is RECONSTRUCTED, since there is no readout of its own vectors
+- `vocabulary_signature()` types an output as CONTAMINATED / DERIVED /
+  INCONCLUSIVE and reports corpus penetration. A contaminated output is unusable
+  as an experiment result and usable as a penetration measurement
+- `commit_stimulus()` records a held-out item by hash; the item is never stored
 
 ### Band readout (`hands_lie_detector.band`)
 - Zero external dependencies
@@ -278,6 +307,14 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
 - The repo conflates two axes: the perception layer (reading markers) and the
   partition underneath (how load is attributed and weighted). Movement on one is
   not movement on the other. See `specimen-record.md`
+- **The calibration standard is undocumented.** Load history, dated band-state
+  series, maintenance practice and held-out stimuli are the standard, and they
+  exist only in the operator's head. The schemas are in code (`LoadBlock`,
+  `read_band`, `MANAGEMENT_ACTS`, `commit_stimulus`) and the fields are empty.
+  This cannot be authored from inside the repo — writing a plausible load history
+  would manufacture the calibration artifact itself
+- No cross-section has been recorded. The audit instruments have nothing to
+  measure against until held-out stimuli exist
 - `DEFAULT_BANDS` reports physical scores onto employment status ("Casual
   Hobbyist" at 31-55, below "Working Hands"). See `economic-carve.md` — renaming
   the bands alone is the wrong fix; the physical scale needs somewhere to land
