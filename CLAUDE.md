@@ -23,12 +23,17 @@ hands-lie-detector/
 │   │   ├── classifier.py         # Multi-head CNN (ResNet50/18, EfficientNet-B0)
 │   │   ├── dataset.py            # Image dataset loader with labels CSV
 │   │   └── train.py              # Training loop with validation and checkpointing
-│   └── prompt/                   # Requires: anthropic or openai
-│       └── evaluator.py          # Vision LLM scoring with rubric prompt
+│   ├── prompt/                   # Requires: anthropic or openai
+│   │   └── evaluator.py          # Vision LLM scoring with rubric prompt
+│   └── integration/              # Pure Python — no dependencies
+│       ├── domains.py            # Domain zone/load-mode signatures, channels
+│       ├── residual.py           # Residual-zone readout (Test C), conflicts
+│       └── dissociation.py       # Double-dissociation discriminator (Test A)
 ├── scoring-metrics.md            # Main 100-point hand scoring rubric (v0.1)
 ├── feet-lie-detector.md          # Parallel scoring system for feet
 ├── gloves-debunk.md              # Addresses the "I wore gloves" excuse
 ├── known_failure_cases.md        # Catalogues specific vision model failures
+├── reference-class-empty.md      # Why multi-domain load has no reference class
 ├── README.md                     # Mission statement and project premise
 ├── requirements.txt              # All dependencies
 ├── setup.py                      # Package setup with optional extras
@@ -99,6 +104,11 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - **feet-lie-detector.md** — Analogous rubric for feet.
 - **gloves-debunk.md** — Why gloves don't erase structural adaptation.
 - **known_failure_cases.md** — Specific vision model failure modes.
+- **reference-class-empty.md** — Why the evidence base for multi-domain load is
+  structurally empty (enrollment, confound control, combinatorics, sampling
+  frame), why the resulting prior error is directional rather than noisy, and a
+  within-subject discriminator for whether integration is one quantity or a
+  family. Also audits where this repo implements the same cuts.
 
 ## Architecture Notes
 
@@ -114,6 +124,25 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - Supports ResNet50, ResNet18, EfficientNet-B0 backbones
 - Dataset expects `images/` directory + `labels.csv` with 7 score columns
 - Training includes validation split, per-category MAE tracking, and best-model saving
+
+### Integration readout (`hands_lie_detector.integration`)
+- Zero external dependencies
+- Companion to `reference-class-empty.md`; sits alongside the scoring module
+  rather than replacing it
+- `ScoreEvaluator` is additive by construction (`sum` of 7 categories), so no
+  two categories can interact. This module keeps the non-additive part as its
+  own quantity: `read_hand()` returns residual zones — markers no enrolled
+  domain predicts — and never redistributes them across enrolled domains
+- `geometry_conflicts()` finds zones two domains load in incompatible modes;
+  that quantity exists only in the pair, so a domain-partitioned cohort deletes
+  it by construction
+- `double_dissociation()` implements the n=1 within-subject discriminator;
+  movement is judged against the carrier's own baseline variability, which is
+  why no cohort is needed
+- **All default signature tables are stipulated from mechanism, not fitted to
+  data.** `is_evidence_based` returns `False` for every shipped default, and the
+  provenance travels into printed reports. Do not let these harden into
+  evidence — that is the failure the accompanying document is about
 
 ### Prompt evaluator (`hands_lie_detector.prompt`)
 - Sends the full rubric as a structured prompt to vision LLMs
@@ -178,6 +207,11 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
 - `scoring-metrics.md` has duplicate content (lines 1-108 and 112-208)
 - Future expansions in README (clean_but_used, callus_memory, etc.) not yet developed
 - Vision classifier needs labeled training data to be useful — no dataset included yet
+- Scoring rubric and vision heads are additive; they cannot represent the
+  integration term. See `reference-class-empty.md` for what this costs and for
+  the specific directional error in `WEAR_LOCALIZATION` (multi-domain wear reads
+  as unlocalized and scores toward the cosplayer band)
+- H1 vs H2 in `reference-class-empty.md` is open; no discriminator has been run
 
 ## Git Workflow
 
