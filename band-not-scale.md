@@ -47,6 +47,68 @@ Mean thickness cannot separate state 2 from state 3. Both are thick.
 
 ---
 
+## RETRACTION — contrast is not a skill proxy
+
+*(Added later, and it invalidates the strongest claim this document originally
+made.)*
+
+The version below specced dispersion of the thickness map as a proxy for
+competence: "high contrast = the working hand." That is wrong.
+
+```
+ROTARY / CLAMP    one repeated geometry
+                  -> sharp, localized plates, HIGH dispersion
+
+FIREWOOD          every piece a different diameter, bark, weight, balance;
+                  a DISTRIBUTION of geometries
+                  -> diffuse, spread deposit, LOW dispersion
+```
+
+Same hours, same force, same competence. Opposite score.
+
+A fixed-geometry specialist and a variable-geometry generalist would have been
+ranked as if one were skilled and the other soft — **the desk-hands error
+re-entering through the replacement metric**, and aimed precisely at the
+multi-domain case this repo exists for.
+
+**Dispersion measures the geometric CONCENTRATION of the load history. Nothing
+else.** The skill claim is removed from the code and from the scale.
+
+### What that costs
+
+The three-state model does not survive intact. If low dispersion is what a
+variable-geometry load history looks like, then low dispersion is no longer
+diagnostic of saturation either — **a generalist and a glassy hand produce the
+same thickness signature.** Both are thick, both are even.
+
+So the map yields three descriptive states, one of which is explicitly
+ambiguous:
+
+| state | mean | concentration | what it means |
+|---|---|---|---|
+| `soft` | low | low | no load history deposited |
+| `concentrated` | any | high | the contact set repeated |
+| `uniform_thick` | high | low | **AMBIGUOUS**: generalist *or* saturated |
+
+And the separator is not an image. It is a functional **sensing test**.
+`read_band()` returns `band position = unresolved` until one is supplied, and
+says why.
+
+### The sensing test, and why it is a real ceiling
+
+Two probes in one hand, thumb and fingers separating them, one tip landed on a
+standoff, sustained static hold with continuous micro-correction.
+
+- force required: near zero
+- precision required: sub-millimetre, unsupported
+- feedback channel: fingertip only
+
+**Not performable with saturated hands.** Not harder — not available. So "too
+calloused to sense" is not a comfort limit or a preference. It is a **capability
+ceiling**, and that makes it a usable discriminator rather than a claim.
+
+---
+
 ## The primary feature
 
 ```
@@ -54,8 +116,10 @@ metric ≈ spatial variance / edge sharpness of the thickness map
          across the palmar surface
 ```
 
-Replaces mean. Not added alongside it as an eighth category — the additive form
-is what let a monotone composite dominate in the first place.
+Replaces mean as the *descriptive* feature. Not added alongside it as an eighth
+category — the additive form is what let a monotone composite dominate in the
+first place. But read it as concentration, per the retraction above, not as
+quality.
 
 ### Why it works, and why it's hard to fake
 
@@ -124,6 +188,30 @@ Promoted from "future" to the core test in `README.md`.
 
 ---
 
+## Instrument limit — the metric needs raking light
+
+The thickness map is not measurable from ordinary field photographs. Backlit
+frames and overhead-flat frames both fail: under either, thickness, boundary
+sharpness and contrast cannot be resolved at all.
+
+As specced, this metric does not run on the kind of image the series actually
+contains. `ThicknessReading.measurable` returns `False` for anything but
+`LightCondition.RAKING`, and `report()` prints the failure above the state
+rather than below it.
+
+So the scale needs a tier split:
+
+| tier | requires | items |
+|---|---|---|
+| **1** | any light, phone-shootable | pruning present/absent · lesion present/absent · staining · gross girth · nail state |
+| **2** | oblique light, one added protocol line | thickness map · boundary sharpness · concentration |
+
+Tier 1 alone separates a wet-regime frame from a dry-regime one cleanly. The fix
+for tier 2 costs nothing: single-source side light, hand flat, same angle each
+time.
+
+---
+
 ## Executable
 
 ```python
@@ -141,16 +229,17 @@ print(interpret_acute_damage(readout.state, has_acute_lesion=True))
 On three stipulated maps — one per state — the two readings diverge exactly where
 they should:
 
-| map | mean | dispersion | band state | monotone score |
+| map | mean | concentration | map state | monotone score |
 |---|---|---|---|---|
-| soft | 0.103 | 0.014 | `soft_uniform` | 10.3 |
-| banded | 0.564 | 0.242 | `banded` | **56.4** |
-| glassy | 0.813 | 0.017 | `thick_glassy` | **81.3** |
+| soft | 0.103 | 0.014 | `soft` | 10.3 |
+| fixed-geometry specialist | 0.564 | 0.242 | `concentrated` | 56.4 |
+| variable-geometry generalist | 0.497 | 0.037 | `uniform_thick` | 49.7 |
+| saturated | 0.813 | 0.017 | `uniform_thick` | **81.3** |
 
-The monotone scorer ranks the glassy hand 25 points above the working one.
-`BandReadout.monotone_disagrees` flags it, and `report()` prints the sign error
-rather than burying it. A test asserts the inversion, so the demonstration cannot
-quietly stop working.
+Two things to read off that table. The monotone scorer still ranks the saturated
+hand top — the original sign error, unchanged. And rows three and four land in
+the *same state*: the generalist and the saturated hand are not separable by
+thickness, which is the retraction above, shown.
 
 `monotone_score()` is a stand-in for the shape of the seven-category rubric, not
 the rubric itself — every category is monotone in thickness and the total is

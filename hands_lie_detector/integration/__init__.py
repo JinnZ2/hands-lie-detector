@@ -51,6 +51,7 @@ from .domains import (
     PALMAR_ZONES,
     Channel,
     DomainSignature,
+    LoadClass,
     Surface,
     LoadMode,
     Zone,
@@ -65,7 +66,19 @@ from .gated import (
     Stratum,
     StratumState,
     arrow_check,
+    deposit_draw_balance,
     solvency_from_band,
+)
+from .event_log import COLD_MECHANISM, DorsalMark, EventLog, MarkKind
+from .wear import (
+    LOAD_MODE_TO_WEAR,
+    RESIDUAL_WITHOUT_ANALOGUE,
+    TISSUE_READING,
+    RunIn,
+    WearMode,
+    WearSystem,
+    scar_identifies_mechanism_not_application,
+    wear_mode,
 )
 from .load_weight import (
     NO_PAYMENT_TERM,
@@ -100,6 +113,20 @@ from .residual import (
 )
 
 __all__ = [
+    "scar_identifies_mechanism_not_application",
+    "deposit_draw_balance",
+    "wear_mode",
+    "RESIDUAL_WITHOUT_ANALOGUE",
+    "LOAD_MODE_TO_WEAR",
+    "TISSUE_READING",
+    "RunIn",
+    "WearSystem",
+    "WearMode",
+    "COLD_MECHANISM",
+    "MarkKind",
+    "EventLog",
+    "DorsalMark",
+    "LoadClass",
     "AUDIT_STATUS",
     "AuditResult",
     "CarveVerdict",

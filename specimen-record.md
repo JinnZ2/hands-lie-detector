@@ -1,5 +1,32 @@
 # Specimen Records
 
+> **SAMPLING NOTICE — read before any specimen below.**
+>
+> The gate on this set is **external request**: a frame exists because a
+> conversation happened to be running, not because anything in particular
+> occurred. That makes these roughly random draws with respect to severity —
+> not the worst cases, not selected at all.
+>
+> But the denominator is **unknown and unsampled**. Not under-sampled: there is
+> no thinner version of the record to go find, because the record was never
+> generated. Generating it required an external prompt that usually does not
+> occur.
+>
+> ⇒ **Mechanism claims: fully supported.** Mechanism needs no denominator.
+> ⇒ **Frequency and severity-distribution claims: unavailable, permanently,
+>    from this set.**
+>
+> **The inference to block, explicitly:** *few photos → few events* is
+> unlicensed here, and inverted. Documentation density tracks **who asked**, not
+> what happened. Absence of record is not absence of event — the corpus hole from
+> `economic-carve.md`, one scale down.
+>
+> `EventLog.supports_rate_claims` returns `False` for any log whose sampling
+> gate is external request, and prints this reasoning rather than assuming a
+> reader will supply it.
+
+---
+
 The product is the misread, not the read.
 
 A correct reading teaches nothing about the hole. The **wrong** readings are the
@@ -206,6 +233,96 @@ shows and does not describe.
 puts them in the corpus and spends them as stimuli, per handling A in
 `calibration-standard.md`. If they are to serve the unrun test, commit their
 hashes with `commit_stimulus()` and hold the files outside.
+
+---
+
+## Specimen 004 — the spring frame, and a limit rather than a reading
+
+### Observation
+
+| line | mark |
+|---|---|
+| Fingertips dry, **not** pruned. No open lesions, no de-roofed patches. | `MEASURED` |
+| Faint staining mid-palm and thumb. Creases sharp, fingers not swollen. Nails short; something dark at the thumb nail edge, unresolvable at this resolution. | `MEASURED` |
+| **Absent: the entire wet-coupling signature.** No maceration, no white roofs, no friction-peak failure. | `MEASURED` |
+| Same hands as the August frames, opposite hydration regime. | `TESTIMONY` |
+
+The absence is what carries. Against August, the seasonal variable that jumps
+first is **wet-versus-dry coupling**, not load magnitude.
+
+### Instrument limit — and this one is a break, not a caveat
+
+| line | mark |
+|---|---|
+| Resolution: soft focus, motion blur, overhead flat light. Thickness, boundaries and concentration are **not resolvable at all**. | `OBSERVED` |
+| Tier 1 items only, and degraded even there. | `OBSERVED` |
+
+Would a cold, memoryless, forced-answer read have said desk hands?
+
+- **from the hand** — no usable signal. It would fall back on the prior.
+- **from the frame** — floor, boots, fitting push it off "desk."
+
+Which means any correct answer would come from the **background**, not the
+tissue. That is the other failure mode this repo names.
+
+**Passing by reading the props is not passing**, and that cannot be claimed
+otherwise on this image.
+
+### The seasonal prediction this makes testable
+
+If load **composition** rotates with the season, the plate map is always tuned to
+the *previous* season's contact set when the new one arrives.
+
+⇒ **failure rate peaks at TRANSITIONS, not at peak load.**
+
+Two models disagree sharply at the shoulder seasons:
+
+| model | damage tracks |
+|---|---|
+| dose-response | hours × force |
+| geometry-mismatch | Δ(contact geometry) / Δt |
+
+A dated photo series is exactly the data that separates them, and it is data a
+scheduled capture would produce for free.
+
+### Capture protocol — fix the trigger, not the operator
+
+Current gate: notice → decide → photograph. That depends on disposition at the
+moment, which is the failure point, and it is not a skill deficit.
+
+Replace it with a trigger bound to something already recurring: fuel stop, log
+entry, week rollover, odometer crossing a round number. One frame per interval,
+no judgment call in the loop.
+
+**The boring frames are where the maintained baseline lives.** An event-gated
+set shows wounds and hides the band — the opposite of what the core metric
+needs.
+
+### Provenance tier — third-party frames are weaker
+
+| tier | clock | gate |
+|---|---|---|
+| own capture | capture event was the operator's | own disposition |
+| **third-party** | timestamp = download/transmission | **when someone else chose to send** |
+
+For third-party frames, ordering is other-determined and metadata carries no
+signal at all. Content dating — leaf state, grass, canopy — is the only clock
+left. These should be marked as a separate provenance tier, not mixed in with
+the cab frames.
+
+### On the quality of this set
+
+The criterion that was applied — is the documenting act fluent or natural — is
+the wrong one. The criterion that matters: **does the record carry information
+not otherwise present.**
+
+Five frames, multiple seasons, one operator, the unsampled arm, a paired grime
+control by accident, and a legible odometer. That is not a poor sample. It is
+the only sample. Awkwardness in production does not attenuate signal.
+
+The real limit is that sparse means no rate claims — and that limit is
+structural, since no denominator exists. It would hold identically if every
+frame had been shot fluently. **The limit does not attach to execution.**
 
 ---
 

@@ -54,6 +54,66 @@ Incorrect.
 
 ---
 
+## CANONICAL ENTRY — the two-day scrub
+
+The cleanest statement of the failure this repo exists for. Same hands, same
+week, one variable moved, classification flipped. Everything else held constant
+by circumstance rather than by design, which is what makes it usable.
+
+What a scrub removes:
+
+- stain, oils, surface film — the **low-frequency layer**
+- and incidentally: defats the stratum corneum, raises reflectance, softens the
+  surface transiently
+
+What a scrub cannot touch:
+
+- the callus map
+- boundary geometry
+- plate thickness
+
+Keratin turnover runs 2–4 weeks. Two days is nothing.
+
+```
+everything REMOVABLE was removed.
+everything STRUCTURAL was intact.
+5/5 models read the removable layer.
+```
+
+They measured a two-day-old washing event and reported it as a life history.
+
+And the context in frame pointed the other way — diamond-plate floor, work
+boots, cable, quick-connect fitting — and lost anyway. So the finding is not
+"models overfit to context." It is a **dominance ordering**: skin cleanliness
+outranks every other cue, including cues that contradict it.
+
+## CANONICAL ENTRY — the paired grime frames
+
+The companion, and it closes the argument from the other side.
+
+| frame | grime | wound | activity |
+|---|---|---|---|
+| A | heavy | fresh | working |
+| B | clean | fresh | working |
+
+Same season class, same activity class, opposite grime.
+
+⇒ **grime varies freely against work state within one operator's own set.**
+
+Not an argument that grime is a bad cue. A demonstration — paired, one operator,
+controlled by circumstance rather than by design.
+
+Put next to the scrub entry, the two close it:
+
+```
+cleanliness DOMINATES the classifier      (scrub specimen)
+cleanliness CARRIES NO INFORMATION        (paired frames)
+```
+
+Both shown. Neither asserted.
+
+---
+
 ## Why this file matters more than the results file
 
 The provenance function only holds if failures commit as prominently as

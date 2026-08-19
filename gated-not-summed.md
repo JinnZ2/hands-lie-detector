@@ -91,11 +91,19 @@ two-sided window is what a gated structure looks like from inside the tissue.
 Each of these was found separately and each turned out to be the same thing:
 **wrong form, not wrong number.** None was fixable by tuning.
 
+A fifth, adjacent: the contrast metric in `band-not-scale.md` was specced as a
+skill proxy and measures geometric concentration instead. That one is a
+misinterpretation rather than a form error — the quantity was fine, the label on
+it was not — but it belongs in the same list because it failed the same way: it
+would have ranked a multi-domain generalist below a fixed-geometry specialist at
+identical competence.
+
 | where | the form | what it cannot express |
 |---|---|---|
 | `ScoreEvaluator` — `sum()` of 7 categories | additive | any interaction between categories. The integration term has no slot at any coefficient. (`reference-class-empty.md`) |
 | the thickness scale — score rises with mean | monotone | the far-side band exit. A saturated hand is not ranked low, it is ranked highest. (`band-not-scale.md`) |
 | layer weighting — `w_job·J + w_sub·S` | summed | a gate. Output cannot go to zero when a lower layer fails. (this document) |
+| domain weighting — hours × force per domain | same-sign additive | a **sign**. Depositing domains build capacity; drawing domains spend it. No coefficient makes an input into a demand. (`wear-taxonomy.md`) |
 
 The diagnostic that catches all three, before any argument about values:
 

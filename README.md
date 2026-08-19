@@ -10,8 +10,16 @@ Dirt is temporary.
 Skin memory is persistent.
 
 Problem:
-Vision models overfit to grime, tools, and context.
-They underweight texture, wear localization, and adaptation.
+SKIN CLEANLINESS OUTRANKS ALL OTHER CUES — including context that contradicts it.
+
+Not a general context-overfit. A specific dominance ordering, with surface
+grime at the top. In the scrubbed specimen the context was present and pointed
+correctly — diamond-plate floor, work boots, cable, quick-connect fitting — and
+the classification still flipped when the stain came off. See
+known_failure_cases.md.
+
+That is a stronger and more falsifiable claim than "models overfit to context,"
+and it is derived from a specimen rather than asserted.
 
 Goal:
 Distinguish:

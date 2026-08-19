@@ -86,6 +86,35 @@ class LoadMode(str, Enum):
     MACERATION = "maceration"     # prolonged wet exposure, softening
 
 
+class LoadClass(str, Enum):
+    """Which side of the ledger a domain sits on.
+
+    The third functional-form error in this stack, after weights and gates: an
+    hours-weighted model puts these on the same axis as parallel inputs, when
+    physically they have opposite signs.
+
+        DEPOSIT         large force, large contact, cyclic.
+                        Builds plate. Consumes tissue. WRITES the map.
+        DRAW_SPEND      near-zero force, small radius, isometric.
+                        Deposits nothing. SPENDS the sensing capacity that the
+                        depositing domains' band position determines.
+        DRAW_SUPPRESS   sustained high-frequency input.
+                        Knocks the sensing channel down directly, without any
+                        callus change. Recovers on its own timescale.
+
+    A domain can be both: an open-station tractor deposits plate while
+    suppressing sensing, so plate map and band position DECOUPLE during it.
+    """
+
+    DEPOSIT = "deposit"
+    DRAW_SPEND = "draw_spend"
+    DRAW_SUPPRESS = "draw_suppress"
+
+    @property
+    def is_draw(self) -> bool:
+        return self is not LoadClass.DEPOSIT
+
+
 class Channel(str, Enum):
     """Candidate decomposition channels for integration (H2 in the analysis).
 
@@ -144,8 +173,22 @@ class DomainSignature:
     name: str
     zone_modes: dict[Zone, LoadMode]
     channel_demand: dict[Channel, float] = field(default_factory=dict)
+    load_classes: frozenset[LoadClass] = frozenset({LoadClass.DEPOSIT})
     provenance: str = STIPULATED
     notes: str = ""
+
+    @property
+    def deposits(self) -> bool:
+        return LoadClass.DEPOSIT in self.load_classes
+
+    @property
+    def draws(self) -> bool:
+        return any(c.is_draw for c in self.load_classes)
+
+    @property
+    def decouples_map_from_band(self) -> bool:
+        """True when a domain deposits plate AND suppresses sensing at once."""
+        return self.deposits and LoadClass.DRAW_SUPPRESS in self.load_classes
 
     @property
     def zones(self) -> frozenset[Zone]:
@@ -157,12 +200,24 @@ class DomainSignature:
         return self.provenance != STIPULATED
 
 
-def _sig(name: str, zone_modes: dict[Zone, LoadMode], **demand: float) -> DomainSignature:
+def _sig(
+    name: str,
+    zone_modes: dict[Zone, LoadMode],
+    load_classes: frozenset[LoadClass] = frozenset({LoadClass.DEPOSIT}),
+    **demand: float,
+) -> DomainSignature:
     return DomainSignature(
         name=name,
         zone_modes=zone_modes,
         channel_demand={Channel(k): v for k, v in demand.items()},
+        load_classes=load_classes,
     )
+
+
+DEPOSIT = frozenset({LoadClass.DEPOSIT})
+SPEND = frozenset({LoadClass.DRAW_SPEND})
+SUPPRESS = frozenset({LoadClass.DRAW_SUPPRESS})
+DEPOSIT_AND_SUPPRESS = frozenset({LoadClass.DEPOSIT, LoadClass.DRAW_SUPPRESS})
 
 
 DEFAULT_DOMAINS: dict[str, DomainSignature] = {
@@ -175,6 +230,7 @@ DEFAULT_DOMAINS: dict[str, DomainSignature] = {
                 Zone.PALM_BELOW_INDEX: LoadMode.VIBRATION,
                 Zone.BASE_OF_FINGERS: LoadMode.COMPRESSION,
             },
+            DEPOSIT_AND_SUPPRESS,
             contact_geometry=0.8, timing=0.4, recovery_budget=0.5, attention=0.6,
         ),
         _sig(
@@ -220,6 +276,7 @@ DEFAULT_DOMAINS: dict[str, DomainSignature] = {
                 Zone.THUMB_PAD: LoadMode.COMPRESSION,
                 Zone.INDEX_SIDE: LoadMode.ABRASION,
             },
+            SPEND,
             contact_geometry=0.6, timing=0.2, recovery_budget=0.2, attention=0.9,
         ),
         _sig(
@@ -230,6 +287,34 @@ DEFAULT_DOMAINS: dict[str, DomainSignature] = {
                 Zone.THUMB_CROTCH: LoadMode.COMPRESSION,
             },
             contact_geometry=0.5, timing=0.7, recovery_budget=0.6, attention=0.5,
+        ),
+        _sig(
+            "probe_work",
+            {Zone.FINGERTIP_PADS: LoadMode.COMPRESSION, Zone.THUMB_PAD: LoadMode.COMPRESSION},
+            SPEND,
+            contact_geometry=0.9, timing=0.1, recovery_budget=0.1, attention=1.0,
+        ),
+        _sig(
+            "chainsaw",
+            {
+                Zone.ACROSS_PALM_CREASE: LoadMode.VIBRATION,
+                Zone.BASE_OF_FINGERS: LoadMode.VIBRATION,
+                Zone.THUMB_CROTCH: LoadMode.COMPRESSION,
+            },
+            DEPOSIT_AND_SUPPRESS,
+            contact_geometry=0.4, timing=0.6, recovery_budget=0.8, attention=0.7,
+        ),
+        _sig(
+            "firewood_handling",
+            {
+                Zone.ACROSS_PALM_CREASE: LoadMode.ABRASION,
+                Zone.BASE_OF_FINGERS: LoadMode.COMPRESSION,
+                Zone.HEEL_OF_PALM: LoadMode.IMPACT,
+                Zone.OUTER_PALM_EDGE: LoadMode.ABRASION,
+                Zone.PALM_BELOW_INDEX: LoadMode.SHEAR,
+            },
+            DEPOSIT,
+            contact_geometry=0.2, timing=0.5, recovery_budget=0.8, attention=0.4,
         ),
         _sig(
             "keyboard",

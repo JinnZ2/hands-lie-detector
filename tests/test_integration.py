@@ -322,29 +322,37 @@ class TestGatedForm(unittest.TestCase):
 
     def test_band_maintenance_is_capacity_solvency(self):
         """Both exits from the band are insolvency, for different reasons."""
-        from hands_lie_detector.band import HandState
+        from hands_lie_detector.band import BandPosition
         from hands_lie_detector.integration import solvency_from_band
 
-        banded = solvency_from_band(HandState.BANDED).solvency
-        glassy = solvency_from_band(HandState.GLASSY).solvency
-        soft = solvency_from_band(HandState.SOFT).solvency
-        self.assertGreater(banded, glassy)
-        self.assertGreater(banded, soft)
+        in_band = solvency_from_band(BandPosition.IN_BAND).solvency
+        saturated = solvency_from_band(BandPosition.OUT_SATURATED).solvency
+        soft = solvency_from_band(BandPosition.OUT_SOFT).solvency
+        self.assertGreater(in_band, saturated)
+        self.assertGreater(in_band, soft)
+
+    def test_an_unresolved_band_position_is_not_solvent(self):
+        """The map alone cannot establish solvency. Unresolved is not solvent."""
+        from hands_lie_detector.band import BandPosition
+        from hands_lie_detector.integration import solvency_from_band
+
+        self.assertEqual(solvency_from_band(BandPosition.UNRESOLVED).solvency, 0.0)
 
     def test_saturation_spends_capacity_to_fund_near_term_output(self):
-        from hands_lie_detector.band import HandState
-        from hands_lie_detector.integration import GatedStack, Stratum, StratumState
-        from hands_lie_detector.integration import solvency_from_band
+        from hands_lie_detector.band import BandPosition
+        from hands_lie_detector.integration import (
+            GatedStack, Stratum, StratumState, solvency_from_band,
+        )
 
-        def stack_for(state):
+        def stack_for(position):
             return GatedStack({
                 Stratum.ENVIRONMENT: StratumState(Stratum.ENVIRONMENT, 1.0),
-                Stratum.CAPACITY: solvency_from_band(state),
+                Stratum.CAPACITY: solvency_from_band(position),
                 Stratum.JOB: StratumState(Stratum.JOB, 1.0, draw=70.0),
             })
 
-        self.assertGreater(stack_for(HandState.BANDED).output(),
-                           stack_for(HandState.GLASSY).output())
+        self.assertGreater(stack_for(BandPosition.IN_BAND).output(),
+                           stack_for(BandPosition.OUT_SATURATED).output())
 
     def test_missing_strata_are_rejected(self):
         from hands_lie_detector.integration import GatedStack, Stratum, StratumState
@@ -395,3 +403,98 @@ class TestDorsalSurface(unittest.TestCase):
                      Zone.DORSAL_PHALANX):
             for neighbour in ADJACENCY[zone]:
                 self.assertIs(neighbour.surface, Surface.DORSAL, f"{zone}->{neighbour}")
+
+
+class TestEventLog(unittest.TestCase):
+    """Dorsal marks are events, not load history. Different instrument, clock."""
+
+    def test_the_log_never_carries_load_history(self):
+        from hands_lie_detector.integration import EventLog
+
+        self.assertFalse(EventLog().carries_load_history)
+
+    def test_palmar_zones_are_refused(self):
+        from hands_lie_detector.integration import DorsalMark, Zone
+
+        with self.assertRaises(ValueError):
+            DorsalMark(Zone.THUMB_CROTCH, "2026-01-05")
+
+    def test_external_request_gating_blocks_rate_claims(self):
+        from hands_lie_detector.integration import DorsalMark, EventLog, Zone
+
+        log = EventLog(
+            marks=[DorsalMark(Zone.DORSAL_METACARPAL, "2026-01-05")],
+            sampling_gate="external request during a phone call",
+        )
+        self.assertFalse(log.supports_rate_claims)
+        self.assertIn("NOT LICENSED", log.report())
+        self.assertIn("few marks does not mean few events", log.report())
+
+    def test_an_unstated_gate_also_blocks_rate_claims(self):
+        from hands_lie_detector.integration import EventLog
+
+        self.assertFalse(EventLog().supports_rate_claims)
+
+    def test_conditions_not_load_are_what_the_log_reports(self):
+        from hands_lie_detector.integration import DorsalMark, EventLog, MarkKind, Zone
+
+        log = EventLog(marks=[
+            DorsalMark(Zone.DORSAL_METACARPAL, "2026-01-05", MarkKind.LACERATION),
+            DorsalMark(Zone.DORSAL_PHALANX, "2026-01-19", MarkKind.SPLIT),
+        ])
+        signature = " ".join(log.condition_signature())
+        self.assertIn("edge density", signature)
+        self.assertIn("elasticity", signature)
+
+
+class TestWearTaxonomy(unittest.TestCase):
+    def test_every_load_mode_maps_to_a_standard_wear_mode(self):
+        from hands_lie_detector.integration import LOAD_MODE_TO_WEAR
+        from hands_lie_detector.integration.domains import LoadMode
+
+        for mode in LoadMode:
+            self.assertIn(mode, LOAD_MODE_TO_WEAR)
+
+    def test_a_hand_without_a_counterface_is_half_a_specimen(self):
+        from hands_lie_detector.integration import WearSystem
+
+        self.assertFalse(WearSystem("across_palm_crease").is_complete_specimen)
+        self.assertTrue(
+            WearSystem("across_palm_crease", counterface="rope").is_complete_specimen
+        )
+
+    def test_the_residual_without_analogue_is_stated_in_code(self):
+        from hands_lie_detector.integration import RESIDUAL_WITHOUT_ANALOGUE
+
+        self.assertIn("remodels", RESIDUAL_WITHOUT_ANALOGUE.lower())
+
+
+class TestDepositDrawSign(unittest.TestCase):
+    """Third form error in the stack: weights, gates, and now sign."""
+
+    def test_draw_domains_deposit_nothing(self):
+        from hands_lie_detector.integration import DEFAULT_DOMAINS, LoadClass
+
+        probe = DEFAULT_DOMAINS["probe_work"]
+        self.assertFalse(probe.deposits)
+        self.assertTrue(probe.draws)
+        self.assertIn(LoadClass.DRAW_SPEND, probe.load_classes)
+
+    def test_some_domains_deposit_and_suppress_at_once(self):
+        from hands_lie_detector.integration import DEFAULT_DOMAINS
+
+        self.assertTrue(DEFAULT_DOMAINS["chainsaw"].decouples_map_from_band)
+        self.assertFalse(DEFAULT_DOMAINS["shovel_haul"].decouples_map_from_band)
+
+    def test_the_balance_names_the_sign_problem(self):
+        from hands_lie_detector.integration import deposit_draw_balance
+
+        report = deposit_draw_balance(["rotary_hand_tool", "probe_work"])
+        self.assertIn("opposite signs", report)
+        self.assertIn("DECOUPLING", report)
+
+    def test_variable_geometry_domain_spreads_across_many_zones(self):
+        """firewood_handling is the case that broke the contrast metric."""
+        from hands_lie_detector.integration import DEFAULT_DOMAINS
+
+        self.assertGreaterEqual(len(DEFAULT_DOMAINS["firewood_handling"].zones), 5)

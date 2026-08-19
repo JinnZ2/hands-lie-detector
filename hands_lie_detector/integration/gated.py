@@ -183,8 +183,8 @@ def arrow_check() -> str:
     return "\n".join(lines)
 
 
-def solvency_from_band(band_state, near_term_output: float = 1.0) -> StratumState:
-    """Read capacity solvency off a band state.
+def solvency_from_band(position, near_term_output: float = 1.0) -> StratumState:
+    """Read capacity solvency off a resolved BAND POSITION.
 
     Capacity is the load-bearing ASSET, not the output. Running hands to
     saturation converts capacity into near-term output — spending the
@@ -192,19 +192,69 @@ def solvency_from_band(band_state, near_term_output: float = 1.0) -> StratumStat
     upkeep alongside the work; it is the same operation as keeping the lower
     layer solvent.
 
-    Both sides of the band are insolvency, for different reasons. That two-sided
-    window is what a gated structure looks like from inside the tissue.
+    Both exits from the band are insolvency, for different reasons. That
+    two-sided window is what a gated structure looks like from inside the tissue.
 
-    Args:
-        band_state: a `hands_lie_detector.band.HandState`.
-        near_term_output: draw currently being taken out of capacity.
+    Takes a `band.BandPosition`, NOT a raw map state: the thickness map alone
+    cannot separate a variable-geometry generalist from a saturated hand, so it
+    cannot determine solvency either. An unresolved position returns zero
+    solvency, because unresolved is not the same as solvent.
     """
-    from ..band import HandState
+    from ..band import BandPosition
 
     solvency = {
-        HandState.BANDED: 1.0,        # maintained; the asset is intact
-        HandState.GLASSY: 0.25,       # spent: capacity converted to near-term output
-        HandState.SOFT: 0.25,         # never built
-        HandState.INDETERMINATE: 0.0,  # unread, and unread is not solvent
-    }[band_state]
+        BandPosition.IN_BAND: 1.0,          # maintained; the asset is intact
+        BandPosition.OUT_SATURATED: 0.25,   # spent: converted to near-term output
+        BandPosition.OUT_SOFT: 0.25,        # never built
+        BandPosition.UNRESOLVED: 0.0,       # unread, and unread is not solvent
+    }[position]
     return StratumState(Stratum.CAPACITY, solvency=solvency, draw=near_term_output)
+
+
+# ---------------------------------------------------------------------------
+# The sign error: deposit versus draw
+# ---------------------------------------------------------------------------
+
+def deposit_draw_balance(domain_names: list[str], registry=None) -> str:
+    """Sort enrolled domains by which side of the ledger they sit on.
+
+    The third functional-form error in this stack. An hours-weighted model puts
+    depositing and drawing domains on the same axis as parallel inputs. They are
+    not parallel: one is a LOAD on the tissue, the other is a DEMAND on the
+    capacity that load produced. Opposite signs, and a coefficient cannot
+    express a sign any more than a sum can express a gate.
+    """
+    from .domains import DEFAULT_DOMAINS, LoadClass
+
+    registry = registry or DEFAULT_DOMAINS
+    unknown = [d for d in domain_names if d not in registry]
+    if unknown:
+        raise KeyError(f"unknown domain(s): {sorted(unknown)}")
+
+    sigs = [registry[d] for d in domain_names]
+    deposit = [s.name for s in sigs if s.deposits]
+    spend = [s.name for s in sigs if LoadClass.DRAW_SPEND in s.load_classes]
+    suppress = [s.name for s in sigs if LoadClass.DRAW_SUPPRESS in s.load_classes]
+    decoupling = [s.name for s in sigs if s.decouples_map_from_band]
+
+    lines = [
+        "deposit / draw balance:",
+        f"  DEPOSIT       (writes the map) : {', '.join(deposit) or '(none)'}",
+        f"  DRAW_SPEND    (consumes sensing): {', '.join(spend) or '(none)'}",
+        f"  DRAW_SUPPRESS (knocks it down)  : {', '.join(suppress) or '(none)'}",
+    ]
+    if decoupling:
+        lines += [
+            "",
+            f"  DECOUPLING: {', '.join(decoupling)} deposit plate while suppressing",
+            "  sensing. plate map and band position move independently during this",
+            "  work, so neither one predicts the other.",
+        ]
+    if deposit and (spend or suppress):
+        lines += [
+            "",
+            "  an hours-weighted model sums these. they have opposite signs: the",
+            "  draw classes deposit nothing and spend the capacity the deposit",
+            "  classes built. no coefficient expresses a sign.",
+        ]
+    return "\n".join(lines)

@@ -31,7 +31,7 @@ hands-lie-detector/
 │   │   ├── condition.py          # Condition coordinates; what n=1 supports
 │   │   └── leakage.py            # Vocabulary provenance; held-out commitment
 │   ├── band/                     # Pure Python — no dependencies
-│   │   └── contrast.py           # Three states; contrast replaces mean
+│   │   └── contrast.py           # Map states; concentration, NOT skill
 │   └── integration/              # Pure Python — no dependencies
 │       ├── domains.py            # Domain zone/load-mode signatures, channels
 │       ├── residual.py           # Residual-zone readout (Test C), conflicts
@@ -40,6 +40,8 @@ hands-lie-detector/
 │       ├── partition.py          # Inverted null: partition must be argued for
 │       ├── strip.py              # Render category nouns into mechanical units
 │       ├── gated.py              # Layers gate, not add; the reversed arrow
+│       ├── event_log.py          # Dorsal marks: events, not load history
+│       ├── wear.py               # Tribology taxonomy; counterface required
 │       └── carve_audit.py        # Retrieval protocol, seam, boundary audit
 ├── scoring-metrics.md            # Main 100-point hand scoring rubric (v0.1)
 ├── feet-lie-detector.md          # Parallel scoring system for feet
@@ -53,6 +55,7 @@ hands-lie-detector/
 ├── calibration-standard.md       # Hand as standard, model as drifting sample
 ├── gated-not-summed.md           # Wrong form, not wrong number (x3)
 ├── contrast-case.md              # What n=1 does; show vs describe; coordinates
+├── wear-taxonomy.md              # Tribology spine; deposit vs draw; two clocks
 ├── tests/                        # unittest suite (zero deps)
 ├── README.md                     # Mission statement and project premise
 ├── requirements.txt              # All dependencies
@@ -124,6 +127,12 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - **feet-lie-detector.md** — Analogous rubric for feet.
 - **gloves-debunk.md** — Why gloves don't erase structural adaptation.
 - **known_failure_cases.md** — Specific vision model failure modes.
+- **wear-taxonomy.md** — Wear is classified by mechanism, never application, and
+  the taxonomy (adhesive/abrasive/fatigue/corrosive/fretting) is already
+  domain-blind. Wear is a SYSTEM property, so the tool carries the conjugate
+  record and a hand alone is half a specimen. The band is run-in held. Dorsal is
+  a separate instrument on a ~2wk healing clock against palmar's 2-4wk turnover.
+  Deposit vs draw vs suppress is the third form error: a sign, not a coefficient.
 - **contrast-case.md** — What one characterized point against a dense
   distribution can do (falsify no-axis, give direction, give rough magnitude)
   and cannot (variance, prevalence). Why the measurement must be SHOWN while the
@@ -211,10 +220,20 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - Companion to `band-not-scale.md`. The scoring rubric is monotone in thickness
   (seven monotone categories, summed), so it ranks a saturated undifferentiated
   hand highest. This package reads the thickness map for CONTRAST instead
-- `read_band()` returns one of three states; `dispersion` is the primary
-  feature and `mean` is kept only to show what the monotone scorer would do
+- **RETRACTED: dispersion is not a skill proxy.** It reads the geometric
+  CONCENTRATION of the load history. A fixed-geometry specialist scores high and
+  a variable-geometry generalist scores low at identical competence — the
+  desk-hands error re-entering through the replacement metric
+- `UNIFORM_THICK` is AMBIGUOUS by construction: a generalist and a saturated hand
+  produce the same map. The separator is a functional sensing test, not an image,
+  and `position` stays `UNRESOLVED` until one is supplied
+- `ThicknessReading.measurable` is False except in raking light. Backlit and
+  overhead-flat field photos cannot resolve thickness at all — see the tier split
+  in `band-not-scale.md`
 - `monotone_score()` is a stand-in for the rubric's *shape*, not the rubric.
   `BandReadout.monotone_disagrees` flags the sign error and `report()` prints it
+- `read_band()` refuses dorsal zones; `DorsalMark` refuses palmar ones. The two
+  instruments decline each other's inputs
 - `interpret_acute_damage()` inverts the second sign error: a blister on a
   banded hand is the price of the band position, not a demerit
 - `Zone` gained five DORSAL zones after specimen 003; the vocabulary inherited
@@ -260,9 +279,18 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - `gated.arrow_check()` prints the dependency direction in both accountings: the
   record calls the base layers consumption and the top layer production; physics
   has it reversed. A sign error on direction, not a missing coefficient
-- `gated.solvency_from_band()` reads capacity solvency off `HandState`. Both
-  exits from the band are insolvency — glassy is capacity spent for near-term
-  output, soft is capacity never built
+- `gated.solvency_from_band()` reads capacity solvency off a resolved
+  `BandPosition`, not off a raw map state — the map cannot establish solvency
+  because it cannot separate generalist from saturated. `UNRESOLVED` returns 0.0:
+  unread is not solvent
+- `gated.deposit_draw_balance()` sorts domains by which side of the ledger they
+  sit on. Deposit writes the map; draw spends or suppresses the sensing capacity
+  it produced. Opposite signs, not parallel inputs
+- `wear.WearSystem.is_complete_specimen` is False without a counterface. Every
+  wear measurement in this repo is half a specimen until tool handles are
+  photographed alongside hands
+- `event_log.EventLog.supports_rate_claims` is False when the sampling gate is
+  external request. Documentation density tracks who asked, not what happened
 - `strip.strip()` is the cheapest diagnostic here and should be reached for
   first: render a category noun into force / displacement / cycles / duty cycle.
   Same units on both sides means the category carried no physical information;
@@ -346,9 +374,13 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
 - `scoring-metrics.md` has duplicate content (lines 1-108 and 112-208)
 - Future expansions in README (clean_but_used, callus_memory, etc.) not yet developed
 - Vision classifier needs labeled training data to be useful — no dataset included yet
-- Three documented form errors, none fixed in the shipped scale, because each fix
+- Four documented form errors, none fixed in the shipped scale, because each fix
   is a replacement rather than an edit: additive scoring, the monotone thickness
-  scale, and summed layer weighting. See `gated-not-summed.md`
+  scale, summed layer weighting, and deposit/draw treated as parallel inputs when
+  they carry opposite signs. See `gated-not-summed.md` and `wear-taxonomy.md`
+- The band thresholds and the tier-2 items need raking light. No frame in the
+  specimen series has it, so tier 2 has never actually been measured
+- No counterface has been recorded for any wear observation
 - Scoring rubric and vision heads are additive; they cannot represent the
   integration term. See `reference-class-empty.md` for what this costs and for
   the specific directional error in `WEAR_LOCALIZATION` (multi-domain wear reads
