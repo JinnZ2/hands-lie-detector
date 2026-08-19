@@ -25,6 +25,8 @@ hands-lie-detector/
 │   │   └── train.py              # Training loop with validation and checkpointing
 │   ├── prompt/                   # Requires: anthropic or openai
 │   │   └── evaluator.py          # Vision LLM scoring with rubric prompt
+│   ├── band/                     # Pure Python — no dependencies
+│   │   └── contrast.py           # Three states; contrast replaces mean
 │   └── integration/              # Pure Python — no dependencies
 │       ├── domains.py            # Domain zone/load-mode signatures, channels
 │       ├── residual.py           # Residual-zone readout (Test C), conflicts
@@ -38,6 +40,9 @@ hands-lie-detector/
 ├── known_failure_cases.md        # Catalogues specific vision model failures
 ├── reference-class-empty.md      # Why multi-domain load has no reference class
 ├── economic-carve.md             # Why the partition is payroll, not ontology
+├── band-not-scale.md             # Three states; the monotone sign error
+├── readout-channel.md            # What the channel bypasses; scope of claims
+├── specimen-record.md            # Misreads as the measurement; the unrun test
 ├── tests/                        # unittest suite (zero deps)
 ├── README.md                     # Mission statement and project premise
 ├── requirements.txt              # All dependencies
@@ -109,6 +114,20 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - **feet-lie-detector.md** — Analogous rubric for feet.
 - **gloves-debunk.md** — Why gloves don't erase structural adaptation.
 - **known_failure_cases.md** — Specific vision model failure modes.
+- **band-not-scale.md** — Experience is regulation toward a setpoint, not
+  accumulation. Three states (soft / banded / glassy); mean thickness cannot
+  separate the last two, contrast separates all three. Documents two sign errors
+  in the current rubric: saturation reads as expertise, acute damage reads as
+  incompetence.
+- **readout-channel.md** — Why the tissue route bypasses the gate that deletes
+  the quantity, and the three constraints that scope this repo's claims: the sum
+  not the decomposition, written conventions not photographs, n=1 fine for
+  mechanism and not for anything distributional.
+- **specimen-record.md** — Misreads recorded as the measurement, in the format
+  OBSERVATION → MODEL'S READ → CORRECTION → RESIDUAL. Contains the unrun core
+  test, the stock-image inversion (the classifier is keyed on grease, so a washed
+  worked hand scores negative), and the prediction that mechanism items improve
+  across model generations while classification items stay flat.
 - **economic-carve.md** — Where the domain partition came from: job title →
   SOC/NAICS → risk class → study stratum → literature → prior, with the
   provenance lost by the last hop. Covers the unpaid-domain null, the
@@ -135,6 +154,21 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - Supports ResNet50, ResNet18, EfficientNet-B0 backbones
 - Dataset expects `images/` directory + `labels.csv` with 7 score columns
 - Training includes validation split, per-category MAE tracking, and best-model saving
+
+### Band readout (`hands_lie_detector.band`)
+- Zero external dependencies
+- Companion to `band-not-scale.md`. The scoring rubric is monotone in thickness
+  (seven monotone categories, summed), so it ranks a saturated undifferentiated
+  hand highest. This package reads the thickness map for CONTRAST instead
+- `read_band()` returns one of three states; `dispersion` is the primary
+  feature and `mean` is kept only to show what the monotone scorer would do
+- `monotone_score()` is a stand-in for the rubric's *shape*, not the rubric.
+  `BandReadout.monotone_disagrees` flags the sign error and `report()` prints it
+- `interpret_acute_damage()` inverts the second sign error: a blister on a
+  banded hand is the price of the band position, not a demerit
+- Reads the integrated map only. It does not attribute zones to domains — see
+  the scope constraint in `readout-channel.md`
+- Thresholds are stipulated, and say so in their own output
 
 ### Integration readout (`hands_lie_detector.integration`)
 - Zero external dependencies
@@ -236,6 +270,14 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
   the specific directional error in `WEAR_LOCALIZATION` (multi-domain wear reads
   as unlocalized and scores toward the cosplayer band)
 - H1 vs H2 in `reference-class-empty.md` is open; no discriminator has been run
+- The rubric and vision heads are monotone in thickness and rank a saturated
+  hand highest. `hands_lie_detector.band` demonstrates the sign error but does
+  not fix the rubric — a replacement scale has to be built on contrast from the
+  start, and after the band thresholds are measured rather than stipulated
+- `no_context_no_props` is now the core test in README and has not been run
+- The repo conflates two axes: the perception layer (reading markers) and the
+  partition underneath (how load is attributed and weighted). Movement on one is
+  not movement on the other. See `specimen-record.md`
 - `DEFAULT_BANDS` reports physical scores onto employment status ("Casual
   Hobbyist" at 31-55, below "Working Hands"). See `economic-carve.md` — renaming
   the bands alone is the wrong fix; the physical scale needs somewhere to land
