@@ -69,7 +69,17 @@ from .gated import (
     deposit_draw_balance,
     solvency_from_band,
 )
-from .event_log import COLD_MECHANISM, DorsalMark, EventLog, MarkKind
+from .event_log import (
+    ADAPTATION_MARKS,
+    COLD_MECHANISM,
+    EVENT_MARKS,
+    STRIKE_ZONES,
+    DorsalMark,
+    DorsalSignature,
+    EventLog,
+    MarkKind,
+    dorsal_signature,
+)
 from .wear import (
     LOAD_MODE_TO_WEAR,
     RESIDUAL_WITHOUT_ANALOGUE,
@@ -134,6 +144,11 @@ from .residual import (
 )
 
 __all__ = [
+    "dorsal_signature",
+    "DorsalSignature",
+    "STRIKE_ZONES",
+    "EVENT_MARKS",
+    "ADAPTATION_MARKS",
     "NailRecord",
     "NailMark",
     "NailFinding",

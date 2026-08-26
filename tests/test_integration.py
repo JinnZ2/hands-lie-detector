@@ -408,10 +408,11 @@ class TestDorsalSurface(unittest.TestCase):
 class TestEventLog(unittest.TestCase):
     """Dorsal marks are events, not load history. Different instrument, clock."""
 
-    def test_the_log_never_carries_load_history(self):
+    def test_the_log_never_carries_grip_load_history(self):
+        """Unchanged strong claim: the dorsum is not a grip contact surface."""
         from hands_lie_detector.integration import EventLog
 
-        self.assertFalse(EventLog().carries_load_history)
+        self.assertFalse(EventLog().carries_grip_load_history)
 
     def test_palmar_zones_are_refused(self):
         from hands_lie_detector.integration import DorsalMark, Zone
@@ -720,3 +721,65 @@ class TestNewPalmarZones(unittest.TestCase):
         for zone in (Zone.THENAR_EMINENCE, Zone.HYPOTHENAR,
                      Zone.PROXIMAL_PHALANX_PAD):
             self.assertTrue(ADJACENCY[zone])
+
+
+class TestDorsalSignature(unittest.TestCase):
+    """Count and concentration separate an edge-strike field from repeated impact."""
+
+    @staticmethod
+    def _mechanic():
+        from hands_lie_detector.integration import DorsalMark, EventLog, MarkKind, Zone
+
+        sites = [Zone.DORSAL_METACARPAL, Zone.DORSAL_MCP_KNUCKLES,
+                 Zone.DORSAL_PHALANX, Zone.DORSAL_WEB_SPACE, Zone.WRIST_TRANSITION]
+        return EventLog("mechanic", [
+            DorsalMark(sites[i % 5], "2026-01-01",
+                       MarkKind.LACERATION if i % 2 else MarkKind.ABRASION)
+            for i in range(25)
+        ])
+
+    @staticmethod
+    def _striker():
+        from hands_lie_detector.integration import DorsalMark, EventLog, MarkKind, Zone
+
+        return EventLog("striker", [
+            DorsalMark(Zone.DORSAL_MCP_KNUCKLES, "2026-01-01", MarkKind.THICKENING),
+            DorsalMark(Zone.DORSAL_MCP_KNUCKLES, "2026-01-01", MarkKind.CONTUSION),
+            DorsalMark(Zone.DORSAL_MCP_KNUCKLES, "2026-01-01", MarkKind.THICKENING),
+            DorsalMark(Zone.DORSAL_PHALANX, "2026-01-01", MarkKind.CONTUSION),
+        ])
+
+    def test_many_scattered_marks_read_as_an_edge_strike_field(self):
+        from hands_lie_detector.integration import DorsalSignature, dorsal_signature
+
+        self.assertIs(dorsal_signature(self._mechanic()),
+                      DorsalSignature.EDGE_STRIKE_FIELD)
+
+    def test_few_concentrated_marks_with_remodeling_read_as_repeated_impact(self):
+        from hands_lie_detector.integration import DorsalSignature, dorsal_signature
+
+        self.assertIs(dorsal_signature(self._striker()),
+                      DorsalSignature.REPEATED_IMPACT)
+
+    def test_grip_load_history_is_never_carried_dorsally(self):
+        """The strong claim, unchanged: the dorsum is not a grip surface."""
+        for log in (self._mechanic(), self._striker()):
+            self.assertFalse(log.carries_grip_load_history)
+
+    def test_only_repeated_impact_deposits(self):
+        """The correction: the dorsum has one adaptation route after all."""
+        self.assertFalse(self._mechanic().carries_impact_history)
+        self.assertTrue(self._striker().carries_impact_history)
+
+    def test_a_sparse_log_is_not_classified(self):
+        from hands_lie_detector.integration import (
+            DorsalMark, DorsalSignature, EventLog, MarkKind, Zone, dorsal_signature,
+        )
+
+        log = EventLog(marks=[DorsalMark(Zone.DORSAL_PHALANX, "d", MarkKind.LACERATION)])
+        self.assertIs(dorsal_signature(log), DorsalSignature.SPARSE)
+
+    def test_an_empty_log_is_unreadable_not_negative(self):
+        from hands_lie_detector.integration import DorsalSignature, EventLog, dorsal_signature
+
+        self.assertIs(dorsal_signature(EventLog()), DorsalSignature.UNREADABLE)

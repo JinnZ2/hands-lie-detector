@@ -348,6 +348,15 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - `wear.WearSystem.is_complete_specimen` is False without a counterface. Every
   wear measurement in this repo is half a specimen until tool handles are
   photographed alongside hands
+- `event_log.carries_grip_load_history` is False unconditionally — the dorsum is
+  not a grip surface. But `carries_impact_history` is a narrower channel that CAN
+  be True: repeated axial impact at a fixed knuckle does remodel dorsally, which
+  corrects an earlier over-strong claim that the dorsum never deposits
+- `event_log.dorsal_signature()` separates two histories that share the MCP row:
+  an EDGE_STRIKE_FIELD (many superficial marks at varied sites — confined volume,
+  sudden release, different geometry every reach) from REPEATED_IMPACT (few
+  marks, concentrated at the striking knuckles, with thickening). Count and
+  concentration, the same pair the palmar map uses
 - `event_log.EventLog.supports_rate_claims` is False when the sampling gate is
   external request. Documentation density tracks who asked, not what happened
 - `event_log.EventLog.has_baseline_coverage` is False without scheduled frames.

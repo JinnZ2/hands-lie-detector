@@ -125,6 +125,58 @@ cold cycling lowers its initiation threshold. See `sole-audit.md` — and note
 that this makes time-to-failure useless as a distance proxy, which
 `SoleReading.time_to_failure_supports_distance_claim` enforces.
 
+### Correction — the dorsum has one adaptation route after all
+
+An earlier version of this document, and `EventLog.carries_load_history`,
+returned `False` unconditionally: dorsal tissue has no adaptation route, so it
+records events and never history.
+
+That is too strong, and a field discriminator in routine use exposes it.
+
+The dorsum is not a **grip** contact surface, so grip and shear load deposit
+nothing there — that part holds, and it is the strong claim. But the dorsum
+**is** a contact surface for striking, and repeated axial impact at a fixed
+knuckle does remodel it. So the surface runs two channels:
+
+| channel | deposits? | clock |
+|---|---|---|
+| event log — laceration, abrasion, contusion, split | no, heals away | ~2 weeks |
+| repeated impact at a fixed site — soft-tissue thickening | **yes** | persists |
+
+`carries_grip_load_history` returns `False` unconditionally, as before.
+`carries_impact_history` is the new, narrower channel.
+
+### The discriminator: count and concentration on the dorsum
+
+Two histories that both live on the MCP row and are not the same thing.
+
+| | **edge-strike field** (mechanic) | **repeated impact** (bare-knuckle striker) |
+|---|---|---|
+| count | hundreds | few |
+| distribution | scattered across the dorsum and MCP row, varied sites | concentrated on the 2nd and 3rd MCP heads — the knuckles that land |
+| depth | superficial, skin-level | structural: soft-tissue thickening at the strike points |
+| mechanism | laceration and abrasion against an edge, after a sudden release | repeated axial impact |
+| what it records | event **count** | one geometry, repeated |
+| remodeling | none — scar only | present |
+
+The mechanism behind the mechanic signature: the hand is in a confined volume
+with edges in it, a fastener releases suddenly, and the knuckle travels. **Every
+reach has a different geometry**, so every mark lands somewhere new. High count,
+low concentration, no remodeling.
+
+The striker's is the inverse — few events, one geometry, and the only dorsal case
+that deposits.
+
+Which is the **concentration axis** from `band-not-scale.md`, running on the
+dorsal surface. Same quantity, different tissue: it reads how varied the contact
+geometry was, and — as on the palm — it says nothing about competence in either
+case.
+
+`dorsal_signature()` implements it. Thresholds are stipulated from one
+operator's field use, not fitted: this is `TESTIMONY`, but testimony from a dense
+observational sample rather than from a single case, which is more than most of
+the tables in this repo have behind them.
+
 ### Why dorsal marks cluster in cold work
 
 ```
