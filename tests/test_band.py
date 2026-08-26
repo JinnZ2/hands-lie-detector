@@ -230,7 +230,8 @@ class TestCaptureProtocol(unittest.TestCase):
 
         s = CaptureSession("d", Trigger.FUEL_STOP, positions_shot=set(Position),
                            both_hands=True, light=LightCondition.RAKING,
-                           load_log="70 hr week, yard Saturday")
+                           load_log="70 hr week, yard Saturday",
+                           scale_reference_in_frame=True, fixed_geometry_rig=True)
         self.assertTrue(s.is_complete)
 
 
@@ -253,3 +254,35 @@ class TestKnuckleCapture(unittest.TestCase):
         joined = " ".join(KNUCKLE_LOG_FIELDS)
         self.assertIn("bilateral", joined)
         self.assertIn("scarred", joined)
+
+
+class TestComparability(unittest.TestCase):
+    """A map with no ruler is not comparable to any other map."""
+
+    @staticmethod
+    def _session(**kw):
+        from hands_lie_detector.band import (
+            CaptureSession, LightCondition, Position, Trigger,
+        )
+
+        defaults = dict(
+            date="d", trigger=Trigger.FUEL_STOP, positions_shot=set(Position),
+            both_hands=True, light=LightCondition.RAKING, load_log="70 hr week",
+            scale_reference_in_frame=True, fixed_geometry_rig=True,
+        )
+        return CaptureSession(**{**defaults, **kw})
+
+    def test_a_missing_scale_reference_blocks_comparability(self):
+        session = self._session(scale_reference_in_frame=False)
+        self.assertFalse(session.comparable_across_sessions)
+        self.assertTrue(any("scale reference" in p for p in session.problems))
+
+    def test_unfixed_geometry_blocks_comparability(self):
+        session = self._session(fixed_geometry_rig=False)
+        self.assertFalse(session.comparable_across_sessions)
+        self.assertTrue(any("geometry not fixed" in p for p in session.problems))
+
+    def test_a_rigged_session_with_a_ruler_is_complete(self):
+        session = self._session()
+        self.assertTrue(session.comparable_across_sessions)
+        self.assertTrue(session.is_complete)

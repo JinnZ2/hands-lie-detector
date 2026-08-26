@@ -110,6 +110,8 @@ class CaptureSession:
     light: LightCondition = LightCondition.UNKNOWN
     load_log: str = ""
     paired_state: str = ""  # e.g. "post-wash", "pre-wash"
+    scale_reference_in_frame: bool = False
+    fixed_geometry_rig: bool = False
 
     @property
     def missing_positions(self) -> list[Position]:
@@ -123,8 +125,30 @@ class CaptureSession:
         )
 
     @property
+    def comparable_across_sessions(self) -> bool:
+        """False without a scale reference and a repeatable geometry.
+
+        A map with no ruler in frame is in normalized units with no conversion
+        and no way to sit beside another session's map. A map shot at a
+        remembered angle is not the same measurement twice.
+        """
+        return self.scale_reference_in_frame and self.fixed_geometry_rig
+
+    @property
     def problems(self) -> list[str]:
         out = []
+        if not self.scale_reference_in_frame:
+            out.append(
+                "no scale reference in frame. every thickness figure is then in "
+                "normalized units with no conversion and no cross-session "
+                "comparison — a ruler at the edge is free and this is a protocol "
+                "defect, not an operator one."
+            )
+        if not self.fixed_geometry_rig:
+            out.append(
+                "geometry not fixed. a remembered angle is not the same "
+                "measurement twice; repeatability matters more here than accuracy."
+            )
         if not self.resolves_tier_2:
             out.append(
                 f"tier 2 unresolved: needs {TIER_2_POSITION.value} shot in raking "

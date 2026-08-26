@@ -9,6 +9,72 @@ is waiting on five photographs and one lamp.
 
 ---
 
+## Build this first — the raking-light stage
+
+One object. Everything else in this document depends on it, and nothing else in
+this repo is worth building until it exists.
+
+**Why a jig rather than discipline.** Each frame currently costs a fiddly setup:
+remember the angle, guess the height, brace the phone, hope it matches last
+time. Habits do not survive at five minutes of setup; they survive at ten
+seconds. The jig converts a recurring cost into a one-time cost, which is the
+only thing that makes the scheduled trigger below realistic. It is not an
+accessory to the protocol — it *is* the protocol, made repeatable.
+
+### Spec
+
+| part | requirement | why |
+|---|---|---|
+| **base** | flat board, matte, dark neutral (charcoal or black). Dark fleece over cardboard works. | reflections off the base are fill, and fill destroys the terminator |
+| **light** | one LED, fixed at **1–3 cm above the board plane**, at one edge, aimed across it | height is the single failure repeated in every frame so far. Above the hand grazes *along* the surface; at the plane it crosses *across* |
+| **light distance** | fixed and marked | a moving source changes the shadow length, and shadow length is the reading |
+| **hand position** | outline or tape marks on the board | so the same zones fall under the same rake every time |
+| **camera** | fixed height and spot — marks on the table, a stack of books, anything rigid | motion blur has cost more detail here than light angle has |
+| **scale reference** | **a ruler or coin in frame, every shot** | see below |
+| **exposure reference** | a neutral gray patch in frame | otherwise apparent thickness is confounded with exposure |
+
+Cost is near zero. Cardboard, dark cloth, a block to set the LED height, tape
+marks, a book stack. The precision that matters is *repeatability*, not
+accuracy — the same wrong angle every time is usable; a different right angle
+each time is not.
+
+### The gap this fixes, which the protocol had missed
+
+**No frame in the specimen series contains a scale reference.** Every thickness
+figure in this repo is in normalized units with no way to convert to millimetres
+and no way to compare across sessions — a map from March and a map from August
+cannot be put side by side, because nothing establishes that a pixel means the
+same thing in both.
+
+A ruler at the edge of frame is free and it is currently missing from every
+measurement the repo claims to make. Same for the exposure reference: without a
+known-neutral patch, "thicker" and "brighter" are the same signal.
+
+This is a protocol defect, not an operator one. It should have been rule zero.
+
+### What it unblocks, in order
+
+1. **Position 5 becomes repeatable**, so `ThicknessReading.measurable` can return
+   `True` for the first time and tier 2 stops being theoretical.
+2. **The knuckle positions run on the same stage** — reorient the hand, keep the
+   light. That moves the knuckle scar field from `TESTIMONY` to `MEASURED`.
+3. **Frames become comparable across time**, which is what a dated band series
+   requires and what the calibration standard is waiting on.
+4. **Counterfaces go on the same stage.** Boot soles and tool handles photograph
+   under the same rake, and `WearSystem.is_complete_specimen` can stop returning
+   `False`.
+
+### First three shots once it is built
+
+- **Both hands, position 5.** The bilateral pair under raking light. Nothing in
+  the series has this, and it is the frame that resolves the state.
+- **Both hands, knuckle position B** — loose fist, light skimming the MCP ridge.
+  The one question asked of this repo that no frame has answered.
+- **One boot sole.** Because it is on the same stage, costs one more minute, and
+  is the only instrument here that scales past one body.
+
+---
+
 ## The five positions
 
 | # | position | hand | camera | light | resolves |
