@@ -90,6 +90,14 @@ from .load_weight import (
     load_share,
     relabel,
 )
+from .nail import (
+    FULL_REPLACEMENT_MONTHS,
+    LOAD_BEARING,
+    MM_PER_MONTH,
+    NailFinding,
+    NailMark,
+    NailRecord,
+)
 from .sole import (
     ACTUAL_CONTACT_SOURCES,
     CATEGORY_PREDICTIONS,
@@ -126,6 +134,12 @@ from .residual import (
 )
 
 __all__ = [
+    "NailRecord",
+    "NailMark",
+    "NailFinding",
+    "MM_PER_MONTH",
+    "LOAD_BEARING",
+    "FULL_REPLACEMENT_MONTHS",
     "audit",
     "ZoneWear",
     "SoleZone",

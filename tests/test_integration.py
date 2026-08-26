@@ -664,3 +664,59 @@ class TestSoleAudit(unittest.TestCase):
                       __import__("hands_lie_detector.integration", fromlist=["audit"])
                       .audit(self._boot(separate_work_footwear=False),
                              "driver (as the category describes it)").report())
+
+
+class TestNailChannel(unittest.TestCase):
+    """A third clock: matrix trauma, dated by distance from the fold."""
+
+    def test_only_some_findings_carry_load_information(self):
+        from hands_lie_detector.integration import NailFinding, NailMark
+
+        self.assertTrue(NailMark("R2", NailFinding.LEUKONYCHIA).carries_load_information)
+        self.assertFalse(NailMark("R2", NailFinding.RIDGING).carries_load_information)
+
+    def test_a_mark_dates_itself_by_distance(self):
+        from hands_lie_detector.integration import NailFinding, NailMark
+
+        near = NailMark("R2", NailFinding.LEUKONYCHIA, 3.0)
+        far = NailMark("R3", NailFinding.LEUKONYCHIA, 9.0)
+        self.assertLess(near.months_since_event, far.months_since_event)
+        self.assertIsNone(NailMark("R4", NailFinding.LEUKONYCHIA).months_since_event)
+
+    def test_ordering_needs_two_dated_marks(self):
+        from hands_lie_detector.integration import NailFinding, NailMark, NailRecord
+
+        one = NailRecord(marks=[NailMark("R2", NailFinding.LEUKONYCHIA, 3.0)])
+        two = NailRecord(marks=[NailMark("R2", NailFinding.LEUKONYCHIA, 3.0),
+                                NailMark("R3", NailFinding.LEUKONYCHIA, 8.0)])
+        self.assertFalse(one.supports_ordering)
+        self.assertTrue(two.supports_ordering)
+
+    def test_the_growth_rate_is_stipulated_and_says_so(self):
+        from hands_lie_detector.integration import NailRecord
+
+        record = NailRecord()
+        self.assertFalse(record.is_evidence_based)
+        self.assertIn("ORDERING", record.report())
+
+    def test_the_nail_is_a_separate_channel_from_the_palmar_map(self):
+        from hands_lie_detector.integration import NailRecord
+
+        self.assertTrue(NailRecord().independent_of_palmar_map)
+
+
+class TestNewPalmarZones(unittest.TestCase):
+    def test_thenar_and_hypothenar_are_distinct_zones(self):
+        from hands_lie_detector.integration import PALMAR_ZONES, Zone
+
+        for zone in (Zone.THENAR_EMINENCE, Zone.HYPOTHENAR,
+                     Zone.PROXIMAL_PHALANX_PAD):
+            self.assertIn(zone, PALMAR_ZONES)
+
+    def test_the_new_zones_have_adjacency(self):
+        from hands_lie_detector.integration import Zone
+        from hands_lie_detector.integration.domains import ADJACENCY
+
+        for zone in (Zone.THENAR_EMINENCE, Zone.HYPOTHENAR,
+                     Zone.PROXIMAL_PHALANX_PAD):
+            self.assertTrue(ADJACENCY[zone])

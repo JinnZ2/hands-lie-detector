@@ -39,6 +39,9 @@ class Zone(str, Enum):
 
     # Palmar — grip surface.
     THUMB_CROTCH = "thumb_crotch"
+    THENAR_EMINENCE = "thenar_eminence"      # volumetric thumb-base mass
+    HYPOTHENAR = "hypothenar"                # volumetric ulnar-edge mass
+    PROXIMAL_PHALANX_PAD = "proximal_phalanx_pad"  # finger base pad, not the tip
     INDEX_SIDE = "index_side"
     PALM_BELOW_INDEX = "palm_below_index"
     HEEL_OF_PALM = "heel_of_palm"
@@ -140,7 +143,10 @@ ADJACENCY: dict[Zone, set[Zone]] = {
     Zone.FINGERTIP_PADS: {Zone.BASE_OF_FINGERS, Zone.INDEX_SIDE, Zone.THUMB_PAD},
     Zone.ACROSS_PALM_CREASE: {Zone.BASE_OF_FINGERS, Zone.HEEL_OF_PALM, Zone.PALM_BELOW_INDEX},
     Zone.BASE_OF_FINGERS: {Zone.ACROSS_PALM_CREASE, Zone.FINGERTIP_PADS, Zone.PALM_BELOW_INDEX},
-    Zone.THUMB_PAD: {Zone.THUMB_CROTCH, Zone.FINGERTIP_PADS},
+    Zone.THUMB_PAD: {Zone.THUMB_CROTCH, Zone.FINGERTIP_PADS, Zone.THENAR_EMINENCE},
+    Zone.THENAR_EMINENCE: {Zone.THUMB_CROTCH, Zone.THUMB_PAD, Zone.ACROSS_PALM_CREASE},
+    Zone.HYPOTHENAR: {Zone.HEEL_OF_PALM, Zone.OUTER_PALM_EDGE, Zone.ACROSS_PALM_CREASE},
+    Zone.PROXIMAL_PHALANX_PAD: {Zone.BASE_OF_FINGERS, Zone.FINGERTIP_PADS},
     Zone.OUTER_PALM_EDGE: {Zone.HEEL_OF_PALM, Zone.BASE_OF_FINGERS},
     # Dorsal adjacency is its own graph. It touches the palmar graph only at the
     # hand's edges, which is why a dorsal marker does not get "explained" by a

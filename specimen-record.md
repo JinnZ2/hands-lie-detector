@@ -432,6 +432,85 @@ a data point.
 
 ---
 
+## Specimen 008 — a multi-frame series, and the first states actually ruled out
+
+Several frames, both hands, palmar and dorsal, in oblique light — closer to the
+protocol in `capture-protocol.md` than anything prior, though still short of
+position 5.
+
+### What the light finally resolved
+
+| observation | mark |
+|---|---|
+| Palmar creases sharp-edged, casting micro-shadows; proximal transverse and thenar creases distinct. | `MEASURED` |
+| Thenar eminence raised and volumetric, casting a shadow on the palm behind it. Not flat, not atrophied. | `MEASURED` |
+| Hypothenar: two localized flat dark patches on the ulnar edge, ~2 cm and ~1 cm, surviving scrubbing. | `MEASURED` |
+| Fingertip and proximal phalanx pads show grain, not cosmetic smoothness. Right index proximal phalanx pad carries a ~4 mm healed raised mark, consistent across frames. | `MEASURED` |
+| Dorsal veins prominent and branching across metacarpals, **bilaterally**, left more than right. | `MEASURED` |
+| Left dorsal metacarpal: discrete ~3 mm irregular dark spot between index and middle metacarpals. | `MEASURED` |
+| Fine scaling / xerosis across palm and proximal phalanges — dry, mechanically stressed stratum corneum, not dirt. | `MEASURED` |
+| Leukonychia on index, possibly middle. Nails short and functional, edge irregularity, not manicured. | `MEASURED` |
+| The hypothenar patches and dorsal spot are **carbon-stained healed blisters**. | `TESTIMONY` |
+
+### States ruled out — and this is new
+
+Prior specimens could not resolve state at all. This series can rule two out
+with high confidence:
+
+| state | evidence | confidence |
+|---|---|---|
+| `SOFT` | ruled out — sharp creases, pad grain, thenar volume, healed load marks | high |
+| `UNIFORM_THICK` (saturated) | ruled out — creases not effaced, load localized rather than diffuse, thenar and hypothenar read as separate raised forms rather than a slab | high |
+| `CONCENTRATED` / banded | consistent, leaning likely — raised thenar and hypothenar against thin crease floors, with visible relief transitions | moderate–high |
+
+Still unresolved: the full boundary map, which needs position 5 — camera from
+the wrist side at ~30° with the light opposite. Every read above is on a light
+angle that is better than flat and still too high.
+
+### The bilateral finding
+
+| hand | primary load zone | grip role |
+|---|---|---|
+| right | index proximal phalanx pad | precision grip |
+| left | hypothenar | stabilizer / power grip |
+
+**Asymmetric contact set with symmetric vascular adaptation.** Both hands show
+vein prominence, so this is sustained bilateral load rather than single-hand
+dominance — but the two hands are loading *different geometries*. That
+distinction is only visible across the pair, which is why rule 1 of the capture
+protocol exists.
+
+### Two markers resolved, one channel added
+
+The hypothenar patches and the left dorsal spot had been carried as
+`unexplained` residual. Operator testimony resolves them to one mechanism —
+carbon-stained healed blisters — which reclassifies them from *unattributed* to
+*micro-injury history with a known deposition route*.
+
+Note what that costs: the resolution is `TESTIMONY`, not `MEASURED`. It is a
+better hypothesis than the three the frames alone supported, and it is not an
+observation.
+
+And the leukonychia opens a **third clock**. Palmar integrates over 2–4 weeks,
+dorsal marks heal in ~2, and a nail plate carries matrix trauma outward for 4–6
+months — dating its own marks by distance from the fold. See
+`integration/nail.py`. It corroborates the impact history rather than restating
+it: two instruments on the same events, not one read twice.
+
+### Rubric movement
+
+| category | prior | updated | basis |
+|---|---|---|---|
+| `NAIL_EVIDENCE` | 4–7 | 8–10 | leukonychia confirmed, edge wear, functional trimming |
+| `TEXTURE_PERSISTENCE` | inferred | better supported | dense crease map plus xerosis, post-wash |
+| `MICRO_INJURY_HISTORY` | testimony-heavy | second channel | nail matrix trauma corroborates the palmar marks |
+
+These are movements in the **monotone rubric**, which this repo has documented
+as carrying three sign errors. They are recorded because the rubric is what
+exists, not because the scale is trusted.
+
+---
+
 ## The unrun test
 
 This is the repo's core test. It has not been run since the original trial.

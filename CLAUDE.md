@@ -33,7 +33,8 @@ hands-lie-detector/
 │   │   ├── attribution.py        # Agent retrofit: 4 tests, no ground truth
 │   │   └── leakage.py            # Vocabulary provenance; held-out commitment
 │   ├── band/                     # Pure Python — no dependencies
-│   │   └── contrast.py           # Map states; concentration, NOT skill
+│   │   ├── contrast.py           # Map states; concentration, NOT skill
+│   │   └── capture.py            # Five positions; the raking-light protocol
 │   └── integration/              # Pure Python — no dependencies
 │       ├── domains.py            # Domain zone/load-mode signatures, channels
 │       ├── residual.py           # Residual-zone readout (Test C), conflicts
@@ -45,6 +46,7 @@ hands-lie-detector/
 │       ├── event_log.py          # Dorsal marks: events, not load history
 │       ├── wear.py               # Tribology taxonomy; counterface required
 │       ├── sole.py               # Sole wear audits the job description
+│       ├── nail.py               # Third clock: matrix trauma, self-dating
 │       └── carve_audit.py        # Retrieval protocol, seam, boundary audit
 ├── scoring-metrics.md            # Main 100-point hand scoring rubric (v0.1)
 ├── feet-lie-detector.md          # Parallel scoring system for feet
@@ -61,6 +63,7 @@ hands-lie-detector/
 ├── attribution-retrofit.md       # Agent reassignment; weight vs constraint
 ├── wear-taxonomy.md              # Tribology spine; deposit vs draw; two clocks
 ├── sole-audit.md                 # Boot wear vs stated job title; four gates bypassed
+├── capture-protocol.md           # Five positions, one lamp; unblocks tier 2
 ├── tests/                        # unittest suite (zero deps)
 ├── README.md                     # Mission statement and project premise
 ├── requirements.txt              # All dependencies
@@ -143,6 +146,10 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   override), four tests, and the weight vs constraint distinction. Three of the
   four tests depend on scoring instruments that do not exist yet; only the
   no-destination test is runnable today.
+- **capture-protocol.md** — Five positions and five rules. Position 5 (lateral
+  raking) is the one that unblocks tier 2, and nothing else substitutes for it.
+  `CaptureSession.problems` reports every rule a session missed rather than
+  accepting frames that turn out to be unreadable.
 - **sole-audit.md** — The cheapest instrument here and the first that scales past
   one operator. A job description is AUTHORED; sole wear is DEPOSITED, so the
   delta between the wear a title predicts and the wear a body left is the gap
@@ -265,6 +272,17 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - `UNIFORM_THICK` is AMBIGUOUS by construction: a generalist and a saturated hand
   produce the same map. The separator is a functional sensing test, not an image,
   and `position` stays `UNRESOLVED` until one is supplied
+- `BiologicalCalibration` separates the two quantities cleanly: **mean thickness
+  is calibrated, band position is not**. The map is normalized before the state
+  logic runs, so state and concentration are invariant across baselines while the
+  uncalibrated monotone score drops — a THIRD sign error in the rubric,
+  compounding with saturation. At a lower baseline a healed lesion at a load
+  point is MORE informative, since it formed nearer the sensing threshold
+- `nail.NailRecord` is the third clock: palmar integrates over 2-4 weeks, dorsal
+  heals in ~2, and the nail plate carries matrix trauma outward for 4-6 months,
+  dating its own marks by distance from the fold. It corroborates the palmar map
+  rather than restating it. Treat the ORDERING as the finding; the months are
+  stipulated
 - `ThicknessReading.measurable` is False except in raking light. Backlit and
   overhead-flat field photos cannot resolve thickness at all — see the tier split
   in `band-not-scale.md`
@@ -274,6 +292,9 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   instruments decline each other's inputs
 - `interpret_acute_damage()` inverts the second sign error: a blister on a
   banded hand is the price of the band position, not a demerit
+- `Zone` gained thenar, hypothenar and proximal-phalanx-pad after specimen 008,
+  for the same reason as the dorsal zones: observations kept landing where the
+  vocabulary had no coordinate
 - `Zone` gained five DORSAL zones after specimen 003; the vocabulary inherited
   from `term_audit/` was palmar-only and could not record a strike. No shipped
   `DomainSignature` predicts a dorsal zone, so dorsal markers are residual by
@@ -441,7 +462,11 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
   scale, summed layer weighting, and deposit/draw treated as parallel inputs when
   they carry opposite signs. See `gated-not-summed.md` and `wear-taxonomy.md`
 - The band thresholds and the tier-2 items need raking light. No frame in the
-  specimen series has it, so tier 2 has never actually been measured
+  specimen series has it, so tier 2 has never actually been measured. The fix is
+  five photographs and one lamp — see `capture-protocol.md`; position 5 is the
+  one that matters and nothing substitutes for it
+- Specimen 008 rules out SOFT and saturated with high confidence, which is the
+  first state resolution in the series. The boundary map is still unresolved
 - No counterface has been recorded for any wear observation — no tool handles.
   One boot is on record (specimen 007) and it falsifies one category prediction;
   `CATEGORY_PREDICTIONS` holds exactly one entry

@@ -147,3 +147,88 @@ class TestProvenance(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestBiologicalCalibration(unittest.TestCase):
+    """Mean thickness is calibrated. Band position is not."""
+
+    REFERENCE = {"thumb_crotch": 0.78, "palm_below_index": 0.72,
+                 "base_of_fingers": 0.80, "fingertip_pads": 0.18,
+                 "heel_of_palm": 0.55, "across_palm_crease": 0.70,
+                 "thumb_pad": 0.22}
+    LOWER = {z: round(v * 0.75, 3) for z, v in REFERENCE.items()}
+
+    def _pair(self):
+        from hands_lie_detector.band import BiologicalCalibration, Sex
+
+        return (
+            read_band(self.REFERENCE, light=LightCondition.RAKING),
+            read_band(self.LOWER, light=LightCondition.RAKING,
+                      calibration=BiologicalCalibration(sex=Sex.FEMALE)),
+        )
+
+    def test_state_is_invariant_across_baselines(self):
+        a, b = self._pair()
+        self.assertIs(a.state, b.state)
+
+    def test_concentration_is_invariant_across_baselines(self):
+        a, b = self._pair()
+        self.assertAlmostEqual(a.reading.concentration, b.reading.concentration, places=3)
+
+    def test_the_monotone_score_is_not_calibrated_and_penalizes_baseline(self):
+        """Third sign error in the same scale, compounding with saturation."""
+        a, b = self._pair()
+        self.assertLess(b.monotone, a.monotone)
+        self.assertTrue(b.monotone_penalizes_baseline)
+        self.assertFalse(a.monotone_penalizes_baseline)
+        self.assertIn("BASELINE", b.report())
+
+    def test_the_calibration_factor_is_flagged_as_stipulated(self):
+        from hands_lie_detector.band import BiologicalCalibration
+
+        self.assertFalse(BiologicalCalibration().is_evidence_based)
+
+
+class TestCaptureProtocol(unittest.TestCase):
+    def test_only_the_lateral_raking_position_unblocks_tier_two(self):
+        from hands_lie_detector.band import (
+            CaptureSession, LightCondition, Position, Trigger,
+        )
+
+        without = CaptureSession("d", Trigger.WEEK_ROLLOVER,
+                                 positions_shot={Position.PALM_FLAT},
+                                 light=LightCondition.RAKING)
+        with_it = CaptureSession("d", Trigger.WEEK_ROLLOVER,
+                                 positions_shot={Position.LATERAL_RAKING},
+                                 light=LightCondition.RAKING)
+        self.assertFalse(without.resolves_tier_2)
+        self.assertTrue(with_it.resolves_tier_2)
+
+    def test_raking_light_is_required_even_with_the_right_position(self):
+        from hands_lie_detector.band import (
+            CaptureSession, LightCondition, Position, Trigger,
+        )
+
+        s = CaptureSession("d", Trigger.WEEK_ROLLOVER,
+                           positions_shot={Position.LATERAL_RAKING},
+                           light=LightCondition.FLAT_OVERHEAD)
+        self.assertFalse(s.resolves_tier_2)
+
+    def test_disposition_gated_capture_is_reported_as_a_problem(self):
+        from hands_lie_detector.band import CaptureSession, Position, Trigger
+
+        s = CaptureSession("d", Trigger.NOTICED_SOMETHING,
+                           positions_shot=set(Position), both_hands=True,
+                           load_log="x")
+        self.assertFalse(s.trigger.is_scheduled)
+        self.assertTrue(any("disposition" in p for p in s.problems))
+
+    def test_a_complete_session_has_no_problems(self):
+        from hands_lie_detector.band import (
+            CaptureSession, LightCondition, Position, Trigger,
+        )
+
+        s = CaptureSession("d", Trigger.FUEL_STOP, positions_shot=set(Position),
+                           both_hands=True, light=LightCondition.RAKING,
+                           load_log="70 hr week, yard Saturday")
+        self.assertTrue(s.is_complete)
