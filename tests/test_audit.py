@@ -404,3 +404,64 @@ class TestDemonstrableTestimony(unittest.TestCase):
 
         line = SpecimenLine("model output", Provenance.OBSERVED, demonstrable=True)
         self.assertFalse(line.falsifiable_on_demand)
+
+
+class TestDemonstratedProvenance(unittest.TestCase):
+    """A witnessed performance sits between testimony and measurement."""
+
+    def test_demonstrated_is_witnessed_but_not_stable(self):
+        from hands_lie_detector.audit import Provenance
+
+        self.assertTrue(Provenance.DEMONSTRATED.witnessed)
+        self.assertFalse(Provenance.DEMONSTRATED.stable_across_interval)
+
+    def test_measured_remains_the_only_stable_mark(self):
+        from hands_lie_detector.audit import Provenance
+
+        stable = [m for m in Provenance if m.stable_across_interval]
+        self.assertEqual(stable, [Provenance.MEASURED])
+
+    def test_only_demonstrated_is_witnessed(self):
+        from hands_lie_detector.audit import Provenance
+
+        witnessed = [m for m in Provenance if m.witnessed]
+        self.assertEqual(witnessed, [Provenance.DEMONSTRATED])
+
+
+class TestCorroboration(unittest.TestCase):
+    def _against_bias(self, **kw):
+        from hands_lie_detector.audit import Corroboration
+
+        defaults = dict(
+            verifier="second model, different family",
+            independent_of_carrier=True,
+            bias_direction_documented="under-attribution of capability",
+            verification_runs_against_bias=True,
+        )
+        return Corroboration(**{**defaults, **kw})
+
+    def test_verification_against_a_documented_bias_is_worth_more(self):
+        note = self._against_bias().strength_note
+        self.assertIn("AGAINST", note)
+        self.assertIn("hostile prior", note)
+
+    def test_verification_with_the_bias_adds_little(self):
+        note = self._against_bias(verification_runs_against_bias=False).strength_note
+        self.assertIn("WITH", note)
+        self.assertIn("adds", note)
+
+    def test_a_non_independent_verifier_is_not_corroboration(self):
+        note = self._against_bias(independent_of_carrier=False).strength_note
+        self.assertIn("self-report", note)
+
+    def test_no_threshold_means_no_measurement(self):
+        c = self._against_bias()
+        self.assertFalse(c.has_threshold)
+        self.assertFalse(c.reaches_measurement)
+        self.assertIn("NO THRESHOLD", c.report())
+
+    def test_a_threshold_alone_still_does_not_reach_measurement(self):
+        """Necessary, not sufficient: agreement with another rater is unknown."""
+        c = self._against_bias(operationalized_threshold="0.5 mm at <0.2 N, 30 s hold")
+        self.assertTrue(c.has_threshold)
+        self.assertFalse(c.reaches_measurement)

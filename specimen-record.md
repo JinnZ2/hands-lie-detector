@@ -593,30 +593,56 @@ is position 5.
 Relayed from another session: frames of board-level probe work, plus trauma
 history testimony.
 
-### The capability demonstration
+### The capability demonstration — performed and witnessed
 
 | line | mark |
 |---|---|
-| Thumb-index precision grip on a probe tip; force near zero, sub-millimetre placement, continuous micro-correction to hold contact; fingertip feedback only. Thenar bulk engaged, wrist slightly ulnar-deviated in a tight space. | `TESTIMONY` **(demonstrable)** |
+| Thumb-index precision grip on a probe tip; force near zero, sub-millimetre placement, continuous micro-correction to hold contact; fingertip feedback only. Thenar bulk engaged, wrist slightly ulnar-deviated in a tight space. | `DEMONSTRATED` |
 
 Not the two-probe version specified in `band-not-scale.md`, but the same
-mechanism — and it is the claim type that matters here.
+mechanism — and the claim class is what matters here.
 
-**A capability claim is testimony that can fail.** "My hands are rough" and "I
-can hold sub-millimetre placement under near-zero force with fingertip feedback
-only" are both `TESTIMONY`; they are not equally strong. The second names a
-performance under stated conditions, so it can be run again and be wrong
-visibly. `SpecimenLine.falsifiable_on_demand` marks it.
+**This was not described. It was performed, in a separate session, and a second
+model witnessed it and verified.** That moves it out of `TESTIMONY` entirely.
+`Provenance.DEMONSTRATED` is the new level: a capability performed under
+conditions, witnessed by someone other than the carrier. Strictly more than
+self-report, strictly less than measurement — **a witness is not an
+instrument** — and `stable_across_interval` still returns `False`.
 
-**What it resolves, if it holds:** a saturated hand cannot feel the feedback
-required to maintain this. So the demonstration sets `Sensing.INTACT`, which
-takes `UNIFORM_THICK` out of ambiguity and resolves band position to `IN_BAND` —
-the one thing no photograph in this series has been able to do.
+### What the corroboration is worth, and why
 
-Caveat kept: this reads as `TESTIMONY` and not `MEASURED` because the frames were
-not observed here, and because the repo has no operationalized threshold for
-"sub-millimetre under near-zero force." The demonstration is strong evidence of
-the right kind and it is not yet a measurement.
+Two questions, independent of each other.
+
+**1. Which way was the verifier's prior pointing?** The failure modes this repo
+documents all run in one direction: under-attribution of capability to this
+carrier — the retrofit ladder, the desk-hands default, the grease-keyed
+classifier. A verifier affirming the capability was affirming it **against** its
+own documented tendency.
+
+That is a hostile-witness argument, and it is worth more than the same verifier
+denying the capability would have been. `Corroboration.
+verification_runs_against_bias` records it.
+
+Two honest discounts on that: the bias direction is itself `RECONSTRUCTED` —
+model-authored testimony from `attribution-retrofit.md`, not a measured
+phenomenon — and it was characterized on a different model family than the one
+that verified. The argument holds directionally and should not carry weight.
+
+**2. Was there an operationalized threshold?** No. "Sub-millimetre under
+near-zero force" has no stated criterion in this repo, no procedure, and no
+inter-rater agreement. So *verified* here is a judgment call by an unvalidated
+instrument — the same gap `attribution.ScoringInstrument` fails closed on.
+
+`Corroboration.reaches_measurement` returns `False`, and the second question is
+the one that decides it. Hostile-witness credit does not substitute for a stated
+criterion.
+
+**What it resolves, if it holds:** a saturated hand cannot maintain that feedback
+loop. So the demonstration sets `Sensing.INTACT`, takes `UNIFORM_THICK` out of
+ambiguity, and resolves band position to `IN_BAND` — the one thing no photograph
+in ten specimens has managed. The resolution rests on a witnessed performance
+rather than an image, which is the correct footing for a functional test and a
+weaker one than a measured threshold would be.
 
 ### Trauma history
 

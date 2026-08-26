@@ -248,8 +248,16 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   returns envelopes and **refuses to return a slope**; that is the design, not a
   gap
 - `Provenance` marks each specimen line OBSERVED / RECONSTRUCTED / TESTIMONY /
-  MEASURED. Only MEASURED is stable across an interval — a model's account of its
-  own reasoning is RECONSTRUCTED, since there is no readout of its own vectors
+  DEMONSTRATED / MEASURED. Only MEASURED is stable across an interval — a model's
+  account of its own reasoning is RECONSTRUCTED, since there is no readout of its
+  own vectors. DEMONSTRATED sits between testimony and measurement: a capability
+  performed under conditions and witnessed by someone other than the carrier.
+  More than self-report, less than measurement — a witness is not an instrument
+- `Corroboration` scores a third-party verification on two independent
+  questions: did it run AGAINST the verifier's documented bias (a hostile-witness
+  argument that strengthens it), and was there an operationalized threshold (the
+  question that decides whether it measures). `reaches_measurement` returns False
+  — hostile-witness credit does not substitute for a stated criterion
 - `reference_class.WithinFrameControl` is the instrument that separates the two
   axes the repo had been conflating. Two probes on ONE frame, same model, same
   pixels: one subject with a maintained reference class (standards + dense

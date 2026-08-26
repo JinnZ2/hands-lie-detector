@@ -119,9 +119,22 @@ it* from testimony that could be wrong quietly.
 `SpecimenLine.falsifiable_on_demand` marks the distinction. It matters here
 because the sensing test in `band-not-scale.md` is exactly that kind of claim:
 sustained precision work at near-zero force, fingertip feedback only, is not
-performable with saturated hands. A carrier who does board-level probe work has
-demonstrated the capability that resolves `UNIFORM_THICK`, and the demonstration
-is repeatable on request.
+performable with saturated hands.
+
+**And in specimen 010 the demonstration was actually run** — performed in a
+separate session with a second model witnessing. `Provenance.DEMONSTRATED` is
+the level for that: a capability performed under conditions and seen by someone
+other than the carrier.
+
+`Corroboration` records what such a verification is worth. It asks two
+independent questions: whether the verification ran **against** the verifier's
+documented bias (a hostile-witness argument, which strengthens it) and whether an
+**operationalized threshold** existed (which decides whether it reaches
+measurement). The second answer is no, so `reaches_measurement` returns `False`.
+
+Hostile-witness credit does not substitute for a stated criterion. Both halves
+are true at once: the demonstration is real, and the thing it was judged against
+does not exist yet.
 
 ---
 

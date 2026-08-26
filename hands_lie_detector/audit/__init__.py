@@ -52,9 +52,10 @@ from .reference_class import (
     ReferenceClassStatus,
     WithinFrameControl,
 )
-from .specimen import Provenance, Specimen, SpecimenLine
+from .specimen import Corroboration, Provenance, Specimen, SpecimenLine
 
 __all__ = [
+    "Corroboration",
     "estimate_without_bits",
     "VerbClass",
     "ThreeArmTest",
