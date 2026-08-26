@@ -231,7 +231,8 @@ class TestCaptureProtocol(unittest.TestCase):
         s = CaptureSession("d", Trigger.FUEL_STOP, positions_shot=set(Position),
                            both_hands=True, light=LightCondition.RAKING,
                            load_log="70 hr week, yard Saturday",
-                           scale_reference_in_frame=True, fixed_geometry_rig=True)
+                           scale_reference_in_frame=True, fixed_geometry_rig=True,
+                           fingertips_protected=True)
         self.assertTrue(s.is_complete)
 
 
@@ -269,6 +270,7 @@ class TestComparability(unittest.TestCase):
             date="d", trigger=Trigger.FUEL_STOP, positions_shot=set(Position),
             both_hands=True, light=LightCondition.RAKING, load_log="70 hr week",
             scale_reference_in_frame=True, fixed_geometry_rig=True,
+            fingertips_protected=True,
         )
         return CaptureSession(**{**defaults, **kw})
 
@@ -286,3 +288,53 @@ class TestComparability(unittest.TestCase):
         session = self._session()
         self.assertTrue(session.comparable_across_sessions)
         self.assertTrue(session.is_complete)
+
+
+class TestBiometricProtection(unittest.TestCase):
+    """Rule zero: a close raking shot of a pad is a fingerprint capture."""
+
+    def test_a_session_is_not_safe_until_fingertips_are_protected(self):
+        from hands_lie_detector.band import CaptureSession, Trigger
+
+        s = CaptureSession("d", Trigger.FUEL_STOP)
+        self.assertFalse(s.biometric_safe)
+        self.assertIn("FINGERTIPS UNPROTECTED", s.problems[0])
+
+    def test_the_biometric_problem_is_reported_first(self):
+        from hands_lie_detector.band import CaptureSession, Trigger
+
+        s = CaptureSession("d", Trigger.NOTICED_SOMETHING)
+        self.assertTrue(s.problems[0].startswith("FINGERTIPS UNPROTECTED"))
+
+    def test_blur_radius_scales_with_capture_resolution_and_has_a_floor(self):
+        from hands_lie_detector.band.capture import blur_radius_px
+
+        self.assertGreater(blur_radius_px(4032), blur_radius_px(1080))
+        self.assertGreaterEqual(blur_radius_px(100), 5.0)
+
+    def test_blur_radius_is_about_twice_ridge_pitch(self):
+        from hands_lie_detector.band.capture import RIDGE_PITCH_MM, blur_radius_px
+
+        px_per_mm = 4032 / 90.0
+        self.assertAlmostEqual(blur_radius_px(4032), 2 * RIDGE_PITCH_MM * px_per_mm,
+                               places=3)
+
+    def test_position_two_no_longer_aims_at_the_tips(self):
+        from hands_lie_detector.band import POSITIONS, Position
+
+        spec = POSITIONS[Position.FINGERTIPS]
+        self.assertIn("not the tips", spec.camera)
+        self.assertIn("ANGLED AWAY", spec.hand)
+        self.assertFalse(any("fingertip pad texture" == r for r in spec.resolves))
+
+    def test_a_complete_session_now_requires_biometric_safety(self):
+        from hands_lie_detector.band import (
+            CaptureSession, LightCondition, Position, Trigger,
+        )
+
+        s = CaptureSession("d", Trigger.FUEL_STOP, positions_shot=set(Position),
+                           both_hands=True, light=LightCondition.RAKING,
+                           load_log="x", scale_reference_in_frame=True,
+                           fixed_geometry_rig=True, fingertips_protected=True)
+        self.assertTrue(s.is_complete)
+        self.assertTrue(s.biometric_safe)

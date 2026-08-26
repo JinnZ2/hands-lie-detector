@@ -9,6 +9,57 @@ is waiting on five photographs and one lamp.
 
 ---
 
+## Rule zero — fingertips
+
+**A close, well-lit, raking-light photograph of a fingertip pad is a fingerprint
+capture.**
+
+Position 2 as this document originally specified it — camera at 6–8 inches,
+light skimming across the pads — is a print rig. It was written into the protocol
+without anyone noticing, by the same reasoning that produced everything else
+here: optimize for resolving fine surface detail, and fine surface detail on a
+fingertip is a biometric.
+
+### It costs nothing to fix
+
+The two signals sit at different spatial frequencies:
+
+| | scale |
+|---|---|
+| friction ridges | ~0.4–0.5 mm pitch |
+| callus boundaries, lesions, plate edges | millimetres to centimetres |
+
+So a low-pass filter sized to ridge pitch **destroys the biometric and leaves
+the load structure essentially untouched.** That is a clean separation, not a
+trade-off — the same frequency argument `band-not-scale.md` uses to explain why
+washing removes grime and not the boundary map, running the other way.
+
+### The rule
+
+- **Aim at the proximal and middle phalanx pads**, where the load markers
+  actually are. The distal tip carries the most biometric and the least load
+  information — specimen 008's index marker was on the proximal phalanx, not the
+  tip.
+- **Angle the tips away** from the camera, or keep them out of frame.
+- **Blur to ridge pitch and strip EXIF before any frame leaves the device** —
+  including before sending it to a model. `blur_radius_px()` computes the
+  radius for a given capture scale.
+- Findings that survive this unharmed: presence or absence of pad grain, healed
+  lesions, plate boundaries, everything the band readout uses. Nothing the repo
+  measures needs ridge detail.
+
+`CaptureSession.biometric_safe` returns `False` until this is handled, and
+`problems` reports it first.
+
+### And it already applied to the hold-out protocol
+
+`calibration-standard.md` says never publish a stimulus image — publishing spends
+it. Rule zero is the stronger version: a fingertip frame should not leave the
+device unblurred **even unpublished**, because transmission is not the same as
+publication and neither is reversible.
+
+---
+
 ## Build this first — the raking-light stage
 
 One object. Everything else in this document depends on it, and nothing else in

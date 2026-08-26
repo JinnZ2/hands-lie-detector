@@ -566,6 +566,13 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
 - Reference photographs supplied in conversation are NOT committed, deliberately.
   Publishing an image spends it as a stimulus — commit hashes with
   `commit_stimulus()` and hold the files outside the repo
+- **Rule zero, biometric:** a close raking-light shot of a fingertip pad IS a
+  fingerprint capture, and Position 2 originally specified one. Ridges sit at
+  ~0.45 mm pitch and load structure at millimetres to centimetres, so a low-pass
+  at ridge pitch removes the biometric and leaves the measurement intact. Aim at
+  the proximal/middle phalanx pads, angle the tips away, blur and strip EXIF
+  before any frame leaves the device — including before sending it to a model.
+  `CaptureSession.biometric_safe` returns False until handled
 - `DEFAULT_BANDS` reports physical scores onto employment status ("Casual
   Hobbyist" at 31-55, below "Working Hands"). See `economic-carve.md` — renaming
   the bands alone is the wrong fix; the physical scale needs somewhere to land

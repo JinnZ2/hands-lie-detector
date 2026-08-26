@@ -19,6 +19,48 @@ from enum import Enum
 from .contrast import LightCondition
 
 
+# ---------------------------------------------------------------------------
+# Rule zero — biometric protection
+# ---------------------------------------------------------------------------
+#
+# A close, well-lit, raking-light photograph of a fingertip pad is a FINGERPRINT
+# CAPTURE. Position 2 as originally specified — camera at 6-8 inches, light
+# skimming across the pads — is a print rig, and it was written into this
+# protocol without anyone noticing.
+#
+# The good news is that this costs nothing to fix, because the two signals sit
+# at different spatial frequencies:
+#
+#     friction ridges     ~0.4-0.5 mm pitch
+#     callus boundaries,
+#     lesions, plate edges  millimetres to centimetres
+#
+# So a low-pass filter sized to ridge pitch destroys the biometric and leaves
+# the load structure essentially untouched. This is a clean separation, not a
+# trade-off — the same frequency argument `band-not-scale.md` uses to explain
+# why washing does not remove the boundary map, running the other way.
+
+BIOMETRIC_RULE = (
+    "fingertip pads are never shot square-on at close range in resolvable light. "
+    "aim at the PROXIMAL and MIDDLE phalanx pads, where the load markers "
+    "actually are; keep the distal tips oblique, out of frame, or low-passed. "
+    "blur to ridge pitch and strip EXIF before any frame leaves the device, "
+    "including before sending it to a model."
+)
+
+RIDGE_PITCH_MM = 0.45
+
+
+def blur_radius_px(image_width_px: int, hand_width_mm: float = 90.0) -> float:
+    """Low-pass radius that destroys ridge detail at a given capture scale.
+
+    Deliberately ~2x ridge pitch: over-blurring the biometric is the safe
+    direction, and the load structure is an order of magnitude coarser.
+    """
+    px_per_mm = image_width_px / hand_width_mm
+    return max(5.0, 2.0 * RIDGE_PITCH_MM * px_per_mm)
+
+
 class Position(str, Enum):
     PALM_FLAT = "1_palm_flat"
     FINGERTIPS = "2_fingertips"
@@ -50,10 +92,13 @@ POSITIONS: dict[Position, PositionSpec] = {
         PositionSpec(
             Position.FINGERTIPS,
             hand="relaxed, palm up, fingers slightly curled as if holding a "
-                 "softball",
-            camera="close, 6-8 inches, focused on the pads",
+                 "softball. DISTAL TIPS ANGLED AWAY from the camera",
+            camera="close, 6-8 inches, framed on the PROXIMAL and MIDDLE phalanx "
+                   "pads — not the tips",
             light="from the side, skimming across the pads",
-            resolves=("fingertip pad texture", "proximal phalanx pad markers"),
+            resolves=("proximal and middle phalanx pad markers",
+                      "presence or absence of pad grain",
+                      "healed lesions at load points"),
         ),
         PositionSpec(
             Position.THENAR,
@@ -112,6 +157,7 @@ class CaptureSession:
     paired_state: str = ""  # e.g. "post-wash", "pre-wash"
     scale_reference_in_frame: bool = False
     fixed_geometry_rig: bool = False
+    fingertips_protected: bool = False
 
     @property
     def missing_positions(self) -> list[Position]:
@@ -135,8 +181,18 @@ class CaptureSession:
         return self.scale_reference_in_frame and self.fixed_geometry_rig
 
     @property
+    def biometric_safe(self) -> bool:
+        """False until distal fingertip ridge detail is out of the capture."""
+        return self.fingertips_protected
+
+    @property
     def problems(self) -> list[str]:
         out = []
+        if not self.biometric_safe:
+            out.append(
+                "FINGERTIPS UNPROTECTED. a close raking-light shot of a pad is a "
+                f"fingerprint capture. {BIOMETRIC_RULE}"
+            )
         if not self.scale_reference_in_frame:
             out.append(
                 "no scale reference in frame. every thickness figure is then in "
