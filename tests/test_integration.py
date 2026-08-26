@@ -849,3 +849,93 @@ class TestKnuckleInstrument(unittest.TestCase):
         self.assertGreaterEqual(len(KNUCKLE_WORK_PREDICTIONS), 6)
         for pattern, prediction in KNUCKLE_WORK_PREDICTIONS:
             self.assertTrue(pattern and prediction)
+
+
+class TestHealingCalibration(unittest.TestCase):
+    """Fourth sign error: residual mark is trauma x (1 - healing quality)."""
+
+    def test_good_healing_means_marks_understate_the_history(self):
+        from hands_lie_detector.integration import HealingCalibration, Turnover
+
+        good = HealingCalibration(turnover=Turnover.HIGH,
+                                  thinner_stratum_corneum=True,
+                                  continuous_service=True)
+        self.assertTrue(good.marks_understate_history)
+        self.assertLess(good.residual_factor, 1.0)
+        self.assertIn("UNDERSTATE", good.report())
+
+    def test_every_factor_pushes_the_same_direction(self):
+        """Not noise. A fixed direction."""
+        from hands_lie_detector.integration import HealingCalibration, Turnover
+
+        base = HealingCalibration(turnover=Turnover.TYPICAL).residual_factor
+        for kwargs in ({"turnover": Turnover.HIGH},
+                       {"thinner_stratum_corneum": True},
+                       {"continuous_service": True}):
+            variant = HealingCalibration(turnover=Turnover.TYPICAL, **kwargs)
+            self.assertLess(variant.residual_factor, base, kwargs)
+
+    def test_implied_events_exceed_visible_marks(self):
+        from hands_lie_detector.integration import HealingCalibration, Turnover
+
+        cal = HealingCalibration(turnover=Turnover.HIGH)
+        self.assertGreater(cal.implied_events(10), 10)
+
+    def test_a_neutral_calibration_changes_nothing(self):
+        from hands_lie_detector.integration import NEUTRAL_HEALING
+
+        self.assertTrue(NEUTRAL_HEALING.is_neutral)
+        self.assertEqual(NEUTRAL_HEALING.residual_factor, 1.0)
+        self.assertFalse(NEUTRAL_HEALING.marks_understate_history)
+
+    def test_the_coefficient_is_flagged_and_the_direction_is_the_finding(self):
+        from hands_lie_detector.integration import HealingCalibration
+
+        cal = HealingCalibration()
+        self.assertFalse(cal.is_evidence_based)
+        self.assertIn("ordering is the defensible part", cal.provenance)
+
+    def test_subsurface_remodeling_is_named_as_out_of_reach(self):
+        from hands_lie_detector.integration import BELOW_THE_SURFACE, SUBSURFACE_NOTE
+
+        self.assertGreaterEqual(len(BELOW_THE_SURFACE), 4)
+        self.assertIn("scope limit", SUBSURFACE_NOTE)
+
+
+class TestJointChain(unittest.TestCase):
+    def test_all_three_joints_are_specified(self):
+        from hands_lie_detector.integration import JOINT_SPECS, Joint
+
+        for joint in Joint:
+            self.assertIn(joint, JOINT_SPECS)
+            self.assertTrue(JOINT_SPECS[joint].trauma_pattern)
+
+    def test_only_dip_trauma_writes_to_the_nail_clock(self):
+        from hands_lie_detector.integration import (
+            Joint, KnuckleFinding, KnuckleMarker, Zone,
+        )
+
+        dip = KnuckleFinding("R2", Zone.DORSAL_PHALANX, KnuckleMarker.SCAR,
+                             joint=Joint.DIP)
+        mcp = KnuckleFinding("R2", Zone.DORSAL_MCP_KNUCKLES, KnuckleMarker.SCAR,
+                             joint=Joint.MCP)
+        self.assertTrue(dip.writes_to_nail_clock)
+        self.assertFalse(mcp.writes_to_nail_clock)
+
+    def test_dip_involvement_prompts_the_nail_cross_check(self):
+        from hands_lie_detector.integration import (
+            Joint, KnuckleFinding, KnuckleMarker, KnuckleReadout, Zone,
+        )
+
+        readout = KnuckleReadout("c", [
+            KnuckleFinding("R2", Zone.DORSAL_PHALANX, KnuckleMarker.SCAR,
+                           joint=Joint.DIP),
+        ])
+        self.assertTrue(readout.corroborated_by_nail_clock)
+        self.assertIn("nail matrix", readout.report())
+
+    def test_only_the_mcp_develops_an_adaptive_pad(self):
+        from hands_lie_detector.integration import JOINT_SPECS, Joint
+
+        self.assertIn("pad", JOINT_SPECS[Joint.MCP].trauma_pattern)
+        self.assertNotIn("pad", JOINT_SPECS[Joint.PIP].trauma_pattern)

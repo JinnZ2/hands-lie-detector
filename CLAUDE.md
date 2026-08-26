@@ -47,7 +47,8 @@ hands-lie-detector/
 │       ├── wear.py               # Tribology taxonomy; counterface required
 │       ├── sole.py               # Sole wear audits the job description
 │       ├── nail.py               # Third clock: matrix trauma, self-dating
-│       ├── knuckle.py            # MCP instrument; load modes, differentials
+│       ├── knuckle.py            # MCP/PIP/DIP instrument; load modes
+│       ├── healing.py            # Residual mark != trauma; 4th sign error
 │       └── carve_audit.py        # Retrieval protocol, seam, boundary audit
 ├── scoring-metrics.md            # Main 100-point hand scoring rubric (v0.1)
 ├── feet-lie-detector.md          # Parallel scoring system for feet
@@ -66,6 +67,7 @@ hands-lie-detector/
 ├── sole-audit.md                 # Boot wear vs stated job title; four gates bypassed
 ├── capture-protocol.md           # Five positions, one lamp; unblocks tier 2
 ├── knuckle-instrument.md         # MCP as its own readout; unread not misread
+├── healing-calibration.md        # Residual mark != trauma; the fourth sign error
 ├── tests/                        # unittest suite (zero deps)
 ├── README.md                     # Mission statement and project premise
 ├── requirements.txt              # All dependencies
@@ -148,6 +150,12 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   override), four tests, and the weight vs constraint distinction. Three of the
   four tests depend on scoring instruments that do not exist yet; only the
   no-destination test is runnable today.
+- **healing-calibration.md** — Residual mark is trauma x (1 - healing quality),
+  so a scar count read straight marks a carrier down for healing well. The
+  FOURTH sign error, and the same shape as the third: a physiological parameter
+  with no load content entering a monotone count uncalibrated. Also names what
+  no light angle reaches — fracture callus, capsular thickening, ligament laxity
+  — and extends the joint instrument to PIP and DIP.
 - **knuckle-instrument.md** — The MCP joint as a separate instrument. Three load
   modes (impact / hyperextension / hyperflexion-under-load), a marker taxonomy,
   and the structural claim that **palmar and dorsal load are not correlated**, so
@@ -368,6 +376,19 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   every reach) from REPEATED_CONTACT (few marks, concentrated, with thickening).
   REPEATED_CONTACT is AMBIGUOUS by construction: a striker and a carpet layer
   land in the same class, and the co-occurring scar field is what separates them
+- `healing.HealingCalibration.marks_understate_history` is True whenever the
+  residual factor is below 1. `implied_events()` returns an unbounded float on
+  purpose: the direction is the finding and the coefficient is stipulated, per
+  the living-tissue seam
+- `healing.BELOW_THE_SURFACE` names what no capture protocol reaches — fracture
+  callus, capsular thickening, ligament laxity, tendon adhesion. A scope limit,
+  not a resolution problem
+- `knuckle.Joint` extends the instrument to PIP and DIP. DIP trauma reaches the
+  nail matrix, so `writes_to_nail_clock` prompts the cross-check against
+  `nail.py` — a DIP finding and a nail mark at consistent age are two
+  instruments on one event
+- `audit.SpecimenLine.falsifiable_on_demand` separates a capability claim from a
+  description. Both are TESTIMONY; only one can be re-run and fail visibly
 - `knuckle.KnuckleReadout.predicts_palmar_load` returns False unconditionally.
   Dorsal and palmar load are not correlated, so neither surface's reading
   licenses an inference about the other
@@ -480,6 +501,9 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
 - `scoring-metrics.md` has duplicate content (lines 1-108 and 112-208)
 - Future expansions in README (clean_but_used, callus_memory, etc.) not yet developed
 - Vision classifier needs labeled training data to be useful — no dataset included yet
+- Four documented sign errors in the thickness/injury scale, none fixed:
+  saturation reads as expertise, acute damage reads as incompetence, thickness
+  baseline uncalibrated, residual mark uncalibrated. See `band-not-scale.md`
 - Four documented form errors, none fixed in the shipped scale, because each fix
   is a replacement rather than an edit: additive scoring, the monotone thickness
   scale, summed layer weighting, and deposit/draw treated as parallel inputs when

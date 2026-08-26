@@ -139,6 +139,22 @@ Which disposes of several problems at once, without special-casing any of them:
 
 ---
 
+## Four sign errors, same direction
+
+Two are described below; the other two are calibration failures documented
+elsewhere and listed here so the count stays in one place.
+
+| # | error | where |
+|---|---|---|
+| 1 | saturation reads as expertise | below |
+| 2 | acute damage reads as incompetence | below |
+| 3 | thickness baseline uncalibrated — same history, lower baseline, lower score | `BiologicalCalibration` |
+| 4 | residual mark uncalibrated — same trauma, better healing, fewer marks, lower score | `healing-calibration.md` |
+
+Errors 3 and 4 are the same operation on different quantities: a physiological
+parameter with no load content entering a monotone count uncalibrated. Both are
+fixed by normalizing before the monotone step, and neither by moving a threshold.
+
 ## Two sign errors, same direction
 
 **One: saturation reads as expertise.** Covered above. The glassy hand tops the

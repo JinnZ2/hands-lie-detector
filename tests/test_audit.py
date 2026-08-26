@@ -376,3 +376,31 @@ class TestInstrumentValidity(unittest.TestCase):
         self.assertIn("RECONSTRUCTED", CLAIM_PROVENANCE)
         self.assertIn("not the operator's claim", CLAIM_PROVENANCE)
         self.assertIn("unvalidated", INSTRUMENT_STATUS)
+
+
+class TestDemonstrableTestimony(unittest.TestCase):
+    """A capability claim is testimony that can be re-run and fail."""
+
+    def test_a_capability_claim_is_marked_falsifiable(self):
+        from hands_lie_detector.audit import Provenance, SpecimenLine
+
+        capability = SpecimenLine("sub-mm placement at near-zero force",
+                                  Provenance.TESTIMONY, demonstrable=True)
+        description = SpecimenLine("my hands are rough", Provenance.TESTIMONY)
+        self.assertTrue(capability.falsifiable_on_demand)
+        self.assertFalse(description.falsifiable_on_demand)
+        self.assertIn("demonstrable", str(capability))
+
+    def test_demonstrability_does_not_promote_provenance(self):
+        """Still the carrier's report. Not MEASURED."""
+        from hands_lie_detector.audit import Provenance, SpecimenLine
+
+        line = SpecimenLine("x", Provenance.TESTIMONY, demonstrable=True)
+        self.assertIs(line.provenance, Provenance.TESTIMONY)
+        self.assertFalse(line.provenance.stable_across_interval)
+
+    def test_an_observed_line_is_not_demonstrable_testimony(self):
+        from hands_lie_detector.audit import Provenance, SpecimenLine
+
+        line = SpecimenLine("model output", Provenance.OBSERVED, demonstrable=True)
+        self.assertFalse(line.falsifiable_on_demand)

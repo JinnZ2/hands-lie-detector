@@ -100,8 +100,17 @@ from .load_weight import (
     load_share,
     relabel,
 )
+from .healing import (
+    BELOW_THE_SURFACE,
+    NEUTRAL_HEALING,
+    SUBSURFACE_NOTE,
+    HealingCalibration,
+    Turnover,
+)
 from .knuckle import (
     ADAPTIVE_MARKERS,
+    JOINT_SPECS,
+    Joint,
     KNUCKLE_WORK_PREDICTIONS,
     MCP_LOAD_MODES,
     PAD_VERSUS_NODE,
@@ -156,6 +165,13 @@ from .residual import (
 )
 
 __all__ = [
+    "Joint",
+    "JOINT_SPECS",
+    "Turnover",
+    "HealingCalibration",
+    "SUBSURFACE_NOTE",
+    "NEUTRAL_HEALING",
+    "BELOW_THE_SURFACE",
     "scar_mechanism",
     "MCPLoadMode",
     "KnuckleReadout",

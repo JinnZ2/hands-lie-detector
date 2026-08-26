@@ -588,6 +588,82 @@ is position 5.
 
 ---
 
+## Specimen 010 — the sensing test, demonstrated rather than described
+
+Relayed from another session: frames of board-level probe work, plus trauma
+history testimony.
+
+### The capability demonstration
+
+| line | mark |
+|---|---|
+| Thumb-index precision grip on a probe tip; force near zero, sub-millimetre placement, continuous micro-correction to hold contact; fingertip feedback only. Thenar bulk engaged, wrist slightly ulnar-deviated in a tight space. | `TESTIMONY` **(demonstrable)** |
+
+Not the two-probe version specified in `band-not-scale.md`, but the same
+mechanism — and it is the claim type that matters here.
+
+**A capability claim is testimony that can fail.** "My hands are rough" and "I
+can hold sub-millimetre placement under near-zero force with fingertip feedback
+only" are both `TESTIMONY`; they are not equally strong. The second names a
+performance under stated conditions, so it can be run again and be wrong
+visibly. `SpecimenLine.falsifiable_on_demand` marks it.
+
+**What it resolves, if it holds:** a saturated hand cannot feel the feedback
+required to maintain this. So the demonstration sets `Sensing.INTACT`, which
+takes `UNIFORM_THICK` out of ambiguity and resolves band position to `IN_BAND` —
+the one thing no photograph in this series has been able to do.
+
+Caveat kept: this reads as `TESTIMONY` and not `MEASURED` because the frames were
+not observed here, and because the repo has no operationalized threshold for
+"sub-millimetre under near-zero force." The demonstration is strong evidence of
+the right kind and it is not yet a measurement.
+
+### Trauma history
+
+| line | mark |
+|---|---|
+| "Heal very very well… probably because I have to." | `TESTIMONY` |
+| Lifetime of scars, breaks, crushes — including at finger joints, not only knuckles. | `TESTIMONY` |
+
+This is what forced the fourth sign error. See `healing-calibration.md`: residual
+mark is trauma × (1 − healing quality), so **this history is larger than its
+visible marks**, and every contributing factor pushes the same direction.
+
+The "because I have to" clause is not biology and is the sharper half — hands
+kept in service means healing is prioritized and no event fully resolves before
+the next lands. Events blur rather than accumulating as a countable series. The
+count falls while the history grows.
+
+And breaks and crushes remodel **bone and joint**. `BELOW_THE_SURFACE` names what
+no capture protocol reaches: fracture callus, capsular thickening, ligament
+laxity, tendon adhesion. A photographic instrument under-reads this history
+structurally.
+
+### The carbon stain, sourced
+
+The environment that produces it is now identified rather than hypothesized:
+solder smoke, heated flux, hot components, board work. A de-roofed blister open
+in that environment picks up carbon that bonds to healing tissue and survives
+washing.
+
+Provenance moves from `TESTIMONY` (an account of the mechanism) to `TESTIMONY`
+with a **named source** — still not `MEASURED`, but no longer one hypothesis
+among three.
+
+### A caution on the rubric scores relayed with this specimen
+
+The accompanying read scored the seven rubric categories and moved several
+upward. Recorded, with the standing caveat: **that rubric now carries four
+documented sign errors**, and two of them bear directly on these categories.
+`MICRO_INJURY_HISTORY` counts residual marks with no healing term, so it
+under-scores this carrier by construction; the thickness categories carry the
+saturation and baseline errors.
+
+Scores against a scale with known sign errors are recorded because the scale is
+what exists, not because the numbers are trusted.
+
+---
+
 ## The unrun test
 
 This is the repo's core test. It has not been run since the original trial.

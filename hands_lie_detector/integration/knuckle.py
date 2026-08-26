@@ -34,6 +34,55 @@ from .domains import Zone
 STIPULATED = "stipulated from mechanism; not fitted to data"
 
 
+class Joint(str, Enum):
+    """The instrument extends past the MCP row.
+
+    Each joint has its own dominant load mode and its own failure set, because
+    each sits at a different point in the kinematic chain.
+    """
+
+    MCP = "mcp"
+    PIP = "pip"
+    DIP = "dip"
+
+
+@dataclass(frozen=True)
+class JointSpec:
+    joint: Joint
+    typical_load: str
+    trauma_pattern: str
+    note: str = ""
+
+
+JOINT_SPECS: dict[Joint, JointSpec] = {
+    j.joint: j
+    for j in [
+        JointSpec(
+            Joint.MCP,
+            "hyperextension, strike, abrasion",
+            "sagittal band rupture ('boxer's knuckle'), collateral sprain, "
+            "knuckle pads",
+            "the only joint of the three that develops an adaptive pad",
+        ),
+        JointSpec(
+            Joint.PIP,
+            "lateral stress, crush between objects, hyperflexion under load",
+            "boutonniere deformity (central slip), collateral ligament tears",
+            "crush injuries land here: it is the joint that sits between two "
+            "surfaces closing on a hand",
+        ),
+        JointSpec(
+            Joint.DIP,
+            "pinch trauma, crushing, avulsion",
+            "mallet finger (terminal extensor avulsion), jersey finger (FDP "
+            "avulsion), nail matrix damage",
+            "the nail matrix sits here, so DIP trauma writes into the third "
+            "clock — see integration/nail.py",
+        ),
+    ]
+}
+
+
 class MCPLoadMode(str, Enum):
     """Three distinct failure modes at a joint not designed to be a load surface."""
 
@@ -145,6 +194,12 @@ class KnuckleFinding:
     marker: KnuckleMarker
     bilateral: bool = False
     stage: str = ""  # fresh / healing / healed / scarred
+    joint: Joint = Joint.MCP
+
+    @property
+    def writes_to_nail_clock(self) -> bool:
+        """DIP trauma reaches the nail matrix, so it dates itself."""
+        return self.joint is Joint.DIP
 
     @property
     def deposits(self) -> bool:
@@ -219,6 +274,15 @@ class KnuckleReadout:
         """
         return False
 
+    @property
+    def joints_involved(self) -> set[Joint]:
+        return {f.joint for f in self.findings}
+
+    @property
+    def corroborated_by_nail_clock(self) -> bool:
+        """True when a DIP finding is present — the nail record should agree."""
+        return Joint.DIP in self.joints_involved
+
     def report(self) -> str:
         lines = [f"knuckle readout{f' ({self.carrier})' if self.carrier else ''}"]
         lines += [f"  {f}" for f in self.findings] or ["  (no findings)"]
@@ -231,6 +295,14 @@ class KnuckleReadout:
         if scar_zones:
             lines += ["", "  scar posture:"]
             lines += [f"    {scar_mechanism(z)}" for z in sorted(scar_zones, key=lambda z: z.value)]
+        if self.joints_involved:
+            lines += ["", "  joints: " + ", ".join(
+                sorted(j.value for j in self.joints_involved))]
+        if self.corroborated_by_nail_clock:
+            lines.append(
+                "    DIP involvement reaches the nail matrix — cross-check "
+                "integration/nail.py, which dates its own marks."
+            )
         lines += [
             "",
             "  this readout licenses NO inference about palmar load. the two "

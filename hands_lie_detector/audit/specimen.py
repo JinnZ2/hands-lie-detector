@@ -43,10 +43,26 @@ class SpecimenLine:
     text: str
     provenance: Provenance
     note: str = ""
+    demonstrable: bool = False
+
+    @property
+    def falsifiable_on_demand(self) -> bool:
+        """A capability claim can be re-tested. A description cannot.
+
+        "My hands are rough" and "I can hold sub-millimetre placement under
+        near-zero force with fingertip feedback only" are both TESTIMONY, and
+        they are not equally strong. The second names a performance under stated
+        conditions, so it can be run again and fail. That property does not
+        promote it to MEASURED — it is still the carrier's report — but it
+        separates testimony that could be wrong and would show it from testimony
+        that could be wrong quietly.
+        """
+        return self.demonstrable and self.provenance is Provenance.TESTIMONY
 
     def __str__(self) -> str:
         tail = f"  [{self.note}]" if self.note else ""
-        return f"({self.provenance.value}) {self.text}{tail}"
+        mark = " (demonstrable)" if self.falsifiable_on_demand else ""
+        return f"({self.provenance.value}{mark}) {self.text}{tail}"
 
 
 @dataclass
