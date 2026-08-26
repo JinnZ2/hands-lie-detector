@@ -755,21 +755,28 @@ class TestDorsalSignature(unittest.TestCase):
         self.assertIs(dorsal_signature(self._mechanic()),
                       DorsalSignature.EDGE_STRIKE_FIELD)
 
-    def test_few_concentrated_marks_with_remodeling_read_as_repeated_impact(self):
+    def test_few_concentrated_marks_with_remodeling_read_as_repeated_contact(self):
+        """AMBIGUOUS by construction: a striker and a carpet layer both land here."""
         from hands_lie_detector.integration import DorsalSignature, dorsal_signature
+        from hands_lie_detector.integration.event_log import SIGNATURE_READING
 
-        self.assertIs(dorsal_signature(self._striker()),
-                      DorsalSignature.REPEATED_IMPACT)
+        signature = dorsal_signature(self._striker())
+        self.assertIs(signature, DorsalSignature.REPEATED_CONTACT)
+        self.assertIn("AMBIGUOUS", SIGNATURE_READING[signature])
 
     def test_grip_load_history_is_never_carried_dorsally(self):
         """The strong claim, unchanged: the dorsum is not a grip surface."""
         for log in (self._mechanic(), self._striker()):
             self.assertFalse(log.carries_grip_load_history)
 
-    def test_only_repeated_impact_deposits(self):
-        """The correction: the dorsum has one adaptation route after all."""
-        self.assertFalse(self._mechanic().carries_impact_history)
-        self.assertTrue(self._striker().carries_impact_history)
+    def test_only_repeated_contact_deposits(self):
+        """The correction: the dorsum has one adaptation route after all.
+
+        Widened once more — the route is repeated dorsal CONTACT, so friction
+        and pressure qualify alongside impact.
+        """
+        self.assertFalse(self._mechanic().carries_contact_history)
+        self.assertTrue(self._striker().carries_contact_history)
 
     def test_a_sparse_log_is_not_classified(self):
         from hands_lie_detector.integration import (
@@ -783,3 +790,62 @@ class TestDorsalSignature(unittest.TestCase):
         from hands_lie_detector.integration import DorsalSignature, EventLog, dorsal_signature
 
         self.assertIs(dorsal_signature(EventLog()), DorsalSignature.UNREADABLE)
+
+
+class TestKnuckleInstrument(unittest.TestCase):
+    """The MCP joint reads strike and press, not grip."""
+
+    def test_a_knuckle_readout_licenses_no_palmar_inference(self):
+        """Dorsal and palmar load are not correlated, in either direction."""
+        from hands_lie_detector.integration import KnuckleReadout
+
+        self.assertFalse(KnuckleReadout().predicts_palmar_load)
+
+    def test_scar_location_distinguishes_posture(self):
+        from hands_lie_detector.integration import Zone, scar_mechanism
+
+        self.assertIn("FLEXED", scar_mechanism(Zone.DORSAL_MCP_KNUCKLES))
+        self.assertIn("FLAT", scar_mechanism(Zone.DORSAL_METACARPAL))
+        self.assertIn("does not distinguish", scar_mechanism(Zone.DORSAL_WEB_SPACE))
+
+    def test_pads_deposit_and_scars_do_not(self):
+        from hands_lie_detector.integration import (
+            KnuckleFinding, KnuckleMarker, Zone,
+        )
+
+        pad = KnuckleFinding("R3", Zone.DORSAL_MCP_KNUCKLES, KnuckleMarker.PAD)
+        scar = KnuckleFinding("R3", Zone.DORSAL_MCP_KNUCKLES, KnuckleMarker.SCAR)
+        self.assertTrue(pad.deposits)
+        self.assertFalse(scar.deposits)
+
+    def test_every_differential_requires_a_clinical_view(self):
+        """This is a load-history instrument, not a diagnostic one."""
+        from hands_lie_detector.integration import Differential
+
+        for d in Differential:
+            self.assertTrue(d.requires_clinical_view)
+
+    def test_the_report_declines_the_differential(self):
+        from hands_lie_detector.integration import (
+            KnuckleFinding, KnuckleMarker, KnuckleReadout, Zone,
+        )
+
+        readout = KnuckleReadout("c", [
+            KnuckleFinding("R3", Zone.DORSAL_MCP_KNUCKLES, KnuckleMarker.PAD),
+        ])
+        self.assertIn("no bony component", readout.report())
+        self.assertIn("decline the differential", readout.report())
+
+    def test_all_three_load_modes_are_specified(self):
+        from hands_lie_detector.integration import MCP_LOAD_MODES, MCPLoadMode
+
+        for mode in MCPLoadMode:
+            self.assertIn(mode, MCP_LOAD_MODES)
+            self.assertTrue(MCP_LOAD_MODES[mode].mechanism)
+
+    def test_work_predictions_are_falsifiable_claims(self):
+        from hands_lie_detector.integration import KNUCKLE_WORK_PREDICTIONS
+
+        self.assertGreaterEqual(len(KNUCKLE_WORK_PREDICTIONS), 6)
+        for pattern, prediction in KNUCKLE_WORK_PREDICTIONS:
+            self.assertTrue(pattern and prediction)

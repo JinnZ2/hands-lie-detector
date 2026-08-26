@@ -38,7 +38,11 @@ EVENT_MARKS: frozenset[MarkKind] = frozenset({
     MarkKind.LACERATION, MarkKind.ABRASION, MarkKind.CONTUSION, MarkKind.SPLIT,
 })
 
-# The exception: repeated direct impact at a fixed site DOES remodel dorsally.
+# The exception: repeated DORSAL CONTACT at a fixed site remodels.
+#
+# Widened after the knuckle-pad literature: pads form in carpet layers, tailors
+# and shearers, who are not striking anything. The route is repeated contact —
+# friction and pressure count, not only impact. See `knuckle-instrument.md`.
 ADAPTATION_MARKS: frozenset[MarkKind] = frozenset({MarkKind.THICKENING})
 
 
@@ -90,19 +94,31 @@ class EventLog:
         return False
 
     @property
-    def carries_impact_history(self) -> bool:
-        """True only where repeated direct impact has remodeled a fixed site.
+    def carries_contact_history(self) -> bool:
+        """True where repeated DORSAL CONTACT has remodeled a fixed site.
 
-        CORRECTION to an earlier version of this module, which returned False
-        unconditionally for all load history. That was too strong. The dorsum has
-        no adaptation route for GRIP, but it is a contact surface for STRIKING,
-        and repeated axial impact at the same knuckle does deposit soft-tissue
-        thickening there.
+        Corrected twice, in the same direction both times.
 
-        So the dorsum runs two channels, not one: an event log that heals away,
-        and — under repeated strike at a fixed geometry — a deposit that does not.
+        First version: `carries_load_history` returned False unconditionally,
+        on the grounds that dorsal tissue has no adaptation route at all. Too
+        strong — repeated axial impact at a fixed knuckle does remodel it.
+
+        Second version narrowed the route to STRIKING. Also too narrow: knuckle
+        pads form in carpet layers, tailors and shearers, who strike nothing.
+        The route is repeated dorsal CONTACT, and friction and pressure qualify
+        alongside impact.
+
+        The claim that survives both corrections is the one about grip: the
+        dorsum is not a grip surface, so grip and shear deposit nothing there.
+        That is `carries_grip_load_history`, and it is still unconditional.
         """
         return any(m.kind in ADAPTATION_MARKS for m in self.marks)
+
+    # Kept as an alias so the narrower name does not read as the whole claim.
+    @property
+    def carries_impact_history(self) -> bool:
+        """Deprecated name for `carries_contact_history`. Impact is one route."""
+        return self.carries_contact_history
 
     @property
     def supports_rate_claims(self) -> bool:
@@ -215,7 +231,7 @@ class EventLog:
 
 class DorsalSignature(str, Enum):
     EDGE_STRIKE_FIELD = "edge_strike_field"
-    REPEATED_IMPACT = "repeated_impact"
+    REPEATED_CONTACT = "repeated_contact"   # AMBIGUOUS: impact or friction
     SPARSE = "sparse"
     MIXED = "mixed"
     UNREADABLE = "unreadable"
@@ -226,10 +242,14 @@ SIGNATURE_READING: dict[DorsalSignature, str] = {
         "many superficial marks at varied sites. a confined working volume with "
         "edges in it, entered repeatedly at different geometries. records event "
         "COUNT, not load carried.",
-    DorsalSignature.REPEATED_IMPACT:
-        "few marks, concentrated at the striking knuckles, with soft-tissue "
-        "thickening. one geometry repeated. this is the dorsal case that does "
-        "deposit.",
+    DorsalSignature.REPEATED_CONTACT:
+        "few marks, concentrated at one or two knuckles, with soft-tissue "
+        "thickening. one geometry repeated, and this is the dorsal case that "
+        "does deposit. AMBIGUOUS as to route: repeated IMPACT and repeated "
+        "FRICTION or PRESSURE both produce it — a striker and a carpet layer "
+        "land in the same class. the co-occurring scar field separates them "
+        "(strike work carries one, press work does not), and thickening alone "
+        "does not.",
     DorsalSignature.SPARSE:
         "too few marks to distinguish a distribution from an accident.",
     DorsalSignature.MIXED:
@@ -261,7 +281,7 @@ def dorsal_signature(log: "EventLog") -> DorsalSignature:
     counts = log.zones_marked()
     top_two = sum(sorted(counts.values(), reverse=True)[:2])
     concentration = top_two / len(marks)
-    remodeled = log.carries_impact_history
+    remodeled = log.carries_contact_history
 
     many = len(marks) >= FIELD_THRESHOLD
     concentrated = concentration >= CONCENTRATION_THRESHOLD
@@ -271,7 +291,7 @@ def dorsal_signature(log: "EventLog") -> DorsalSignature:
     if many and not concentrated:
         return DorsalSignature.EDGE_STRIKE_FIELD
     if remodeled and concentrated:
-        return DorsalSignature.REPEATED_IMPACT
+        return DorsalSignature.REPEATED_CONTACT
     if len(marks) < 4:
         return DorsalSignature.SPARSE
     return DorsalSignature.MIXED

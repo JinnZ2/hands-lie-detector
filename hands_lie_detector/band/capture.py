@@ -172,3 +172,55 @@ class CaptureSession:
         else:
             lines += ["", "protocol satisfied."]
         return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Knuckle survey — three positions the palmar set does not cover
+# ---------------------------------------------------------------------------
+#
+# Knuckle ridges run TRANSVERSE across the hand. Light running down the fingers
+# grazes along them and resolves nothing; light crossing them casts shadows into
+# the valleys. That is why position 4 in the main set — a flat dorsal shot with
+# side light — misses knuckle detail even when the light is low.
+
+
+class KnucklePosition(str, Enum):
+    DORSAL_SURVEY = "a_dorsal_survey"
+    LOOSE_FIST_PROFILE = "b_loose_fist_profile"
+    MCP_SIDE_PROFILE = "c_mcp_side_profile"
+
+
+KNUCKLE_POSITIONS: dict[KnucklePosition, PositionSpec] = {
+    KnucklePosition.DORSAL_SURVEY: PositionSpec(
+        Position.DORSAL,
+        hand="flat on a neutral surface, dorsum up, fingers together or slightly "
+             "spread",
+        camera="directly above",
+        light="RAKING FROM THE FINGERTIP DIRECTION toward the wrist, or from the "
+              "thumb side — across the ridges, never along them",
+        resolves=("scar field", "pad thickening", "ridge irregularity"),
+    ),
+    KnucklePosition.LOOSE_FIST_PROFILE: PositionSpec(
+        Position.DORSAL,
+        hand="fingers curled to ~90 degrees at the MCP, IP joints extended",
+        camera="dorsal surface facing camera, slightly angled",
+        light="from the side, skimming across the MCP ridge line",
+        resolves=("pads and scars in relief", "the 'torn up' presentation"),
+    ),
+    KnucklePosition.MCP_SIDE_PROFILE: PositionSpec(
+        Position.DORSAL,
+        hand="lateral view, MCP joint centred",
+        camera="from the side",
+        light="from above or below, grazing the joint",
+        resolves=("dorsal-palmar thickness at the joint", "pad bulk",
+                  "volar fullness"),
+    ),
+}
+
+KNUCKLE_LOG_FIELDS: tuple[str, ...] = (
+    "which MCP joints carry markers (index, middle, ring, little, thumb)",
+    "bilateral or asymmetric",
+    "fresh / healing / healed / scarred",
+    "pad vs scar vs diffuse swelling",
+    "any carbon staining or embedded material",
+)

@@ -232,3 +232,24 @@ class TestCaptureProtocol(unittest.TestCase):
                            both_hands=True, light=LightCondition.RAKING,
                            load_log="70 hr week, yard Saturday")
         self.assertTrue(s.is_complete)
+
+
+class TestKnuckleCapture(unittest.TestCase):
+    def test_knuckle_light_crosses_the_ridges_not_along_them(self):
+        from hands_lie_detector.band import KNUCKLE_POSITIONS, KnucklePosition
+
+        survey = KNUCKLE_POSITIONS[KnucklePosition.DORSAL_SURVEY]
+        self.assertIn("across the ridges", survey.light)
+        self.assertIn("never along them", survey.light)
+
+    def test_three_knuckle_positions_exist_beyond_the_main_set(self):
+        from hands_lie_detector.band import KNUCKLE_POSITIONS, KnucklePosition
+
+        self.assertEqual(len(KNUCKLE_POSITIONS), len(KnucklePosition))
+
+    def test_the_log_fields_name_laterality_and_stage(self):
+        from hands_lie_detector.band import KNUCKLE_LOG_FIELDS
+
+        joined = " ".join(KNUCKLE_LOG_FIELDS)
+        self.assertIn("bilateral", joined)
+        self.assertIn("scarred", joined)

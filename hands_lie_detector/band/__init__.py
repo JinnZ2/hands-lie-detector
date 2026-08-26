@@ -14,6 +14,9 @@ on a different clock (`integration.event_log`).
 """
 
 from .capture import (
+    KNUCKLE_LOG_FIELDS,
+    KNUCKLE_POSITIONS,
+    KnucklePosition,
     POSITIONS,
     TIER_2_POSITION,
     CaptureSession,
@@ -41,6 +44,9 @@ from .contrast import (
 )
 
 __all__ = [
+    "KnucklePosition",
+    "KNUCKLE_POSITIONS",
+    "KNUCKLE_LOG_FIELDS",
     "Trigger",
     "PositionSpec",
     "Position",

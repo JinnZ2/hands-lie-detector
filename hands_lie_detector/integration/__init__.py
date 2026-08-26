@@ -100,6 +100,18 @@ from .load_weight import (
     load_share,
     relabel,
 )
+from .knuckle import (
+    ADAPTIVE_MARKERS,
+    KNUCKLE_WORK_PREDICTIONS,
+    MCP_LOAD_MODES,
+    PAD_VERSUS_NODE,
+    Differential,
+    KnuckleFinding,
+    KnuckleMarker,
+    KnuckleReadout,
+    MCPLoadMode,
+    scar_mechanism,
+)
 from .nail import (
     FULL_REPLACEMENT_MONTHS,
     LOAD_BEARING,
@@ -144,6 +156,16 @@ from .residual import (
 )
 
 __all__ = [
+    "scar_mechanism",
+    "MCPLoadMode",
+    "KnuckleReadout",
+    "KnuckleMarker",
+    "KnuckleFinding",
+    "Differential",
+    "PAD_VERSUS_NODE",
+    "MCP_LOAD_MODES",
+    "KNUCKLE_WORK_PREDICTIONS",
+    "ADAPTIVE_MARKERS",
     "dorsal_signature",
     "DorsalSignature",
     "STRIKE_ZONES",

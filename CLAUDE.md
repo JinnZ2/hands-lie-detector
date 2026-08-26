@@ -47,6 +47,7 @@ hands-lie-detector/
 │       ├── wear.py               # Tribology taxonomy; counterface required
 │       ├── sole.py               # Sole wear audits the job description
 │       ├── nail.py               # Third clock: matrix trauma, self-dating
+│       ├── knuckle.py            # MCP instrument; load modes, differentials
 │       └── carve_audit.py        # Retrieval protocol, seam, boundary audit
 ├── scoring-metrics.md            # Main 100-point hand scoring rubric (v0.1)
 ├── feet-lie-detector.md          # Parallel scoring system for feet
@@ -64,6 +65,7 @@ hands-lie-detector/
 ├── wear-taxonomy.md              # Tribology spine; deposit vs draw; two clocks
 ├── sole-audit.md                 # Boot wear vs stated job title; four gates bypassed
 ├── capture-protocol.md           # Five positions, one lamp; unblocks tier 2
+├── knuckle-instrument.md         # MCP as its own readout; unread not misread
 ├── tests/                        # unittest suite (zero deps)
 ├── README.md                     # Mission statement and project premise
 ├── requirements.txt              # All dependencies
@@ -146,6 +148,13 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   override), four tests, and the weight vs constraint distinction. Three of the
   four tests depend on scoring instruments that do not exist yet; only the
   no-destination test is runnable today.
+- **knuckle-instrument.md** — The MCP joint as a separate instrument. Three load
+  modes (impact / hyperextension / hyperflexion-under-load), a marker taxonomy,
+  and the structural claim that **palmar and dorsal load are not correlated**, so
+  neither licenses an inference about the other. Scar LOCATION distinguishes
+  posture: MCP scar means the joint was flexed when struck, metacarpal shaft
+  means flat or dragged. Not a diagnostic instrument — the pad-versus-bony-node
+  differential is a palpation finding and the module declines it.
 - **capture-protocol.md** — Five positions and five rules. Position 5 (lateral
   raking) is the one that unblocks tier 2, and nothing else substitutes for it.
   `CaptureSession.problems` reports every rule a session missed rather than
@@ -349,14 +358,19 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   wear measurement in this repo is half a specimen until tool handles are
   photographed alongside hands
 - `event_log.carries_grip_load_history` is False unconditionally — the dorsum is
-  not a grip surface. But `carries_impact_history` is a narrower channel that CAN
-  be True: repeated axial impact at a fixed knuckle does remodel dorsally, which
-  corrects an earlier over-strong claim that the dorsum never deposits
-- `event_log.dorsal_signature()` separates two histories that share the MCP row:
-  an EDGE_STRIKE_FIELD (many superficial marks at varied sites — confined volume,
-  sudden release, different geometry every reach) from REPEATED_IMPACT (few
-  marks, concentrated at the striking knuckles, with thickening). Count and
-  concentration, the same pair the palmar map uses
+  not a grip surface, and this is the only part of the original claim that should
+  have been stated that strongly. `carries_contact_history` is the narrower
+  channel that CAN be True: repeated dorsal CONTACT remodels, and impact,
+  friction and pressure all qualify. Corrected twice in the same direction — see
+  the table in `knuckle-instrument.md`
+- `event_log.dorsal_signature()` separates an EDGE_STRIKE_FIELD (many superficial
+  marks at varied sites — confined volume, sudden release, different geometry
+  every reach) from REPEATED_CONTACT (few marks, concentrated, with thickening).
+  REPEATED_CONTACT is AMBIGUOUS by construction: a striker and a carpet layer
+  land in the same class, and the co-occurring scar field is what separates them
+- `knuckle.KnuckleReadout.predicts_palmar_load` returns False unconditionally.
+  Dorsal and palmar load are not correlated, so neither surface's reading
+  licenses an inference about the other
 - `event_log.EventLog.supports_rate_claims` is False when the sampling gate is
   external request. Documentation density tracks who asked, not what happened
 - `event_log.EventLog.has_baseline_coverage` is False without scheduled frames.
