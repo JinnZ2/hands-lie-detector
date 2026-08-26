@@ -56,6 +56,35 @@ produces them, which is why the fix has to be a trigger and not a resolution.
 
 ---
 
+## Equipment: one light is the specification, not a compromise
+
+Worth stating plainly, because the intuition runs the wrong way.
+
+**A single hard source is the requirement.** Two lights, a softbox, a bounce, or
+ordinary room light all produce *fill* — and fill is what erases the shadow that
+carries the thickness information. The measurement lives in the terminator
+between a raised zone and a thin one, and fill light climbs into it and flattens
+it out.
+
+So one bare LED is the correct instrument. What matters is not how many lights
+there are but:
+
+| | requirement | why |
+|---|---|---|
+| **kill the ambient** | shoot in a dark room, that lamp only | any second source is fill, and fill destroys the reading |
+| **get it LOW** | near the plane of the hand, not above it | height is the single most common failure. Light from above grazes *along* the surface; the map needs it crossing *across* |
+| **flat surface, not vertical** | hand on a table, not pressed to a wall | pressing distorts the tissue being measured |
+| **camera perpendicular** | to the hand's plane, not to the light | position 5 puts them opposite each other on purpose |
+| **brace the phone** | table edge, book, anything | motion blur has cost more detail in this series than light angle has |
+
+Every one of those is free. None of them is a hardware problem, and a better
+camera fixes none of them.
+
+The specimen series has failed on **height and blur**, repeatedly — not on
+equipment.
+
+---
+
 ## What this unblocks, in order
 
 1. **Tier 2 becomes measurable at all.** Currently every state readout in this

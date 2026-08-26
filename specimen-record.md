@@ -511,6 +511,83 @@ exists, not because the scale is trusted.
 
 ---
 
+## Specimen 009 — the first matched bilateral pair, and a geometry failure recorded twice
+
+Four frames across two sessions. Two dorsal (one per hand, matched conditions),
+one ulnar palm, one dorsal against a vertical surface under side light.
+
+### The bilateral pair — the reason this specimen matters
+
+Frames 1 and 2 are the first in the series to satisfy **rule 1** of
+`capture-protocol.md`: both hands, same session, same background, same light
+direction and height, same camera.
+
+| observation | mark |
+|---|---|
+| Left dorsal venous relief markedly greater than right — branching network over the metacarpals raised enough to cast its own micro-shadows; right present but flatter. | `MEASURED` |
+| Left dorsal pigmented mark resolves as **two** adjacent marks over the third/fourth metacarpal region, proximal to the MCPs. | `MEASURED` |
+| Pronounced transverse dorsal creasing on both, greater on left. | `MEASURED` |
+| Nails on both hands: short, natural, unpolished, functional length; some plates matte rather than glossy. | `MEASURED` |
+
+**Why the asymmetry is readable where the absolute level is not.** Vein
+prominence alone is confounded by body fat, skin thickness, temperature,
+hydration and age. A left-versus-right comparison at the same moment controls
+every one of those systemically — same body, same minute. So the *difference*
+is a measurement even though the *level* is not.
+
+That is exactly what rule 1 exists for, and it is the first time the series has
+delivered it.
+
+### The hypothenar patches, in plane
+
+| observation | mark |
+|---|---|
+| Two flat grayish-brown patches on the ulnar palm, ~1.5–2 cm and ~1 cm. | `MEASURED` |
+| **In the skin plane, not raised and not sitting on it** — no shadow at their edges, no elevation, no surface film catching light differently from surrounding skin. | `MEASURED` |
+
+This is the first frame that *supports* the carbon-stain account rather than
+merely failing to contradict it. A surface deposit would catch light
+differently; a raised scar would cast an edge shadow. Neither is present.
+
+### Instrument failure — same geometry problem, twice
+
+The questions asked of these frames were about **knuckle use and abuse** and
+about **nails**. Neither is answerable from what was shot, for the same reason
+both times:
+
+| target | failure |
+|---|---|
+| MCP knuckles | light too **high**, grazing *along* the dorsum instead of crossing the knuckle domes. Slight fullness at left index and middle MCPs is all that resolves, and that is absence of resolution rather than absence of finding. |
+| nail plates | plates bright enough that a white transverse mark and a specular highlight are the same pixel value. Leukonychia cannot be separated from reflection. |
+
+**And a taxonomy note that no lighting fixes.** "Knuckle use" and "knuckle abuse"
+are two questions with different answers on this surface. Dorsal skin has no
+adaptation route, so it deposits no load history — the dorsum cannot report
+accumulated *use* at any resolution. It reports discrete *events*, on a ~2-week
+healing clock. See `integration/event_log.py`, where
+`EventLog.carries_load_history` returns `False` unconditionally.
+
+So a perfect dorsal photograph answers the second question and not the first.
+
+### Attribution caution
+
+Outdoor work, gardening and building are `TESTIMONY`, and they are a **load
+history** claim. The dorsal marks are consistent with that and do not confirm
+it — they confirm events. The dorsal creasing is real and is hydration, sun and
+age confounded, so it is texture rather than evidence.
+
+Recording the distinction because the casual version of this read ("outdoor work,
+makes sense") is the additive attribution the rest of this repo argues against,
+arriving in a friendly form.
+
+### Status after this specimen
+
+Still tier 1, plus one good bilateral control. `read_band()` on any frame here
+would return `NOT MEASURABLE` and band position `unresolved`. Nothing in the set
+is position 5.
+
+---
+
 ## The unrun test
 
 This is the repo's core test. It has not been run since the original trial.
