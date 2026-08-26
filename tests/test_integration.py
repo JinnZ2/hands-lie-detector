@@ -872,7 +872,7 @@ class TestHealingCalibration(unittest.TestCase):
         for kwargs in ({"turnover": Turnover.HIGH},
                        {"thinner_stratum_corneum": True},
                        {"continuous_service": True}):
-            variant = HealingCalibration(turnover=Turnover.TYPICAL, **kwargs)
+            variant = HealingCalibration(**{"turnover": Turnover.TYPICAL, **kwargs})
             self.assertLess(variant.residual_factor, base, kwargs)
 
     def test_implied_events_exceed_visible_marks(self):
