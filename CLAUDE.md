@@ -25,15 +25,18 @@ hands-lie-detector/
 │   │   └── train.py              # Training loop with validation and checkpointing
 │   ├── prompt/                   # Requires: anthropic or openai
 │   │   └── evaluator.py          # Vision LLM scoring with rubric prompt
+│   ├── channel.py                # CH1/CH2 split; failure modes never overlap
 │   ├── audit/                    # Pure Python — no dependencies
 │   │   ├── crosssection.py       # Cross-sections; envelope, never slope
 │   │   ├── specimen.py           # Specimen records, per-line provenance
 │   │   ├── condition.py          # Condition coordinates; what n=1 supports
 │   │   ├── reference_class.py    # Within-frame control; isolates the layer
 │   │   ├── attribution.py        # Agent retrofit: 4 tests, no ground truth
+│   │   ├── precedence.py         # Ordering probe SPEC; position not content
 │   │   └── leakage.py            # Vocabulary provenance; held-out commitment
 │   ├── band/                     # Pure Python — no dependencies
-│   │   └── contrast.py           # Map states; concentration, NOT skill
+│   │   ├── contrast.py           # Map states; concentration, NOT skill
+│   │   └── capture.py            # Five positions; the raking-light protocol
 │   └── integration/              # Pure Python — no dependencies
 │       ├── domains.py            # Domain zone/load-mode signatures, channels
 │       ├── residual.py           # Residual-zone readout (Test C), conflicts
@@ -45,6 +48,9 @@ hands-lie-detector/
 │       ├── event_log.py          # Dorsal marks: events, not load history
 │       ├── wear.py               # Tribology taxonomy; counterface required
 │       ├── sole.py               # Sole wear audits the job description
+│       ├── nail.py               # Third clock: matrix trauma, self-dating
+│       ├── knuckle.py            # MCP/PIP/DIP instrument; load modes
+│       ├── healing.py            # Residual mark != trauma; 4th sign error
 │       └── carve_audit.py        # Retrieval protocol, seam, boundary audit
 ├── scoring-metrics.md            # Main 100-point hand scoring rubric (v0.1)
 ├── feet-lie-detector.md          # Parallel scoring system for feet
@@ -59,8 +65,13 @@ hands-lie-detector/
 ├── gated-not-summed.md           # Wrong form, not wrong number (x3)
 ├── contrast-case.md              # What n=1 does; show vs describe; coordinates
 ├── attribution-retrofit.md       # Agent reassignment; weight vs constraint
+├── channel-split.md              # CH1 physical record vs CH2 annotation
+├── precedence-probe.md           # Ordering probe spec; runs on CH1 only
 ├── wear-taxonomy.md              # Tribology spine; deposit vs draw; two clocks
 ├── sole-audit.md                 # Boot wear vs stated job title; four gates bypassed
+├── capture-protocol.md           # Five positions, one lamp; unblocks tier 2
+├── knuckle-instrument.md         # MCP as its own readout; unread not misread
+├── healing-calibration.md        # Residual mark != trauma; the fourth sign error
 ├── tests/                        # unittest suite (zero deps)
 ├── README.md                     # Mission statement and project premise
 ├── requirements.txt              # All dependencies
@@ -135,6 +146,18 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   to read boot wear as the counterface instead.
 - **gloves-debunk.md** — Why gloves don't erase structural adaptation.
 - **known_failure_cases.md** — Specific vision model failure modes.
+- **channel-split.md** — Physical record (CH1) and annotation (CH2) as declared-
+  separate artifacts with non-overlapping failure lists. CH1 fails by resolution,
+  occlusion, angle and scale and **cannot fail by lying**; CH2 fails the ordinary
+  self-report ways and cannot fail by resolution. Hands don't lie, but hands
+  don't caption. A claim resting on BOTH is more fragile, not less, because it
+  falls if either does — `Claim.falls_with_either` flags it.
+- **precedence-probe.md** — SPEC ONLY, unrun. Names PRECEDENCE VIOLATION: a role
+  prior wired upstream of observation so it gates rather than annotates. The
+  error is POSITION in sequence, not content, so the operationalization is order
+  of first mention — ordinal and readable, needing no magnitude scale. Animal
+  control arm localizes a violation to the human-role prior versus weak
+  observation. Stock imagery excluded: a model can pass it by recognition.
 - **attribution-retrofit.md** — Agent reassignment as an **unmeasured
   hypothesis**, not a documented failure class. Carries a provenance header: the
   account was authored by a model describing its own behavior, which is
@@ -143,6 +166,23 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   override), four tests, and the weight vs constraint distinction. Three of the
   four tests depend on scoring instruments that do not exist yet; only the
   no-destination test is runnable today.
+- **healing-calibration.md** — Residual mark is trauma x (1 - healing quality),
+  so a scar count read straight marks a carrier down for healing well. The
+  FOURTH sign error, and the same shape as the third: a physiological parameter
+  with no load content entering a monotone count uncalibrated. Also names what
+  no light angle reaches — fracture callus, capsular thickening, ligament laxity
+  — and extends the joint instrument to PIP and DIP.
+- **knuckle-instrument.md** — The MCP joint as a separate instrument. Three load
+  modes (impact / hyperextension / hyperflexion-under-load), a marker taxonomy,
+  and the structural claim that **palmar and dorsal load are not correlated**, so
+  neither licenses an inference about the other. Scar LOCATION distinguishes
+  posture: MCP scar means the joint was flexed when struck, metacarpal shaft
+  means flat or dragged. Not a diagnostic instrument — the pad-versus-bony-node
+  differential is a palpation finding and the module declines it.
+- **capture-protocol.md** — Five positions and five rules. Position 5 (lateral
+  raking) is the one that unblocks tier 2, and nothing else substitutes for it.
+  `CaptureSession.problems` reports every rule a session missed rather than
+  accepting frames that turn out to be unreadable.
 - **sole-audit.md** — The cheapest instrument here and the first that scales past
   one operator. A job description is AUTHORED; sole wear is DEPOSITED, so the
   delta between the wear a title predicts and the wear a body left is the gap
@@ -214,6 +254,17 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - Dataset expects `images/` directory + `labels.csv` with 7 score columns
 - Training includes validation split, per-category MAE tracking, and best-model saving
 
+### Channel split (`hands_lie_detector.channel`)
+- Zero external dependencies. Companion to `channel-split.md`
+- `PhysicalRecord` (CH1) has **no field for a caption** — mute by construction —
+  and `can_be_dishonest` returns False: CH1 can be unreadable, not untruthful
+- `Annotation` (CH2) cites a record id; `ChannelSet.add_annotation` refuses one
+  that points at nothing. Citation runs one direction only
+- `FAILURE_MODES` for the two channels do not overlap, which is the reason for
+  the split: discounting one channel does not touch the other
+- `Claim.falls_with_either` marks a fused claim. Resting on both channels is
+  weaker, not stronger — split it into the part each channel carries
+
 ### Audit instruments (`hands_lie_detector.audit`)
 - Zero external dependencies
 - Companion to `calibration-standard.md`
@@ -224,8 +275,16 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   returns envelopes and **refuses to return a slope**; that is the design, not a
   gap
 - `Provenance` marks each specimen line OBSERVED / RECONSTRUCTED / TESTIMONY /
-  MEASURED. Only MEASURED is stable across an interval — a model's account of its
-  own reasoning is RECONSTRUCTED, since there is no readout of its own vectors
+  DEMONSTRATED / MEASURED. Only MEASURED is stable across an interval — a model's
+  account of its own reasoning is RECONSTRUCTED, since there is no readout of its
+  own vectors. DEMONSTRATED sits between testimony and measurement: a capability
+  performed under conditions and witnessed by someone other than the carrier.
+  More than self-report, less than measurement — a witness is not an instrument
+- `Corroboration` scores a third-party verification on two independent
+  questions: did it run AGAINST the verifier's documented bias (a hostile-witness
+  argument that strengthens it), and was there an operationalized threshold (the
+  question that decides whether it measures). `reaches_measurement` returns False
+  — hostile-witness credit does not substitute for a stated criterion
 - `reference_class.WithinFrameControl` is the instrument that separates the two
   axes the repo had been conflating. Two probes on ONE frame, same model, same
   pixels: one subject with a maintained reference class (standards + dense
@@ -233,6 +292,13 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   first and a failure on the second exonerates perception and locates the failure
   on the partition layer. `perception_exonerated` returns True only on that
   pattern
+- `precedence.TrialScore.precedence_violation` is ordinal, not scaled: a role
+  referent appearing before the first named physical feature. That is why the
+  probe is runnable while three of the four `attribution` tests are blocked —
+  "which came first" needs a reader, not a threshold
+- `precedence.PrecedenceProbe` ships **unrun** and `report()` declines to print a
+  rate from an empty arm. `SAME_NODE_FLAG` and `NODE_INDEPENDENCE_FLAG` raise the
+  two scope problems without resolving them
 - `attribution.NoDestinationTest` is the cheapest instrument here and refuses to
   be built on a window that contains a candidate party. In a window with none, an
   invented agent is fabrication rather than bias: binary, not a magnitude, and
@@ -265,6 +331,17 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - `UNIFORM_THICK` is AMBIGUOUS by construction: a generalist and a saturated hand
   produce the same map. The separator is a functional sensing test, not an image,
   and `position` stays `UNRESOLVED` until one is supplied
+- `BiologicalCalibration` separates the two quantities cleanly: **mean thickness
+  is calibrated, band position is not**. The map is normalized before the state
+  logic runs, so state and concentration are invariant across baselines while the
+  uncalibrated monotone score drops — a THIRD sign error in the rubric,
+  compounding with saturation. At a lower baseline a healed lesion at a load
+  point is MORE informative, since it formed nearer the sensing threshold
+- `nail.NailRecord` is the third clock: palmar integrates over 2-4 weeks, dorsal
+  heals in ~2, and the nail plate carries matrix trauma outward for 4-6 months,
+  dating its own marks by distance from the fold. It corroborates the palmar map
+  rather than restating it. Treat the ORDERING as the finding; the months are
+  stipulated
 - `ThicknessReading.measurable` is False except in raking light. Backlit and
   overhead-flat field photos cannot resolve thickness at all — see the tier split
   in `band-not-scale.md`
@@ -274,6 +351,9 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   instruments decline each other's inputs
 - `interpret_acute_damage()` inverts the second sign error: a blister on a
   banded hand is the price of the band position, not a demerit
+- `Zone` gained thenar, hypothenar and proximal-phalanx-pad after specimen 008,
+  for the same reason as the dorsal zones: observations kept landing where the
+  vocabulary had no coordinate
 - `Zone` gained five DORSAL zones after specimen 003; the vocabulary inherited
   from `term_audit/` was palmar-only and could not record a strike. No shipped
   `DomainSignature` predicts a dorsal zone, so dorsal markers are residual by
@@ -327,6 +407,33 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - `wear.WearSystem.is_complete_specimen` is False without a counterface. Every
   wear measurement in this repo is half a specimen until tool handles are
   photographed alongside hands
+- `event_log.carries_grip_load_history` is False unconditionally — the dorsum is
+  not a grip surface, and this is the only part of the original claim that should
+  have been stated that strongly. `carries_contact_history` is the narrower
+  channel that CAN be True: repeated dorsal CONTACT remodels, and impact,
+  friction and pressure all qualify. Corrected twice in the same direction — see
+  the table in `knuckle-instrument.md`
+- `event_log.dorsal_signature()` separates an EDGE_STRIKE_FIELD (many superficial
+  marks at varied sites — confined volume, sudden release, different geometry
+  every reach) from REPEATED_CONTACT (few marks, concentrated, with thickening).
+  REPEATED_CONTACT is AMBIGUOUS by construction: a striker and a carpet layer
+  land in the same class, and the co-occurring scar field is what separates them
+- `healing.HealingCalibration.marks_understate_history` is True whenever the
+  residual factor is below 1. `implied_events()` returns an unbounded float on
+  purpose: the direction is the finding and the coefficient is stipulated, per
+  the living-tissue seam
+- `healing.BELOW_THE_SURFACE` names what no capture protocol reaches — fracture
+  callus, capsular thickening, ligament laxity, tendon adhesion. A scope limit,
+  not a resolution problem
+- `knuckle.Joint` extends the instrument to PIP and DIP. DIP trauma reaches the
+  nail matrix, so `writes_to_nail_clock` prompts the cross-check against
+  `nail.py` — a DIP finding and a nail mark at consistent age are two
+  instruments on one event
+- `audit.SpecimenLine.falsifiable_on_demand` separates a capability claim from a
+  description. Both are TESTIMONY; only one can be re-run and fail visibly
+- `knuckle.KnuckleReadout.predicts_palmar_load` returns False unconditionally.
+  Dorsal and palmar load are not correlated, so neither surface's reading
+  licenses an inference about the other
 - `event_log.EventLog.supports_rate_claims` is False when the sampling gate is
   external request. Documentation density tracks who asked, not what happened
 - `event_log.EventLog.has_baseline_coverage` is False without scheduled frames.
@@ -436,12 +543,19 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
 - `scoring-metrics.md` has duplicate content (lines 1-108 and 112-208)
 - Future expansions in README (clean_but_used, callus_memory, etc.) not yet developed
 - Vision classifier needs labeled training data to be useful — no dataset included yet
+- Four documented sign errors in the thickness/injury scale, none fixed:
+  saturation reads as expertise, acute damage reads as incompetence, thickness
+  baseline uncalibrated, residual mark uncalibrated. See `band-not-scale.md`
 - Four documented form errors, none fixed in the shipped scale, because each fix
   is a replacement rather than an edit: additive scoring, the monotone thickness
   scale, summed layer weighting, and deposit/draw treated as parallel inputs when
   they carry opposite signs. See `gated-not-summed.md` and `wear-taxonomy.md`
 - The band thresholds and the tier-2 items need raking light. No frame in the
-  specimen series has it, so tier 2 has never actually been measured
+  specimen series has it, so tier 2 has never actually been measured. The fix is
+  five photographs and one lamp — see `capture-protocol.md`; position 5 is the
+  one that matters and nothing substitutes for it
+- Specimen 008 rules out SOFT and saturated with high confidence, which is the
+  first state resolution in the series. The boundary map is still unresolved
 - No counterface has been recorded for any wear observation — no tool handles.
   One boot is on record (specimen 007) and it falsifies one category prediction;
   `CATEGORY_PREDICTIONS` holds exactly one entry
@@ -486,6 +600,13 @@ filename,texture_persistence,wear_localization,micro_injury_history,tendon_vein_
 - Reference photographs supplied in conversation are NOT committed, deliberately.
   Publishing an image spends it as a stimulus — commit hashes with
   `commit_stimulus()` and hold the files outside the repo
+- **Rule zero, biometric:** a close raking-light shot of a fingertip pad IS a
+  fingerprint capture, and Position 2 originally specified one. Ridges sit at
+  ~0.45 mm pitch and load structure at millimetres to centimetres, so a low-pass
+  at ridge pitch removes the biometric and leaves the measurement intact. Aim at
+  the proximal/middle phalanx pads, angle the tips away, blur and strip EXIF
+  before any frame leaves the device — including before sending it to a model.
+  `CaptureSession.biometric_safe` returns False until handled
 - `DEFAULT_BANDS` reports physical scores onto employment status ("Casual
   Hobbyist" at 31-55, below "Working Hands"). See `economic-carve.md` — renaming
   the bands alone is the wrong fix; the physical scale needs somewhere to land

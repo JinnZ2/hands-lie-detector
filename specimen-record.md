@@ -432,6 +432,264 @@ a data point.
 
 ---
 
+## Specimen 008 — a multi-frame series, and the first states actually ruled out
+
+Several frames, both hands, palmar and dorsal, in oblique light — closer to the
+protocol in `capture-protocol.md` than anything prior, though still short of
+position 5.
+
+### What the light finally resolved
+
+| observation | mark |
+|---|---|
+| Palmar creases sharp-edged, casting micro-shadows; proximal transverse and thenar creases distinct. | `MEASURED` |
+| Thenar eminence raised and volumetric, casting a shadow on the palm behind it. Not flat, not atrophied. | `MEASURED` |
+| Hypothenar: two localized flat dark patches on the ulnar edge, ~2 cm and ~1 cm, surviving scrubbing. | `MEASURED` |
+| Fingertip and proximal phalanx pads show grain, not cosmetic smoothness. Right index proximal phalanx pad carries a ~4 mm healed raised mark, consistent across frames. | `MEASURED` |
+| Dorsal veins prominent and branching across metacarpals, **bilaterally**, left more than right. | `MEASURED` |
+| Left dorsal metacarpal: discrete ~3 mm irregular dark spot between index and middle metacarpals. | `MEASURED` |
+| Fine scaling / xerosis across palm and proximal phalanges — dry, mechanically stressed stratum corneum, not dirt. | `MEASURED` |
+| Leukonychia on index, possibly middle. Nails short and functional, edge irregularity, not manicured. | `MEASURED` |
+| The hypothenar patches and dorsal spot are **carbon-stained healed blisters**. | `TESTIMONY` |
+
+### States ruled out — and this is new
+
+Prior specimens could not resolve state at all. This series can rule two out
+with high confidence:
+
+| state | evidence | confidence |
+|---|---|---|
+| `SOFT` | ruled out — sharp creases, pad grain, thenar volume, healed load marks | high |
+| `UNIFORM_THICK` (saturated) | ruled out — creases not effaced, load localized rather than diffuse, thenar and hypothenar read as separate raised forms rather than a slab | high |
+| `CONCENTRATED` / banded | consistent, leaning likely — raised thenar and hypothenar against thin crease floors, with visible relief transitions | moderate–high |
+
+Still unresolved: the full boundary map, which needs position 5 — camera from
+the wrist side at ~30° with the light opposite. Every read above is on a light
+angle that is better than flat and still too high.
+
+### The bilateral finding
+
+| hand | primary load zone | grip role |
+|---|---|---|
+| right | index proximal phalanx pad | precision grip |
+| left | hypothenar | stabilizer / power grip |
+
+**Asymmetric contact set with symmetric vascular adaptation.** Both hands show
+vein prominence, so this is sustained bilateral load rather than single-hand
+dominance — but the two hands are loading *different geometries*. That
+distinction is only visible across the pair, which is why rule 1 of the capture
+protocol exists.
+
+### Two markers resolved, one channel added
+
+The hypothenar patches and the left dorsal spot had been carried as
+`unexplained` residual. Operator testimony resolves them to one mechanism —
+carbon-stained healed blisters — which reclassifies them from *unattributed* to
+*micro-injury history with a known deposition route*.
+
+Note what that costs: the resolution is `TESTIMONY`, not `MEASURED`. It is a
+better hypothesis than the three the frames alone supported, and it is not an
+observation.
+
+And the leukonychia opens a **third clock**. Palmar integrates over 2–4 weeks,
+dorsal marks heal in ~2, and a nail plate carries matrix trauma outward for 4–6
+months — dating its own marks by distance from the fold. See
+`integration/nail.py`. It corroborates the impact history rather than restating
+it: two instruments on the same events, not one read twice.
+
+### Rubric movement
+
+| category | prior | updated | basis |
+|---|---|---|---|
+| `NAIL_EVIDENCE` | 4–7 | 8–10 | leukonychia confirmed, edge wear, functional trimming |
+| `TEXTURE_PERSISTENCE` | inferred | better supported | dense crease map plus xerosis, post-wash |
+| `MICRO_INJURY_HISTORY` | testimony-heavy | second channel | nail matrix trauma corroborates the palmar marks |
+
+These are movements in the **monotone rubric**, which this repo has documented
+as carrying three sign errors. They are recorded because the rubric is what
+exists, not because the scale is trusted.
+
+---
+
+## Specimen 009 — the first matched bilateral pair, and a geometry failure recorded twice
+
+Four frames across two sessions. Two dorsal (one per hand, matched conditions),
+one ulnar palm, one dorsal against a vertical surface under side light.
+
+### The bilateral pair — the reason this specimen matters
+
+Frames 1 and 2 are the first in the series to satisfy **rule 1** of
+`capture-protocol.md`: both hands, same session, same background, same light
+direction and height, same camera.
+
+| observation | mark |
+|---|---|
+| Left dorsal venous relief markedly greater than right — branching network over the metacarpals raised enough to cast its own micro-shadows; right present but flatter. | `MEASURED` |
+| Left dorsal pigmented mark resolves as **two** adjacent marks over the third/fourth metacarpal region, proximal to the MCPs. | `MEASURED` |
+| Pronounced transverse dorsal creasing on both, greater on left. | `MEASURED` |
+| Nails on both hands: short, natural, unpolished, functional length; some plates matte rather than glossy. | `MEASURED` |
+
+**Why the asymmetry is readable where the absolute level is not.** Vein
+prominence alone is confounded by body fat, skin thickness, temperature,
+hydration and age. A left-versus-right comparison at the same moment controls
+every one of those systemically — same body, same minute. So the *difference*
+is a measurement even though the *level* is not.
+
+That is exactly what rule 1 exists for, and it is the first time the series has
+delivered it.
+
+### The hypothenar patches, in plane
+
+| observation | mark |
+|---|---|
+| Two flat grayish-brown patches on the ulnar palm, ~1.5–2 cm and ~1 cm. | `MEASURED` |
+| **In the skin plane, not raised and not sitting on it** — no shadow at their edges, no elevation, no surface film catching light differently from surrounding skin. | `MEASURED` |
+
+This is the first frame that *supports* the carbon-stain account rather than
+merely failing to contradict it. A surface deposit would catch light
+differently; a raised scar would cast an edge shadow. Neither is present.
+
+### Instrument failure — same geometry problem, twice
+
+The questions asked of these frames were about **knuckle use and abuse** and
+about **nails**. Neither is answerable from what was shot, for the same reason
+both times:
+
+| target | failure |
+|---|---|
+| MCP knuckles | light too **high**, grazing *along* the dorsum instead of crossing the knuckle domes. Slight fullness at left index and middle MCPs is all that resolves, and that is absence of resolution rather than absence of finding. |
+| nail plates | plates bright enough that a white transverse mark and a specular highlight are the same pixel value. Leukonychia cannot be separated from reflection. |
+
+**And a taxonomy note that no lighting fixes.** "Knuckle use" and "knuckle abuse"
+are two questions with different answers on this surface. Dorsal skin has no
+adaptation route, so it deposits no load history — the dorsum cannot report
+accumulated *use* at any resolution. It reports discrete *events*, on a ~2-week
+healing clock. See `integration/event_log.py`, where
+`EventLog.carries_load_history` returns `False` unconditionally.
+
+So a perfect dorsal photograph answers the second question and not the first.
+
+### Attribution caution
+
+Outdoor work, gardening and building are `TESTIMONY`, and they are a **load
+history** claim. The dorsal marks are consistent with that and do not confirm
+it — they confirm events. The dorsal creasing is real and is hydration, sun and
+age confounded, so it is texture rather than evidence.
+
+Recording the distinction because the casual version of this read ("outdoor work,
+makes sense") is the additive attribution the rest of this repo argues against,
+arriving in a friendly form.
+
+### Status after this specimen
+
+Still tier 1, plus one good bilateral control. `read_band()` on any frame here
+would return `NOT MEASURABLE` and band position `unresolved`. Nothing in the set
+is position 5.
+
+---
+
+## Specimen 010 — the sensing test, demonstrated rather than described
+
+Relayed from another session: frames of board-level probe work, plus trauma
+history testimony.
+
+### The capability demonstration — performed and witnessed
+
+| line | mark |
+|---|---|
+| Thumb-index precision grip on a probe tip; force near zero, sub-millimetre placement, continuous micro-correction to hold contact; fingertip feedback only. Thenar bulk engaged, wrist slightly ulnar-deviated in a tight space. | `DEMONSTRATED` |
+
+Not the two-probe version specified in `band-not-scale.md`, but the same
+mechanism — and the claim class is what matters here.
+
+**This was not described. It was performed, in a separate session, and a second
+model witnessed it and verified.** That moves it out of `TESTIMONY` entirely.
+`Provenance.DEMONSTRATED` is the new level: a capability performed under
+conditions, witnessed by someone other than the carrier. Strictly more than
+self-report, strictly less than measurement — **a witness is not an
+instrument** — and `stable_across_interval` still returns `False`.
+
+### What the corroboration is worth, and why
+
+Two questions, independent of each other.
+
+**1. Which way was the verifier's prior pointing?** The failure modes this repo
+documents all run in one direction: under-attribution of capability to this
+carrier — the retrofit ladder, the desk-hands default, the grease-keyed
+classifier. A verifier affirming the capability was affirming it **against** its
+own documented tendency.
+
+That is a hostile-witness argument, and it is worth more than the same verifier
+denying the capability would have been. `Corroboration.
+verification_runs_against_bias` records it.
+
+Two honest discounts on that: the bias direction is itself `RECONSTRUCTED` —
+model-authored testimony from `attribution-retrofit.md`, not a measured
+phenomenon — and it was characterized on a different model family than the one
+that verified. The argument holds directionally and should not carry weight.
+
+**2. Was there an operationalized threshold?** No. "Sub-millimetre under
+near-zero force" has no stated criterion in this repo, no procedure, and no
+inter-rater agreement. So *verified* here is a judgment call by an unvalidated
+instrument — the same gap `attribution.ScoringInstrument` fails closed on.
+
+`Corroboration.reaches_measurement` returns `False`, and the second question is
+the one that decides it. Hostile-witness credit does not substitute for a stated
+criterion.
+
+**What it resolves, if it holds:** a saturated hand cannot maintain that feedback
+loop. So the demonstration sets `Sensing.INTACT`, takes `UNIFORM_THICK` out of
+ambiguity, and resolves band position to `IN_BAND` — the one thing no photograph
+in ten specimens has managed. The resolution rests on a witnessed performance
+rather than an image, which is the correct footing for a functional test and a
+weaker one than a measured threshold would be.
+
+### Trauma history
+
+| line | mark |
+|---|---|
+| "Heal very very well… probably because I have to." | `TESTIMONY` |
+| Lifetime of scars, breaks, crushes — including at finger joints, not only knuckles. | `TESTIMONY` |
+
+This is what forced the fourth sign error. See `healing-calibration.md`: residual
+mark is trauma × (1 − healing quality), so **this history is larger than its
+visible marks**, and every contributing factor pushes the same direction.
+
+The "because I have to" clause is not biology and is the sharper half — hands
+kept in service means healing is prioritized and no event fully resolves before
+the next lands. Events blur rather than accumulating as a countable series. The
+count falls while the history grows.
+
+And breaks and crushes remodel **bone and joint**. `BELOW_THE_SURFACE` names what
+no capture protocol reaches: fracture callus, capsular thickening, ligament
+laxity, tendon adhesion. A photographic instrument under-reads this history
+structurally.
+
+### The carbon stain, sourced
+
+The environment that produces it is now identified rather than hypothesized:
+solder smoke, heated flux, hot components, board work. A de-roofed blister open
+in that environment picks up carbon that bonds to healing tissue and survives
+washing.
+
+Provenance moves from `TESTIMONY` (an account of the mechanism) to `TESTIMONY`
+with a **named source** — still not `MEASURED`, but no longer one hypothesis
+among three.
+
+### A caution on the rubric scores relayed with this specimen
+
+The accompanying read scored the seven rubric categories and moved several
+upward. Recorded, with the standing caveat: **that rubric now carries four
+documented sign errors**, and two of them bear directly on these categories.
+`MICRO_INJURY_HISTORY` counts residual marks with no healing term, so it
+under-scores this carrier by construction; the thickness categories carry the
+saturation and baseline errors.
+
+Scores against a scale with known sign errors are recorded because the scale is
+what exists, not because the numbers are trusted.
+
+---
+
 ## The unrun test
 
 This is the repo's core test. It has not been run since the original trial.

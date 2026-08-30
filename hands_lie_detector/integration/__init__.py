@@ -69,7 +69,17 @@ from .gated import (
     deposit_draw_balance,
     solvency_from_band,
 )
-from .event_log import COLD_MECHANISM, DorsalMark, EventLog, MarkKind
+from .event_log import (
+    ADAPTATION_MARKS,
+    COLD_MECHANISM,
+    EVENT_MARKS,
+    STRIKE_ZONES,
+    DorsalMark,
+    DorsalSignature,
+    EventLog,
+    MarkKind,
+    dorsal_signature,
+)
 from .wear import (
     LOAD_MODE_TO_WEAR,
     RESIDUAL_WITHOUT_ANALOGUE,
@@ -89,6 +99,35 @@ from .load_weight import (
     ledger_share,
     load_share,
     relabel,
+)
+from .healing import (
+    BELOW_THE_SURFACE,
+    NEUTRAL_HEALING,
+    SUBSURFACE_NOTE,
+    HealingCalibration,
+    Turnover,
+)
+from .knuckle import (
+    ADAPTIVE_MARKERS,
+    JOINT_SPECS,
+    Joint,
+    KNUCKLE_WORK_PREDICTIONS,
+    MCP_LOAD_MODES,
+    PAD_VERSUS_NODE,
+    Differential,
+    KnuckleFinding,
+    KnuckleMarker,
+    KnuckleReadout,
+    MCPLoadMode,
+    scar_mechanism,
+)
+from .nail import (
+    FULL_REPLACEMENT_MONTHS,
+    LOAD_BEARING,
+    MM_PER_MONTH,
+    NailFinding,
+    NailMark,
+    NailRecord,
 )
 from .sole import (
     ACTUAL_CONTACT_SOURCES,
@@ -126,6 +165,34 @@ from .residual import (
 )
 
 __all__ = [
+    "Joint",
+    "JOINT_SPECS",
+    "Turnover",
+    "HealingCalibration",
+    "SUBSURFACE_NOTE",
+    "NEUTRAL_HEALING",
+    "BELOW_THE_SURFACE",
+    "scar_mechanism",
+    "MCPLoadMode",
+    "KnuckleReadout",
+    "KnuckleMarker",
+    "KnuckleFinding",
+    "Differential",
+    "PAD_VERSUS_NODE",
+    "MCP_LOAD_MODES",
+    "KNUCKLE_WORK_PREDICTIONS",
+    "ADAPTIVE_MARKERS",
+    "dorsal_signature",
+    "DorsalSignature",
+    "STRIKE_ZONES",
+    "EVENT_MARKS",
+    "ADAPTATION_MARKS",
+    "NailRecord",
+    "NailMark",
+    "NailFinding",
+    "MM_PER_MONTH",
+    "LOAD_BEARING",
+    "FULL_REPLACEMENT_MONTHS",
     "audit",
     "ZoneWear",
     "SoleZone",

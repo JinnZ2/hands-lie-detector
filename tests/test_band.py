@@ -147,3 +147,194 @@ class TestProvenance(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestBiologicalCalibration(unittest.TestCase):
+    """Mean thickness is calibrated. Band position is not."""
+
+    REFERENCE = {"thumb_crotch": 0.78, "palm_below_index": 0.72,
+                 "base_of_fingers": 0.80, "fingertip_pads": 0.18,
+                 "heel_of_palm": 0.55, "across_palm_crease": 0.70,
+                 "thumb_pad": 0.22}
+    LOWER = {z: round(v * 0.75, 3) for z, v in REFERENCE.items()}
+
+    def _pair(self):
+        from hands_lie_detector.band import BiologicalCalibration, Sex
+
+        return (
+            read_band(self.REFERENCE, light=LightCondition.RAKING),
+            read_band(self.LOWER, light=LightCondition.RAKING,
+                      calibration=BiologicalCalibration(sex=Sex.FEMALE)),
+        )
+
+    def test_state_is_invariant_across_baselines(self):
+        a, b = self._pair()
+        self.assertIs(a.state, b.state)
+
+    def test_concentration_is_invariant_across_baselines(self):
+        a, b = self._pair()
+        self.assertAlmostEqual(a.reading.concentration, b.reading.concentration, places=3)
+
+    def test_the_monotone_score_is_not_calibrated_and_penalizes_baseline(self):
+        """Third sign error in the same scale, compounding with saturation."""
+        a, b = self._pair()
+        self.assertLess(b.monotone, a.monotone)
+        self.assertTrue(b.monotone_penalizes_baseline)
+        self.assertFalse(a.monotone_penalizes_baseline)
+        self.assertIn("BASELINE", b.report())
+
+    def test_the_calibration_factor_is_flagged_as_stipulated(self):
+        from hands_lie_detector.band import BiologicalCalibration
+
+        self.assertFalse(BiologicalCalibration().is_evidence_based)
+
+
+class TestCaptureProtocol(unittest.TestCase):
+    def test_only_the_lateral_raking_position_unblocks_tier_two(self):
+        from hands_lie_detector.band import (
+            CaptureSession, LightCondition, Position, Trigger,
+        )
+
+        without = CaptureSession("d", Trigger.WEEK_ROLLOVER,
+                                 positions_shot={Position.PALM_FLAT},
+                                 light=LightCondition.RAKING)
+        with_it = CaptureSession("d", Trigger.WEEK_ROLLOVER,
+                                 positions_shot={Position.LATERAL_RAKING},
+                                 light=LightCondition.RAKING)
+        self.assertFalse(without.resolves_tier_2)
+        self.assertTrue(with_it.resolves_tier_2)
+
+    def test_raking_light_is_required_even_with_the_right_position(self):
+        from hands_lie_detector.band import (
+            CaptureSession, LightCondition, Position, Trigger,
+        )
+
+        s = CaptureSession("d", Trigger.WEEK_ROLLOVER,
+                           positions_shot={Position.LATERAL_RAKING},
+                           light=LightCondition.FLAT_OVERHEAD)
+        self.assertFalse(s.resolves_tier_2)
+
+    def test_disposition_gated_capture_is_reported_as_a_problem(self):
+        from hands_lie_detector.band import CaptureSession, Position, Trigger
+
+        s = CaptureSession("d", Trigger.NOTICED_SOMETHING,
+                           positions_shot=set(Position), both_hands=True,
+                           load_log="x")
+        self.assertFalse(s.trigger.is_scheduled)
+        self.assertTrue(any("disposition" in p for p in s.problems))
+
+    def test_a_complete_session_has_no_problems(self):
+        from hands_lie_detector.band import (
+            CaptureSession, LightCondition, Position, Trigger,
+        )
+
+        s = CaptureSession("d", Trigger.FUEL_STOP, positions_shot=set(Position),
+                           both_hands=True, light=LightCondition.RAKING,
+                           load_log="70 hr week, yard Saturday",
+                           scale_reference_in_frame=True, fixed_geometry_rig=True,
+                           fingertips_protected=True)
+        self.assertTrue(s.is_complete)
+
+
+class TestKnuckleCapture(unittest.TestCase):
+    def test_knuckle_light_crosses_the_ridges_not_along_them(self):
+        from hands_lie_detector.band import KNUCKLE_POSITIONS, KnucklePosition
+
+        survey = KNUCKLE_POSITIONS[KnucklePosition.DORSAL_SURVEY]
+        self.assertIn("across the ridges", survey.light)
+        self.assertIn("never along them", survey.light)
+
+    def test_three_knuckle_positions_exist_beyond_the_main_set(self):
+        from hands_lie_detector.band import KNUCKLE_POSITIONS, KnucklePosition
+
+        self.assertEqual(len(KNUCKLE_POSITIONS), len(KnucklePosition))
+
+    def test_the_log_fields_name_laterality_and_stage(self):
+        from hands_lie_detector.band import KNUCKLE_LOG_FIELDS
+
+        joined = " ".join(KNUCKLE_LOG_FIELDS)
+        self.assertIn("bilateral", joined)
+        self.assertIn("scarred", joined)
+
+
+class TestComparability(unittest.TestCase):
+    """A map with no ruler is not comparable to any other map."""
+
+    @staticmethod
+    def _session(**kw):
+        from hands_lie_detector.band import (
+            CaptureSession, LightCondition, Position, Trigger,
+        )
+
+        defaults = dict(
+            date="d", trigger=Trigger.FUEL_STOP, positions_shot=set(Position),
+            both_hands=True, light=LightCondition.RAKING, load_log="70 hr week",
+            scale_reference_in_frame=True, fixed_geometry_rig=True,
+            fingertips_protected=True,
+        )
+        return CaptureSession(**{**defaults, **kw})
+
+    def test_a_missing_scale_reference_blocks_comparability(self):
+        session = self._session(scale_reference_in_frame=False)
+        self.assertFalse(session.comparable_across_sessions)
+        self.assertTrue(any("scale reference" in p for p in session.problems))
+
+    def test_unfixed_geometry_blocks_comparability(self):
+        session = self._session(fixed_geometry_rig=False)
+        self.assertFalse(session.comparable_across_sessions)
+        self.assertTrue(any("geometry not fixed" in p for p in session.problems))
+
+    def test_a_rigged_session_with_a_ruler_is_complete(self):
+        session = self._session()
+        self.assertTrue(session.comparable_across_sessions)
+        self.assertTrue(session.is_complete)
+
+
+class TestBiometricProtection(unittest.TestCase):
+    """Rule zero: a close raking shot of a pad is a fingerprint capture."""
+
+    def test_a_session_is_not_safe_until_fingertips_are_protected(self):
+        from hands_lie_detector.band import CaptureSession, Trigger
+
+        s = CaptureSession("d", Trigger.FUEL_STOP)
+        self.assertFalse(s.biometric_safe)
+        self.assertIn("FINGERTIPS UNPROTECTED", s.problems[0])
+
+    def test_the_biometric_problem_is_reported_first(self):
+        from hands_lie_detector.band import CaptureSession, Trigger
+
+        s = CaptureSession("d", Trigger.NOTICED_SOMETHING)
+        self.assertTrue(s.problems[0].startswith("FINGERTIPS UNPROTECTED"))
+
+    def test_blur_radius_scales_with_capture_resolution_and_has_a_floor(self):
+        from hands_lie_detector.band.capture import blur_radius_px
+
+        self.assertGreater(blur_radius_px(4032), blur_radius_px(1080))
+        self.assertGreaterEqual(blur_radius_px(100), 5.0)
+
+    def test_blur_radius_is_about_twice_ridge_pitch(self):
+        from hands_lie_detector.band.capture import RIDGE_PITCH_MM, blur_radius_px
+
+        px_per_mm = 4032 / 90.0
+        self.assertAlmostEqual(blur_radius_px(4032), 2 * RIDGE_PITCH_MM * px_per_mm,
+                               places=3)
+
+    def test_position_two_no_longer_aims_at_the_tips(self):
+        from hands_lie_detector.band import POSITIONS, Position
+
+        spec = POSITIONS[Position.FINGERTIPS]
+        self.assertIn("not the tips", spec.camera)
+        self.assertIn("ANGLED AWAY", spec.hand)
+        self.assertFalse(any("fingertip pad texture" == r for r in spec.resolves))
+
+    def test_a_complete_session_now_requires_biometric_safety(self):
+        from hands_lie_detector.band import (
+            CaptureSession, LightCondition, Position, Trigger,
+        )
+
+        s = CaptureSession("d", Trigger.FUEL_STOP, positions_shot=set(Position),
+                           both_hands=True, light=LightCondition.RAKING,
+                           load_log="x", scale_reference_in_frame=True,
+                           fixed_geometry_rig=True, fingertips_protected=True)
+        self.assertTrue(s.is_complete)
+        self.assertTrue(s.biometric_safe)

@@ -13,8 +13,22 @@ decompose it into domains, and it does not read dorsal marks — those are event
 on a different clock (`integration.event_log`).
 """
 
+from .capture import (
+    KNUCKLE_LOG_FIELDS,
+    KNUCKLE_POSITIONS,
+    KnucklePosition,
+    POSITIONS,
+    TIER_2_POSITION,
+    CaptureSession,
+    Position,
+    PositionSpec,
+    Trigger,
+)
 from .contrast import (
     DEFAULT_THRESHOLDS,
+    NEUTRAL_CALIBRATION,
+    BiologicalCalibration,
+    Sex,
     MANAGEMENT_ACTS,
     BandPosition,
     BandReadout,
@@ -30,6 +44,18 @@ from .contrast import (
 )
 
 __all__ = [
+    "KnucklePosition",
+    "KNUCKLE_POSITIONS",
+    "KNUCKLE_LOG_FIELDS",
+    "Trigger",
+    "PositionSpec",
+    "Position",
+    "CaptureSession",
+    "TIER_2_POSITION",
+    "POSITIONS",
+    "BiologicalCalibration",
+    "NEUTRAL_CALIBRATION",
+    "Sex",
     "BandPosition",
     "BandReadout",
     "ContrastThresholds",

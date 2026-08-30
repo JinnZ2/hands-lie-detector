@@ -408,10 +408,11 @@ class TestDorsalSurface(unittest.TestCase):
 class TestEventLog(unittest.TestCase):
     """Dorsal marks are events, not load history. Different instrument, clock."""
 
-    def test_the_log_never_carries_load_history(self):
+    def test_the_log_never_carries_grip_load_history(self):
+        """Unchanged strong claim: the dorsum is not a grip contact surface."""
         from hands_lie_detector.integration import EventLog
 
-        self.assertFalse(EventLog().carries_load_history)
+        self.assertFalse(EventLog().carries_grip_load_history)
 
     def test_palmar_zones_are_refused(self):
         from hands_lie_detector.integration import DorsalMark, Zone
@@ -664,3 +665,277 @@ class TestSoleAudit(unittest.TestCase):
                       __import__("hands_lie_detector.integration", fromlist=["audit"])
                       .audit(self._boot(separate_work_footwear=False),
                              "driver (as the category describes it)").report())
+
+
+class TestNailChannel(unittest.TestCase):
+    """A third clock: matrix trauma, dated by distance from the fold."""
+
+    def test_only_some_findings_carry_load_information(self):
+        from hands_lie_detector.integration import NailFinding, NailMark
+
+        self.assertTrue(NailMark("R2", NailFinding.LEUKONYCHIA).carries_load_information)
+        self.assertFalse(NailMark("R2", NailFinding.RIDGING).carries_load_information)
+
+    def test_a_mark_dates_itself_by_distance(self):
+        from hands_lie_detector.integration import NailFinding, NailMark
+
+        near = NailMark("R2", NailFinding.LEUKONYCHIA, 3.0)
+        far = NailMark("R3", NailFinding.LEUKONYCHIA, 9.0)
+        self.assertLess(near.months_since_event, far.months_since_event)
+        self.assertIsNone(NailMark("R4", NailFinding.LEUKONYCHIA).months_since_event)
+
+    def test_ordering_needs_two_dated_marks(self):
+        from hands_lie_detector.integration import NailFinding, NailMark, NailRecord
+
+        one = NailRecord(marks=[NailMark("R2", NailFinding.LEUKONYCHIA, 3.0)])
+        two = NailRecord(marks=[NailMark("R2", NailFinding.LEUKONYCHIA, 3.0),
+                                NailMark("R3", NailFinding.LEUKONYCHIA, 8.0)])
+        self.assertFalse(one.supports_ordering)
+        self.assertTrue(two.supports_ordering)
+
+    def test_the_growth_rate_is_stipulated_and_says_so(self):
+        from hands_lie_detector.integration import NailRecord
+
+        record = NailRecord()
+        self.assertFalse(record.is_evidence_based)
+        self.assertIn("ORDERING", record.report())
+
+    def test_the_nail_is_a_separate_channel_from_the_palmar_map(self):
+        from hands_lie_detector.integration import NailRecord
+
+        self.assertTrue(NailRecord().independent_of_palmar_map)
+
+
+class TestNewPalmarZones(unittest.TestCase):
+    def test_thenar_and_hypothenar_are_distinct_zones(self):
+        from hands_lie_detector.integration import PALMAR_ZONES, Zone
+
+        for zone in (Zone.THENAR_EMINENCE, Zone.HYPOTHENAR,
+                     Zone.PROXIMAL_PHALANX_PAD):
+            self.assertIn(zone, PALMAR_ZONES)
+
+    def test_the_new_zones_have_adjacency(self):
+        from hands_lie_detector.integration import Zone
+        from hands_lie_detector.integration.domains import ADJACENCY
+
+        for zone in (Zone.THENAR_EMINENCE, Zone.HYPOTHENAR,
+                     Zone.PROXIMAL_PHALANX_PAD):
+            self.assertTrue(ADJACENCY[zone])
+
+
+class TestDorsalSignature(unittest.TestCase):
+    """Count and concentration separate an edge-strike field from repeated impact."""
+
+    @staticmethod
+    def _mechanic():
+        from hands_lie_detector.integration import DorsalMark, EventLog, MarkKind, Zone
+
+        sites = [Zone.DORSAL_METACARPAL, Zone.DORSAL_MCP_KNUCKLES,
+                 Zone.DORSAL_PHALANX, Zone.DORSAL_WEB_SPACE, Zone.WRIST_TRANSITION]
+        return EventLog("mechanic", [
+            DorsalMark(sites[i % 5], "2026-01-01",
+                       MarkKind.LACERATION if i % 2 else MarkKind.ABRASION)
+            for i in range(25)
+        ])
+
+    @staticmethod
+    def _striker():
+        from hands_lie_detector.integration import DorsalMark, EventLog, MarkKind, Zone
+
+        return EventLog("striker", [
+            DorsalMark(Zone.DORSAL_MCP_KNUCKLES, "2026-01-01", MarkKind.THICKENING),
+            DorsalMark(Zone.DORSAL_MCP_KNUCKLES, "2026-01-01", MarkKind.CONTUSION),
+            DorsalMark(Zone.DORSAL_MCP_KNUCKLES, "2026-01-01", MarkKind.THICKENING),
+            DorsalMark(Zone.DORSAL_PHALANX, "2026-01-01", MarkKind.CONTUSION),
+        ])
+
+    def test_many_scattered_marks_read_as_an_edge_strike_field(self):
+        from hands_lie_detector.integration import DorsalSignature, dorsal_signature
+
+        self.assertIs(dorsal_signature(self._mechanic()),
+                      DorsalSignature.EDGE_STRIKE_FIELD)
+
+    def test_few_concentrated_marks_with_remodeling_read_as_repeated_contact(self):
+        """AMBIGUOUS by construction: a striker and a carpet layer both land here."""
+        from hands_lie_detector.integration import DorsalSignature, dorsal_signature
+        from hands_lie_detector.integration.event_log import SIGNATURE_READING
+
+        signature = dorsal_signature(self._striker())
+        self.assertIs(signature, DorsalSignature.REPEATED_CONTACT)
+        self.assertIn("AMBIGUOUS", SIGNATURE_READING[signature])
+
+    def test_grip_load_history_is_never_carried_dorsally(self):
+        """The strong claim, unchanged: the dorsum is not a grip surface."""
+        for log in (self._mechanic(), self._striker()):
+            self.assertFalse(log.carries_grip_load_history)
+
+    def test_only_repeated_contact_deposits(self):
+        """The correction: the dorsum has one adaptation route after all.
+
+        Widened once more — the route is repeated dorsal CONTACT, so friction
+        and pressure qualify alongside impact.
+        """
+        self.assertFalse(self._mechanic().carries_contact_history)
+        self.assertTrue(self._striker().carries_contact_history)
+
+    def test_a_sparse_log_is_not_classified(self):
+        from hands_lie_detector.integration import (
+            DorsalMark, DorsalSignature, EventLog, MarkKind, Zone, dorsal_signature,
+        )
+
+        log = EventLog(marks=[DorsalMark(Zone.DORSAL_PHALANX, "d", MarkKind.LACERATION)])
+        self.assertIs(dorsal_signature(log), DorsalSignature.SPARSE)
+
+    def test_an_empty_log_is_unreadable_not_negative(self):
+        from hands_lie_detector.integration import DorsalSignature, EventLog, dorsal_signature
+
+        self.assertIs(dorsal_signature(EventLog()), DorsalSignature.UNREADABLE)
+
+
+class TestKnuckleInstrument(unittest.TestCase):
+    """The MCP joint reads strike and press, not grip."""
+
+    def test_a_knuckle_readout_licenses_no_palmar_inference(self):
+        """Dorsal and palmar load are not correlated, in either direction."""
+        from hands_lie_detector.integration import KnuckleReadout
+
+        self.assertFalse(KnuckleReadout().predicts_palmar_load)
+
+    def test_scar_location_distinguishes_posture(self):
+        from hands_lie_detector.integration import Zone, scar_mechanism
+
+        self.assertIn("FLEXED", scar_mechanism(Zone.DORSAL_MCP_KNUCKLES))
+        self.assertIn("FLAT", scar_mechanism(Zone.DORSAL_METACARPAL))
+        self.assertIn("does not distinguish", scar_mechanism(Zone.DORSAL_WEB_SPACE))
+
+    def test_pads_deposit_and_scars_do_not(self):
+        from hands_lie_detector.integration import (
+            KnuckleFinding, KnuckleMarker, Zone,
+        )
+
+        pad = KnuckleFinding("R3", Zone.DORSAL_MCP_KNUCKLES, KnuckleMarker.PAD)
+        scar = KnuckleFinding("R3", Zone.DORSAL_MCP_KNUCKLES, KnuckleMarker.SCAR)
+        self.assertTrue(pad.deposits)
+        self.assertFalse(scar.deposits)
+
+    def test_every_differential_requires_a_clinical_view(self):
+        """This is a load-history instrument, not a diagnostic one."""
+        from hands_lie_detector.integration import Differential
+
+        for d in Differential:
+            self.assertTrue(d.requires_clinical_view)
+
+    def test_the_report_declines_the_differential(self):
+        from hands_lie_detector.integration import (
+            KnuckleFinding, KnuckleMarker, KnuckleReadout, Zone,
+        )
+
+        readout = KnuckleReadout("c", [
+            KnuckleFinding("R3", Zone.DORSAL_MCP_KNUCKLES, KnuckleMarker.PAD),
+        ])
+        self.assertIn("no bony component", readout.report())
+        self.assertIn("decline the differential", readout.report())
+
+    def test_all_three_load_modes_are_specified(self):
+        from hands_lie_detector.integration import MCP_LOAD_MODES, MCPLoadMode
+
+        for mode in MCPLoadMode:
+            self.assertIn(mode, MCP_LOAD_MODES)
+            self.assertTrue(MCP_LOAD_MODES[mode].mechanism)
+
+    def test_work_predictions_are_falsifiable_claims(self):
+        from hands_lie_detector.integration import KNUCKLE_WORK_PREDICTIONS
+
+        self.assertGreaterEqual(len(KNUCKLE_WORK_PREDICTIONS), 6)
+        for pattern, prediction in KNUCKLE_WORK_PREDICTIONS:
+            self.assertTrue(pattern and prediction)
+
+
+class TestHealingCalibration(unittest.TestCase):
+    """Fourth sign error: residual mark is trauma x (1 - healing quality)."""
+
+    def test_good_healing_means_marks_understate_the_history(self):
+        from hands_lie_detector.integration import HealingCalibration, Turnover
+
+        good = HealingCalibration(turnover=Turnover.HIGH,
+                                  thinner_stratum_corneum=True,
+                                  continuous_service=True)
+        self.assertTrue(good.marks_understate_history)
+        self.assertLess(good.residual_factor, 1.0)
+        self.assertIn("UNDERSTATE", good.report())
+
+    def test_every_factor_pushes_the_same_direction(self):
+        """Not noise. A fixed direction."""
+        from hands_lie_detector.integration import HealingCalibration, Turnover
+
+        base = HealingCalibration(turnover=Turnover.TYPICAL).residual_factor
+        for kwargs in ({"turnover": Turnover.HIGH},
+                       {"thinner_stratum_corneum": True},
+                       {"continuous_service": True}):
+            variant = HealingCalibration(**{"turnover": Turnover.TYPICAL, **kwargs})
+            self.assertLess(variant.residual_factor, base, kwargs)
+
+    def test_implied_events_exceed_visible_marks(self):
+        from hands_lie_detector.integration import HealingCalibration, Turnover
+
+        cal = HealingCalibration(turnover=Turnover.HIGH)
+        self.assertGreater(cal.implied_events(10), 10)
+
+    def test_a_neutral_calibration_changes_nothing(self):
+        from hands_lie_detector.integration import NEUTRAL_HEALING
+
+        self.assertTrue(NEUTRAL_HEALING.is_neutral)
+        self.assertEqual(NEUTRAL_HEALING.residual_factor, 1.0)
+        self.assertFalse(NEUTRAL_HEALING.marks_understate_history)
+
+    def test_the_coefficient_is_flagged_and_the_direction_is_the_finding(self):
+        from hands_lie_detector.integration import HealingCalibration
+
+        cal = HealingCalibration()
+        self.assertFalse(cal.is_evidence_based)
+        self.assertIn("ordering is the defensible part", cal.provenance)
+
+    def test_subsurface_remodeling_is_named_as_out_of_reach(self):
+        from hands_lie_detector.integration import BELOW_THE_SURFACE, SUBSURFACE_NOTE
+
+        self.assertGreaterEqual(len(BELOW_THE_SURFACE), 4)
+        self.assertIn("scope limit", SUBSURFACE_NOTE)
+
+
+class TestJointChain(unittest.TestCase):
+    def test_all_three_joints_are_specified(self):
+        from hands_lie_detector.integration import JOINT_SPECS, Joint
+
+        for joint in Joint:
+            self.assertIn(joint, JOINT_SPECS)
+            self.assertTrue(JOINT_SPECS[joint].trauma_pattern)
+
+    def test_only_dip_trauma_writes_to_the_nail_clock(self):
+        from hands_lie_detector.integration import (
+            Joint, KnuckleFinding, KnuckleMarker, Zone,
+        )
+
+        dip = KnuckleFinding("R2", Zone.DORSAL_PHALANX, KnuckleMarker.SCAR,
+                             joint=Joint.DIP)
+        mcp = KnuckleFinding("R2", Zone.DORSAL_MCP_KNUCKLES, KnuckleMarker.SCAR,
+                             joint=Joint.MCP)
+        self.assertTrue(dip.writes_to_nail_clock)
+        self.assertFalse(mcp.writes_to_nail_clock)
+
+    def test_dip_involvement_prompts_the_nail_cross_check(self):
+        from hands_lie_detector.integration import (
+            Joint, KnuckleFinding, KnuckleMarker, KnuckleReadout, Zone,
+        )
+
+        readout = KnuckleReadout("c", [
+            KnuckleFinding("R2", Zone.DORSAL_PHALANX, KnuckleMarker.SCAR,
+                           joint=Joint.DIP),
+        ])
+        self.assertTrue(readout.corroborated_by_nail_clock)
+        self.assertIn("nail matrix", readout.report())
+
+    def test_only_the_mcp_develops_an_adaptive_pad(self):
+        from hands_lie_detector.integration import JOINT_SPECS, Joint
+
+        self.assertIn("pad", JOINT_SPECS[Joint.MCP].trauma_pattern)
+        self.assertNotIn("pad", JOINT_SPECS[Joint.PIP].trauma_pattern)

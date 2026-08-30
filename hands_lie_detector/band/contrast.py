@@ -70,6 +70,73 @@ class LightCondition(str, Enum):
         return self is LightCondition.RAKING
 
 
+class Sex(str, Enum):
+    MALE = "male"
+    FEMALE = "female"
+    UNSTATED = "unstated"
+
+
+@dataclass(frozen=True)
+class BiologicalCalibration:
+    """Sex and age calibrate the THICKNESS BASELINE. They do not touch band position.
+
+    The separation is the whole point:
+
+        MEAN THICKNESS   is a calibrated quantity. absolute plate depth runs
+                         lower at some baselines than others at identical load
+                         and identical competence.
+        CONTRAST / STATE is NOT calibrated. a banded hand at a lower baseline has
+                         thinner plates with the SAME boundary sharpness, so the
+                         state readout is already scale-invariant once the map is
+                         normalized.
+
+    Which means the contrast-based readout survives this confound and the
+    monotone one does not — see `BandReadout.monotone_penalizes_baseline`.
+
+    A consequence worth stating: at a lower baseline, healed lesions at load
+    points are MORE informative, not less. Less gross thickness means lesions
+    form closer to the sensing threshold, so their presence is stronger evidence
+    of a maintained band position rather than weaker.
+
+    The factor below is STIPULATED. It is a plausible range from general skin
+    biology, not a fitted value, and it needs the calibration series in
+    `calibration-standard.md` before it means anything.
+    """
+
+    sex: Sex = Sex.UNSTATED
+    age: int | None = None
+    female_baseline_factor: float = 0.75  # stipulated; range given as 0.7-0.8
+    provenance: str = STIPULATED
+
+    @property
+    def is_evidence_based(self) -> bool:
+        return self.provenance != STIPULATED
+
+    @property
+    def is_neutral(self) -> bool:
+        return self.sex is Sex.UNSTATED and self.age is None
+
+    @property
+    def baseline_factor(self) -> float:
+        """Multiplier the raw map is expected to sit at, relative to reference."""
+        factor = 1.0
+        if self.sex is Sex.FEMALE:
+            factor *= self.female_baseline_factor
+        if self.age is not None and self.age >= 60:
+            factor *= 0.9  # stipulated: thinning with age
+        return factor
+
+    def normalize(self, thickness: dict["Zone", float]) -> dict["Zone", float]:
+        """Restore a map to the reference scale so state logic reads unchanged."""
+        f = self.baseline_factor
+        if f == 1.0:
+            return dict(thickness)
+        return {z: min(1.0, t / f) for z, t in thickness.items()}
+
+
+NEUTRAL_CALIBRATION = BiologicalCalibration()
+
+
 class MapState(str, Enum):
     """What the thickness map shows. NOT a competence ranking."""
 
@@ -125,6 +192,7 @@ class ThicknessReading:
     thickness: dict[Zone, float]
     thresholds: ContrastThresholds = DEFAULT_THRESHOLDS
     light: LightCondition = LightCondition.UNKNOWN
+    calibration: BiologicalCalibration = NEUTRAL_CALIBRATION
 
     def __post_init__(self) -> None:
         for zone, value in self.thickness.items():
@@ -142,8 +210,20 @@ class ThicknessReading:
         return self.light.resolves_thickness
 
     @property
-    def mean(self) -> float:
+    def calibrated(self) -> dict[Zone, float]:
+        """The map on the reference scale. State logic reads this."""
+        return self.calibration.normalize(self.thickness)
+
+    @property
+    def raw_mean(self) -> float:
+        """Uncalibrated mean. This is what a monotone scorer sees."""
         return sum(self.thickness.values()) / len(self.thickness) if self.thickness else 0.0
+
+    @property
+    def mean(self) -> float:
+        """Calibrated mean, on the reference scale."""
+        values = self.calibrated.values()
+        return sum(values) / len(values) if values else 0.0
 
     @property
     def concentration(self) -> float:
@@ -152,21 +232,23 @@ class ThicknessReading:
         Reads how CONCENTRATED the load history's geometry was. High means the
         contact set repeated; low means it varied. Neither is a competence claim.
         """
-        return pstdev(self.thickness.values()) if len(self.thickness) > 1 else 0.0
+        values = list(self.calibrated.values())
+        return pstdev(values) if len(values) > 1 else 0.0
 
     @property
     def edges(self) -> list[tuple[Zone, Zone, float]]:
         seen: set[frozenset[Zone]] = set()
         out: list[tuple[Zone, Zone, float]] = []
+        calibrated = self.calibrated
         for zone, neighbours in ADJACENCY.items():
-            if zone not in self.thickness:
+            if zone not in calibrated:
                 continue
             for other in neighbours:
                 key = frozenset({zone, other})
-                if other not in self.thickness or key in seen:
+                if other not in calibrated or key in seen:
                     continue
                 seen.add(key)
-                out.append((zone, other, abs(self.thickness[zone] - self.thickness[other])))
+                out.append((zone, other, abs(calibrated[zone] - calibrated[other])))
         return sorted(out, key=lambda e: -e[2])
 
     @property
@@ -195,8 +277,13 @@ def monotone_score(reading: ThicknessReading) -> float:
 
     Not the rubric. Every category there rises with thickness and the total is
     their sum, so the composite is monotone in mean. This isolates that property.
+
+    Deliberately reads the RAW map. The rubric has no calibration step, so a
+    lower thickness baseline scores lower at identical load and identical
+    competence — a third sign error in the same scale, compounding with the
+    saturation one.
     """
-    return 100.0 * reading.mean
+    return 100.0 * reading.raw_mean
 
 
 def band_position(state: MapState, sensing: Sensing) -> BandPosition:
@@ -233,6 +320,18 @@ class BandReadout:
         return self.state.ambiguous and self.sensing is Sensing.UNTESTED
 
     @property
+    def monotone_penalizes_baseline(self) -> bool:
+        """True when an uncalibrated monotone score marks a hand down for baseline.
+
+        The contrast readout is unaffected: the map is normalized before the
+        state logic runs, so boundary sharpness and state survive the confound
+        that the monotone scale walks straight into.
+        """
+        return not self.reading.calibration.is_neutral and (
+            self.reading.calibration.baseline_factor < 1.0
+        )
+
+    @property
     def monotone_disagrees(self) -> bool:
         """The monotone scorer ranks a possibly-saturated hand highly."""
         return self.state is MapState.UNIFORM_THICK and self.monotone >= 45.0
@@ -262,7 +361,7 @@ class BandReadout:
             f"map state: {self.state.value}",
             f"  {self.interpretation()}",
             "",
-            f"  mean thickness  : {r.mean:.3f}   (monotone feature)",
+            f"  mean thickness  : {r.mean:.3f} calibrated / {r.raw_mean:.3f} raw",
             f"  concentration   : {r.concentration:.3f}   (geometry repeat, NOT skill)",
             f"  sharpest edge   : {r.sharpest_boundary()}",
             "",
@@ -283,6 +382,16 @@ class BandReadout:
                 "separator is a functional test — sub-millimetre placement under "
                 "near-zero force, fingertip feedback only.",
             ]
+        if self.monotone_penalizes_baseline:
+            lines += [
+                "",
+                f"BASELINE: calibrated at x{r.calibration.baseline_factor:.2f}. the "
+                "state above is read on the normalized map and is unaffected. the "
+                "monotone score is NOT calibrated and marks this hand down for "
+                "baseline at identical load — a separate sign error from saturation.",
+                "  and at a lower baseline a healed lesion at a load point is MORE "
+                "informative: it formed closer to the sensing threshold.",
+            ]
         if self.monotone_disagrees:
             lines += [
                 "",
@@ -299,12 +408,13 @@ def read_band(
     thresholds: ContrastThresholds = DEFAULT_THRESHOLDS,
     light: LightCondition = LightCondition.UNKNOWN,
     sensing: Sensing = Sensing.UNTESTED,
+    calibration: BiologicalCalibration = NEUTRAL_CALIBRATION,
 ) -> BandReadout:
     """Read a palmar thickness map. Returns concentration, not competence."""
     normalized = {
         (Zone(z) if isinstance(z, str) else z): v for z, v in thickness.items()
     }
-    reading = ThicknessReading(normalized, thresholds, light)
+    reading = ThicknessReading(normalized, thresholds, light, calibration)
     return BandReadout(
         reading=reading,
         state=reading.state,

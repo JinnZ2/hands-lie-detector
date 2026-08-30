@@ -114,6 +114,40 @@ Both shown. Neither asserted.
 
 ---
 
+## CANONICAL ENTRY — the knuckle field, unread rather than misread
+
+A different failure from the two above, and a worse one.
+
+The scrub and paired-grime entries document models producing a **wrong answer**:
+they read the removable layer and reported a life history. The knuckle case is
+that there is **no category for the marker at all**.
+
+Why the dorsum is absent from what models learned:
+
+- training data is overwhelmingly **palmar** — grip analysis, palmistry,
+  biometric capture
+- shot frontally or from overhead, never **raking across the knuckle ridges**
+- clean, or uniformly dirty
+
+And the marker itself is hostile to that setup: small relative to hand area, low
+contrast without oblique light, and outside the grip vocabulary entirely. Where
+it does register, it tends to come back as "rash", "dermatitis" or "poor skin
+condition" — the model reaching for the nearest class it has.
+
+```
+cleanliness case   a WRONG ANSWER    the model had a category and picked badly
+knuckle case       a MISSING QUESTION the model has no category to pick
+```
+
+Which makes it invisible to any evaluation that scores answers. A model cannot be
+marked wrong on a question nobody asked it, and the forced-classification design
+in the unrun core test does not fix this on its own — the question has to name
+the dorsal surface or the failure stays unmeasured.
+
+See `knuckle-instrument.md`.
+
+---
+
 ## Why this file matters more than the results file
 
 The provenance function only holds if failures commit as prominently as
