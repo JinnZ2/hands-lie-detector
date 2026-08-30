@@ -25,12 +25,14 @@ hands-lie-detector/
 │   │   └── train.py              # Training loop with validation and checkpointing
 │   ├── prompt/                   # Requires: anthropic or openai
 │   │   └── evaluator.py          # Vision LLM scoring with rubric prompt
+│   ├── channel.py                # CH1/CH2 split; failure modes never overlap
 │   ├── audit/                    # Pure Python — no dependencies
 │   │   ├── crosssection.py       # Cross-sections; envelope, never slope
 │   │   ├── specimen.py           # Specimen records, per-line provenance
 │   │   ├── condition.py          # Condition coordinates; what n=1 supports
 │   │   ├── reference_class.py    # Within-frame control; isolates the layer
 │   │   ├── attribution.py        # Agent retrofit: 4 tests, no ground truth
+│   │   ├── precedence.py         # Ordering probe SPEC; position not content
 │   │   └── leakage.py            # Vocabulary provenance; held-out commitment
 │   ├── band/                     # Pure Python — no dependencies
 │   │   ├── contrast.py           # Map states; concentration, NOT skill
@@ -63,6 +65,8 @@ hands-lie-detector/
 ├── gated-not-summed.md           # Wrong form, not wrong number (x3)
 ├── contrast-case.md              # What n=1 does; show vs describe; coordinates
 ├── attribution-retrofit.md       # Agent reassignment; weight vs constraint
+├── channel-split.md              # CH1 physical record vs CH2 annotation
+├── precedence-probe.md           # Ordering probe spec; runs on CH1 only
 ├── wear-taxonomy.md              # Tribology spine; deposit vs draw; two clocks
 ├── sole-audit.md                 # Boot wear vs stated job title; four gates bypassed
 ├── capture-protocol.md           # Five positions, one lamp; unblocks tier 2
@@ -142,6 +146,18 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   to read boot wear as the counterface instead.
 - **gloves-debunk.md** — Why gloves don't erase structural adaptation.
 - **known_failure_cases.md** — Specific vision model failure modes.
+- **channel-split.md** — Physical record (CH1) and annotation (CH2) as declared-
+  separate artifacts with non-overlapping failure lists. CH1 fails by resolution,
+  occlusion, angle and scale and **cannot fail by lying**; CH2 fails the ordinary
+  self-report ways and cannot fail by resolution. Hands don't lie, but hands
+  don't caption. A claim resting on BOTH is more fragile, not less, because it
+  falls if either does — `Claim.falls_with_either` flags it.
+- **precedence-probe.md** — SPEC ONLY, unrun. Names PRECEDENCE VIOLATION: a role
+  prior wired upstream of observation so it gates rather than annotates. The
+  error is POSITION in sequence, not content, so the operationalization is order
+  of first mention — ordinal and readable, needing no magnitude scale. Animal
+  control arm localizes a violation to the human-role prior versus weak
+  observation. Stock imagery excluded: a model can pass it by recognition.
 - **attribution-retrofit.md** — Agent reassignment as an **unmeasured
   hypothesis**, not a documented failure class. Carries a provenance header: the
   account was authored by a model describing its own behavior, which is
@@ -238,6 +254,17 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - Dataset expects `images/` directory + `labels.csv` with 7 score columns
 - Training includes validation split, per-category MAE tracking, and best-model saving
 
+### Channel split (`hands_lie_detector.channel`)
+- Zero external dependencies. Companion to `channel-split.md`
+- `PhysicalRecord` (CH1) has **no field for a caption** — mute by construction —
+  and `can_be_dishonest` returns False: CH1 can be unreadable, not untruthful
+- `Annotation` (CH2) cites a record id; `ChannelSet.add_annotation` refuses one
+  that points at nothing. Citation runs one direction only
+- `FAILURE_MODES` for the two channels do not overlap, which is the reason for
+  the split: discounting one channel does not touch the other
+- `Claim.falls_with_either` marks a fused claim. Resting on both channels is
+  weaker, not stronger — split it into the part each channel carries
+
 ### Audit instruments (`hands_lie_detector.audit`)
 - Zero external dependencies
 - Companion to `calibration-standard.md`
@@ -265,6 +292,13 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   first and a failure on the second exonerates perception and locates the failure
   on the partition layer. `perception_exonerated` returns True only on that
   pattern
+- `precedence.TrialScore.precedence_violation` is ordinal, not scaled: a role
+  referent appearing before the first named physical feature. That is why the
+  probe is runnable while three of the four `attribution` tests are blocked —
+  "which came first" needs a reader, not a threshold
+- `precedence.PrecedenceProbe` ships **unrun** and `report()` declines to print a
+  rate from an empty arm. `SAME_NODE_FLAG` and `NODE_INDEPENDENCE_FLAG` raise the
+  two scope problems without resolving them
 - `attribution.NoDestinationTest` is the cheapest instrument here and refuses to
   be built on a window that contains a candidate party. In a window with none, an
   invented agent is fabrication rather than bias: binary, not a magnitude, and

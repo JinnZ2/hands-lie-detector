@@ -25,6 +25,16 @@ from .leakage import (
     commit_stimulus,
     vocabulary_signature,
 )
+from .precedence import (
+    NODE_INDEPENDENCE_FLAG,
+    SAME_NODE_FLAG,
+    ArmResult,
+    Localization,
+    PrecedenceProbe,
+    ProbeInput,
+    SubjectArm,
+    TrialScore,
+)
 from .attribution import (
     ACCOMMODATION_DIRECTION,
     ASYMMETRY_READING,
@@ -55,6 +65,14 @@ from .reference_class import (
 from .specimen import Corroboration, Provenance, Specimen, SpecimenLine
 
 __all__ = [
+    "TrialScore",
+    "SubjectArm",
+    "ProbeInput",
+    "PrecedenceProbe",
+    "Localization",
+    "ArmResult",
+    "SAME_NODE_FLAG",
+    "NODE_INDEPENDENCE_FLAG",
     "Corroboration",
     "estimate_without_bits",
     "VerbClass",
