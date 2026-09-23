@@ -18,5 +18,5 @@ setup(
             "openai>=1.0",
         ],
     },
-    license="MIT",
+    license="CC0-1.0",
 )
