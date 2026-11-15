@@ -63,6 +63,7 @@ def step_rgb(w=64, h=64, edge=32):
 
 def a_log(kind, oid, regions, sha=None, before=True):
     return {"observer": {"kind": kind, "id": oid}, "image_sha256": sha,
+            "image_sha256_source": "PNG" if sha else None,
             "before_task_prompt": before,
             "entries": [{"rank": i + 1, "noticed": f"thing {i + 1}", "region": r}
                         for i, r in enumerate(regions)]}
@@ -406,3 +407,73 @@ class PromptedKind(unittest.TestCase):
         with contextlib.redirect_stdout(buf):
             self.assertEqual(main([str(p)]), 0)
         self.assertIn("never used as a probe", buf.getvalue())
+
+
+class FrameRecord(unittest.TestCase):
+    def setUp(self):
+        import shutil
+        self.tmp = Path(tempfile.mkdtemp())
+        for f in (ROOT / "attention_runs").glob("*.json"):
+            shutil.copy(f, self.tmp / f.name)
+
+    def test_labels_as_given(self):
+        from hands_lie_detector.attention import frames as F
+        fr, rows = F.check_dir(ROOT / "attention_runs")
+        fx = fr["frames"]
+        self.assertEqual((fx["photo1"]["source_file"], fx["photo2"]["source_file"]),
+                         ("IMG_4070", "IMG_4071"))
+        self.assertEqual({fx["road1"]["source_file"], fx["road2"]["source_file"]},
+                         {"IMG_4074", "IMG_4076"})
+        for r in ("road1", "road2"):
+            self.assertEqual(fx[r]["allowed_log_kinds"], ["prompted"])
+        for ph in ("photo1", "photo2"):
+            self.assertIs(fx[ph]["backlit"], True)
+            self.assertIn("on device", fx[ph]["physics_run"])
+            self.assertIsNone(fx[ph]["image_sha256"])
+        self.assertEqual(len(rows), 4)
+
+    def test_free_log_refused_on_prompted_only_frame(self):
+        from hands_lie_detector.attention import frames as F
+        fr = F.load(ROOT / "attention_runs")
+        lg = a_log("claude", "c", [None])
+        lg["frame_label"] = "road1"
+        with self.assertRaises(L.LogError):
+            F.check_log(lg, fr)
+        lg["log_kind"], lg["before_task_prompt"] = "prompted", False
+        F.check_log(lg, fr)
+        lg["frame_label"] = "nowhere"
+        with self.assertRaises(L.LogError):
+            F.check_log(lg, fr)
+
+    def test_sha_needs_its_source_format(self):
+        lg = a_log("claude", "c", [None], sha="ab" * 32)
+        lg["image_sha256_source"] = None
+        with self.assertRaises(L.LogError):
+            L.validate_stored(lg)
+        lg["image_sha256_source"] = "PNG"
+        L.validate_stored(lg)
+        lg = a_log("claude", "c", [None])
+        lg["image_sha256_source"] = "PNG"
+        with self.assertRaises(L.LogError):
+            L.validate_stored(lg)
+
+    def test_fill_from_decoded_png_only(self):
+        import hashlib
+        from hands_lie_detector.attention import frames as F
+        jpg = self.tmp / "x.jpg"
+        jpg.write_bytes(b"\xff\xd8\xff\xe0" + b"0" * 64)
+        with self.assertRaises(L.LogError):
+            F.fill(self.tmp, "photo1", jpg)
+        self.assertIsNone(F.load(self.tmp)["frames"]["photo1"]["image_sha256"])
+        png = self.tmp / "x.png"
+        png.write_bytes(png_bytes(4, 3, [[(10, 20, 30)] * 4] * 3))
+        sha, fmt, n = F.fill(self.tmp, "photo1", png)
+        self.assertEqual(sha, hashlib.sha256(png.read_bytes()).hexdigest())
+        self.assertEqual((fmt, n), ("PNG", 2))
+        fr, _ = F.check_dir(self.tmp)
+        self.assertEqual(fr["frames"]["photo1"]["image_sha256_source"], "PNG")
+        self.assertIsNone(fr["frames"]["photo2"]["image_sha256"])
+        other = self.tmp / "y.png"
+        other.write_bytes(png_bytes(4, 3, [[(1, 2, 3)] * 4] * 3))
+        with self.assertRaises(L.LogError):
+            F.fill(self.tmp, "photo1", other)

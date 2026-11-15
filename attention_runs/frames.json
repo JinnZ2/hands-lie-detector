@@ -1,0 +1,51 @@
+{
+ "note": "labels from the operator, 2026-11-15. Images are not committed. image_sha256 is filled only by `frames fill` from a decoded file; image_sha256_source logs the format.",
+ "frames": {
+  "photo1": {
+   "source_file": "IMG_4070",
+   "set": "morning pair",
+   "allowed_log_kinds": [
+    "free",
+    "prompted"
+   ],
+   "backlit": true,
+   "physics_run": "on device (backlit)",
+   "image_sha256": null,
+   "image_sha256_source": null
+  },
+  "photo2": {
+   "source_file": "IMG_4071",
+   "set": "morning pair",
+   "allowed_log_kinds": [
+    "free",
+    "prompted"
+   ],
+   "backlit": true,
+   "physics_run": "on device (backlit)",
+   "image_sha256": null,
+   "image_sha256_source": null
+  },
+  "road1": {
+   "source_file": "IMG_4074",
+   "set": "road set, shoulder-mounted, same hand",
+   "allowed_log_kinds": [
+    "prompted"
+   ],
+   "backlit": null,
+   "physics_run": null,
+   "image_sha256": null,
+   "image_sha256_source": null
+  },
+  "road2": {
+   "source_file": "IMG_4076",
+   "set": "road set, shoulder-mounted, same hand",
+   "allowed_log_kinds": [
+    "prompted"
+   ],
+   "backlit": null,
+   "physics_run": null,
+   "image_sha256": null,
+   "image_sha256_source": null
+  }
+ }
+}

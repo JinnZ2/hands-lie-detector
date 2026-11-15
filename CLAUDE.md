@@ -41,6 +41,7 @@ hands-lie-detector/
 │   │   ├── image.py              # PNG/PPM decode; JPEG/HEIC refused → coordinates-only
 │   │   ├── log.py                # Observer logs, before any task prompt; never merged
 │   │   ├── check.py              # Check a stored log; prompted kind never a probe
+│   │   ├── frames.py             # Frame record; sha256 only from a decoded file
 │   │   ├── physics.py            # Gradient, edge, specular/diffuse, transmission
 │   │   ├── maps.py               # Pointer / BIAS / BLIND SPOT; controls; divergence
 │   │   ├── run.py                # One run: bounds logged, aggregates only
@@ -373,7 +374,10 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   2026-11-15 morning Claude log is split per photo (photo1, photo2), 4 entries
   each, CARRIED, before_task_prompt true, per_photo_order UNRESOLVED, regions
   and image_sha256 null. The two post-cue items are in matching prompted logs.
-  The first real run is pending.
+  `frames.json` labels photo1 = IMG_4070, photo2 = IMG_4071 (backlit: physics
+  run on device), road1/road2 = IMG_4074/IMG_4076 (prompted logs only).
+  image_sha256 comes only from `frames fill` on a decoded file, with
+  image_sha256_source naming the format. The first real run is pending.
 
 ### Band readout (`hands_lie_detector.band`)
 - Zero external dependencies

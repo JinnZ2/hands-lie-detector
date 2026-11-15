@@ -5,7 +5,10 @@
  },
  "log_kind": "prompted",
  "frame_label": "photo1",
+ "source_file": "IMG_4070",
+ "backlit": true,
  "image_sha256": null,
+ "image_sha256_source": null,
  "before_task_prompt": false,
  "per_photo_order": "UNRESOLVED",
  "per_photo_order_note": "reply covered the pair; order not separable by photo",
@@ -16,8 +19,9 @@
   "before_task_prompt": "false: attended only after the \"hands don't lie\" cue (task given)",
   "use": "stored for comparison with the free log; never used as a probe",
   "pairs_with": "claude_2026-11-15_morning_photo1.json",
-  "image_sha256": "null until this photo's PNG arrives",
-  "status": "CARRIED; regions null until drawn"
+  "image_sha256": "null until filled by `frames fill` from the decoded file (PNG, or JPEG once the decoder lands); image_sha256_source logs which",
+  "status": "CARRIED; regions null until drawn",
+  "frame": "photo1 = IMG_4070 (operator label, 2026-11-15); backlit: physics run stays on device"
  },
  "entries": [
   {

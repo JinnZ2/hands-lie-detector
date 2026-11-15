@@ -5,7 +5,10 @@
  },
  "log_kind": "free",
  "frame_label": "photo2",
+ "source_file": "IMG_4071",
+ "backlit": true,
  "image_sha256": null,
+ "image_sha256_source": null,
  "before_task_prompt": true,
  "per_photo_order": "UNRESOLVED",
  "per_photo_order_note": "reply covered the pair; order not separable by photo",
@@ -16,8 +19,9 @@
   "before_task_prompt": "true: photos + greeting only; no task (set 2026-11-15 by the operator)",
   "status": "CARRIED; regions null until drawn",
   "split": "split 2026-11-15 from claude_2026-11-15_morning.json (one log covering 2 photos) into one log per photo; same 4 entries in each",
-  "image_sha256": "null until this photo's PNG arrives",
-  "prompted_items": "palm creases, weathered texture: in claude_2026-11-15_morning_photo2_prompted.json"
+  "image_sha256": "null until filled by `frames fill` from the decoded file (PNG, or JPEG once the decoder lands); image_sha256_source logs which",
+  "prompted_items": "palm creases, weathered texture: in claude_2026-11-15_morning_photo2_prompted.json",
+  "frame": "photo2 = IMG_4071 (operator label, 2026-11-15); backlit: physics run stays on device"
  },
  "entries": [
   {

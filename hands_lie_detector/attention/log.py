@@ -35,6 +35,7 @@ import json
 OBSERVER_KINDS = ("claude", "model", "human")
 LOG_KINDS = ("free", "prompted")
 PER_PHOTO_ORDER = ("RESOLVED", "UNRESOLVED")
+SHA_SOURCES = ("PNG", "PPM", "JPEG")   # format of the file the hash was taken from
 SLOTS = ("claude", "other_models", "human")
 
 
@@ -65,6 +66,12 @@ def _check(log, width, height, image_sha256):
     ppo = log.get("per_photo_order")
     if ppo is not None and ppo not in PER_PHOTO_ORDER:
         raise LogError(f"per_photo_order must be one of {PER_PHOTO_ORDER} or absent, got {ppo!r}")
+    sha, src = log.get("image_sha256"), log.get("image_sha256_source")
+    if sha is not None and src not in SHA_SOURCES:
+        raise LogError(f"image_sha256 is set: image_sha256_source must name the decoded format "
+                       f"it came from, one of {SHA_SOURCES}, got {src!r}")
+    if sha is None and src is not None:
+        raise LogError("image_sha256_source given with no image_sha256")
     if image_sha256 and log.get("image_sha256") and log["image_sha256"] != image_sha256:
         raise LogError("image_sha256 does not match the image: this log is for another frame")
     entries = log.get("entries")

@@ -104,10 +104,12 @@ The sweep has been run only on constructed images in the tests. A ramp whose gra
 `attention_runs/` holds logs and results. Frames are never committed (`.gitignore`).
 
 - **First real run: pending.** No PNG and no completed log have arrived.
+- **Frame record** `attention_runs/frames.json` (operator labels): photo1 = IMG_4070, photo2 = IMG_4071 (morning pair, free and prompted logs, both backlit, so the physics run stays on device); road1 = IMG_4074, road2 = IMG_4076 (road set, shoulder-mounted, same hand; prompted logs only). `frames.py` checks every log against it: a log's `frame_label` must be in the record and its `log_kind` allowed there.
+- **`image_sha256`** is filled only by `frames fill` from a file the decoder decodes, with `image_sha256_source` naming the format (PNG now; JPEG once the decoder handles it). A hash with no source format is refused. All are null today.
 - **Claude's logs for the 2026-11-15 morning photos**, one per photo: `attention_runs/claude_2026-11-15_morning_photo1.json` and `..._photo2.json`.
   - The same 4 entries in each, CARRIED from the chat transcript, with `before_task_prompt` true (photos and greeting only).
   - `per_photo_order` UNRESOLVED: the reply covered the pair, so the order is not separable by photo.
-  - Regions are null until drawn. `image_sha256` is null until each photo's PNG arrives.
+  - Regions are null until drawn.
   - Palm creases and weathered texture, attended only after the task cue, are in the matching `_prompted.json` logs (`log_kind` prompted), stored and never used as a probe.
 - `python3 -m hands_lie_detector.attention.template` builds a log from an order given as `--item` arguments, with every region null (`--log-kind prompted` for a post-cue log).
 
