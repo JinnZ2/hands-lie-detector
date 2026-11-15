@@ -48,6 +48,17 @@ No full text was read for any entry.
   a load history. The bone pattern is a deposit, as here. The labels it was
   read against are a ledger, not a deposit. Read before borrowing their
   groups.
+- **PROPOSED prediction (co-authored):** continuous multi-domain load, where
+  grip-force work and thumb-precision work run together over years, would
+  produce an **intermediate or mixed** entheseal pattern, sitting between the
+  two Karakostis patterns rather than on either.
+  - It is a bone-level prediction. Entheses are not visible in a photograph
+    of a living hand, so no frame in this repo can test it.
+  - It would need skeletal material whose load history is documented as
+    multi-domain. That is the same enrollment gap `reference-class-empty.md`
+    describes.
+  - Not tested. Karakostis's abstract reports two patterns and does not say
+    whether intermediate cases were seen.
 
 ## 3. Davis et al. 2012, *International Journal of Osteoarchaeology*
 
@@ -56,6 +67,11 @@ No full text was read for any entry.
 - **State: UNVERIFIED.** Europe PMC does not return this record; the journal
   is not indexed there. Author list, volume, pages and DOI are not confirmed
   here.
+- **Provenance (as delivered):** cited in the reference list of the Wiley
+  special issue "Entheseal Changes and Occupation".
+- **Verification route:** a title search on Wiley Online Library. Not run
+  from this session, because that host is not on its network allowlist.
+  Stays UNVERIFIED until a record is found.
 
 ## 4. Drapeau 2008, *HOMO* 59:93–109
 
@@ -75,12 +91,23 @@ No full text was read for any entry.
     well understood") is the same open question as this repo's load-mode
     split. A bilateral difference says one side was used more. It does not
     say whether "more" means more often or harder.
+  - The same frequency-versus-intensity confound applies to callus edge
+    sharpness. Many cycles at a fixed grip geometry and fewer cycles at high
+    force could both produce a sharp edge, so a sharp edge alone does not
+    say which. Edge sharpness as a discriminator between the two is a
+    **CANDIDATE**, not a test. Nothing here shows that the two loads leave
+    different edges, and no threshold exists.
 
 ## 5. Review: "Entheseal Changes: Benefits, Limitations and Applications in Bioarchaeology"
 
 - **Delivered:** a Pathways review.
 - **State: UNVERIFIED.** No record with this title was found in Europe PMC.
   Authors, venue, year and identifier are not confirmed here.
+- **Provenance (as delivered):** a ResearchGate PDF and a page on the Pathways
+  journal site, under the exact title above.
+- **Verification route:** an exact-title search on the Pathways journal site.
+  ResearchGate is a secondary copy, not the record. Not run from this session.
+  Stays UNVERIFIED until a record is found.
 
 ---
 

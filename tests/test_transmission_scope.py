@@ -25,6 +25,19 @@ class TransmissionScope(unittest.TestCase):
             section = text.split(n, 1)[1].split("\n## ", 1)[0]
             self.assertTrue("VERIFIED (abstract)" in section or "UNVERIFIED" in section, n)
 
+    def test_unverified_entries_stay_unverified_and_name_a_route(self):
+        text = (ROOT / "REFERENCES" / "related_fields.md").read_text(encoding="utf-8")
+        for n in ("## 3.", "## 5."):
+            section = text.split(n, 1)[1].split("\n## ", 1)[0]
+            self.assertIn("UNVERIFIED", section, n)
+            self.assertIn("Verification route", section, n)
+
+    def test_candidate_and_prediction_not_promoted(self):
+        text = (ROOT / "REFERENCES" / "related_fields.md").read_text(encoding="utf-8")
+        self.assertIn("**CANDIDATE**, not a test", text)
+        self.assertIn("**PROPOSED prediction (co-authored):**", text)
+        self.assertIn("no frame in this repo can test it", text)
+
 
 if __name__ == "__main__":
     unittest.main()
