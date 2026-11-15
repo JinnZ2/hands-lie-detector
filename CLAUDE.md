@@ -172,6 +172,15 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   with no load content entering a monotone count uncalibrated. Also names what
   no light angle reaches — fracture callus, capsular thickening, ligament laxity
   — and extends the joint instrument to PIP and DIP.
+- **backlit-transmission.md** — PROPOSED. Backlit transmission reads PATH
+  OPACITY (everything on the light path), not the callus plate map that raking
+  light reads, so `LightCondition.BACKLIT.resolves_thickness` stays False and
+  tier 2 still needs position 5. Opacity is not composition. Extends rule zero:
+  a backlit palm shows the vein pattern, which a ridge-pitch blur does not
+  remove.
+- **REFERENCES/related_fields.md** — PROPOSED pointer list into bioarchaeology's
+  entheseal-change literature, each entry marked VERIFIED (abstract) or
+  UNVERIFIED. Their labels are recorded occupations; the deposit is bone.
 - **knuckle-instrument.md** — The MCP joint as a separate instrument. Three load
   modes (impact / hyperextension / hyperflexion-under-load), a marker taxonomy,
   and the structural claim that **palmar and dorsal load are not correlated**, so
