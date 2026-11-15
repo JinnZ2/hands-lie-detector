@@ -199,6 +199,9 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   reported per cell. PNG/PPM only; JPEG and HEIC are refused for coordinates-only
   mode. Backlit frames stay on device. Built and tested on constructed images
   only; readings, no interpretation.
+- **REFERENCES/attention_as_sensor.md** — PROPOSED pointer list for
+  attention-as-sensor: FDIP-NET (PRESS_RELEASE), Farid et al. CVPR 2022
+  (SNIPPET), a practitioner highlight check (SNIPPET, CARRIED). No grades.
 - **REFERENCES/related_fields.md** — PROPOSED pointer list into bioarchaeology's
   entheseal-change literature, each entry marked VERIFIED (abstract) or
   UNVERIFIED. Their labels are recorded occupations; the deposit is bone.

@@ -113,6 +113,10 @@ The sweep has been run only on constructed images in the tests. A ramp whose gra
   - Palm creases and weathered texture, attended only after the task cue, are in the matching `_prompted.json` logs (`log_kind` prompted), stored and never used as a probe.
 - `python3 -m hands_lie_detector.attention.template` builds a log from an order given as `--item` arguments, with every region null (`--log-kind prompted` for a post-cue log).
 
+## References
+
+`REFERENCES/attention_as_sensor.md`: three pointers, each with its read depth (one PRESS_RELEASE, two SNIPPET). None is graded above its depth; the relevance note is PROPOSED.
+
 ## Privacy
 
 - No pixel array, crop or per-pixel map is ever written. Outputs are region aggregates and the image's sha256.
