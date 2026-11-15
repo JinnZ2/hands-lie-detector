@@ -42,6 +42,7 @@ hands-lie-detector/
 │   │   ├── log.py                # Observer logs, before any task prompt; never merged
 │   │   ├── check.py              # Check a stored log; prompted kind never a probe
 │   │   ├── frames.py             # Frame record; sha256 only from a decoded file
+│   │   ├── fdip_shift.py         # FDIP-like features under resize/quantize/re-encode
 │   │   ├── physics.py            # Gradient, edge, specular/diffuse, transmission
 │   │   ├── maps.py               # Pointer / BIAS / BLIND SPOT; controls; divergence
 │   │   ├── run.py                # One run: bounds logged, aggregates only

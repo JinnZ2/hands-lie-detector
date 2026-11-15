@@ -1,0 +1,45 @@
+FDIP-like feature shift (PROPOSED; constructed frames; readings only, no interpretation)
+frames: CONSTRUCTED (flat, ramp, step_edge, step_edge_odd, fine_texture)  size 48  seed 0
+relative = shift / before; '--' where before is 0
+
+frame         transform               laplacian_abs_mean       laplacian_var       grad_mag_mean        grad_sq_mean
+flat          resize_down2_up2          +0.000 (     --)    +0.000 (     --)    +0.000 (     --)    +0.000 (     --)
+flat          resize_nearest_half       +0.000 (     --)    +0.000 (     --)    +0.000 (     --)    +0.000 (     --)
+flat          quantize_6bit             +0.000 (     --)    +0.000 (     --)    +0.000 (     --)    +0.000 (     --)
+flat          quantize_4bit             +0.000 (     --)    +0.000 (     --)    +0.000 (     --)    +0.000 (     --)
+flat          quantize_2bit             +0.000 (     --)    +0.000 (     --)    +0.000 (     --)    +0.000 (     --)
+flat          reencode_png              +0.000 (     --)    +0.000 (     --)    +0.000 (     --)    +0.000 (     --)
+flat          reencode_ppm_maxval15     +0.000 (     --)    +0.000 (     --)    +0.000 (     --)    +0.000 (     --)
+flat          reencode_jpeg          NOT_AVAILABLE: the Python standard library has no JPEG codec
+ramp          resize_down2_up2         +10.022 (+11.820)  +117.935 (+139.181)    +0.011 ( +0.002)    +0.245 ( +0.008)
+ramp          resize_nearest_half       +9.978 (+11.769)  +116.501 (+137.488)    -0.011 ( -0.002)    -0.114 ( -0.004)
+ramp          quantize_6bit             +1.935 ( +2.282)   +10.283 (+12.136)    -0.033 ( -0.006)    +0.462 ( +0.016)
+ramp          quantize_4bit             +9.587 (+11.308)  +166.109 (+196.033)    -0.206 ( -0.038)   +12.288 ( +0.417)
+ramp          quantize_2bit             +7.500 ( +8.846)  +533.413 (+629.505)    -1.250 ( -0.231)  +104.114 ( +3.535)
+ramp          reencode_png              +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)
+ramp          reencode_ppm_maxval15    +10.239 (+12.077)  +187.631 (+221.432)    +0.120 ( +0.022)   +17.669 ( +0.600)
+ramp          reencode_jpeg          NOT_AVAILABLE: the Python standard library has no JPEG codec
+step_edge     resize_down2_up2          +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)
+step_edge     resize_nearest_half       +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)
+step_edge     quantize_6bit             +0.050 ( +0.007)   +15.758 ( +0.015)    +0.025 ( +0.007)    +3.939 ( +0.015)
+step_edge     quantize_4bit             +0.373 ( +0.055)  +120.496 ( +0.112)    +0.187 ( +0.055)   +30.124 ( +0.112)
+step_edge     quantize_2bit             -0.672 ( -0.098)  -200.673 ( -0.187)    -0.336 ( -0.098)   -50.168 ( -0.187)
+step_edge     reencode_png              +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)
+step_edge     reencode_ppm_maxval15     +0.188 ( +0.028)   +59.921 ( +0.056)    +0.094 ( +0.028)   +14.980 ( +0.056)
+step_edge     reencode_jpeg          NOT_AVAILABLE: the Python standard library has no JPEG codec
+step_edge_odd resize_down2_up2          +0.000 ( +0.000)  -536.258 ( -0.500)    +0.000 ( +0.000)  -134.064 ( -0.500)
+step_edge_odd resize_nearest_half       +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)
+step_edge_odd quantize_6bit             +0.050 ( +0.007)   +15.758 ( +0.015)    +0.025 ( +0.007)    +3.939 ( +0.015)
+step_edge_odd quantize_4bit             +0.373 ( +0.055)  +120.496 ( +0.112)    +0.187 ( +0.055)   +30.124 ( +0.112)
+step_edge_odd quantize_2bit             -0.672 ( -0.098)  -200.673 ( -0.187)    -0.336 ( -0.098)   -50.168 ( -0.187)
+step_edge_odd reencode_png              +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)
+step_edge_odd reencode_ppm_maxval15     +0.188 ( +0.028)   +59.921 ( +0.056)    +0.094 ( +0.028)   +14.980 ( +0.056)
+step_edge_odd reencode_jpeg          NOT_AVAILABLE: the Python standard library has no JPEG codec
+fine_texture  resize_down2_up2         -28.093 ( -0.391) -4580.881 ( -0.616)   -10.403 ( -0.369)  -496.799 ( -0.545)
+fine_texture  resize_nearest_half       -4.900 ( -0.068) -1629.605 ( -0.219)    -0.299 ( -0.011)   -17.425 ( -0.019)
+fine_texture  quantize_6bit             -0.089 ( -0.001)    -2.668 ( -0.000)    +0.003 ( +0.000)    +0.283 ( +0.000)
+fine_texture  quantize_4bit             -0.656 ( -0.009)  -207.109 ( -0.028)    +0.060 ( +0.002)    +3.657 ( +0.004)
+fine_texture  quantize_2bit             +8.785 ( +0.122) +1174.289 ( +0.158)    +4.480 ( +0.159)  +311.438 ( +0.341)
+fine_texture  reencode_png              +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)    +0.000 ( +0.000)
+fine_texture  reencode_ppm_maxval15     +0.284 ( +0.004)    -9.580 ( -0.001)    +0.197 ( +0.007)   +13.103 ( +0.014)
+fine_texture  reencode_jpeg          NOT_AVAILABLE: the Python standard library has no JPEG codec

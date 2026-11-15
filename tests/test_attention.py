@@ -517,3 +517,52 @@ class PromptedFix(unittest.TestCase):
         free["entries_pending"], free["entries_pending_reason"] = True, "x"
         with self.assertRaises(L.LogError):          # free log cannot be pending
             L.validate_stored(free)
+
+
+class FdipShift(unittest.TestCase):
+    def setUp(self):
+        from hands_lie_detector.attention import fdip_shift as F
+        self.F = F
+        self.rep = F.run(size=32, seed=0)
+
+    def _row(self, frame, t):
+        return [r for r in self.rep["rows"] if r["frame"] == frame and r["transform"] == t][0]
+
+    def test_flat_has_no_features_and_no_relative(self):
+        f = self.F.constructed_frames(32)["flat"]
+        self.assertEqual(set(self.F.features(f).values()), {0.0})
+        self.assertIsNone(self._row("flat", "quantize_2bit")["features"]["grad_mag_mean"]["relative"])
+
+    def test_lossless_png_is_a_null_shift(self):
+        for fr in ("ramp", "step_edge", "fine_texture"):
+            for k, v in self._row(fr, "reencode_png")["features"].items():
+                self.assertEqual(v["shift"], 0.0, (fr, k))
+
+    def test_jpeg_not_available_named(self):
+        r = self._row("ramp", "reencode_jpeg")
+        self.assertEqual(r["state"], "NOT_AVAILABLE")
+        self.assertIn("JPEG", r["reason"])
+
+    def test_block_alignment_control(self):
+        even = self._row("step_edge", "resize_down2_up2")["features"]["grad_sq_mean"]["shift"]
+        odd = self._row("step_edge_odd", "resize_down2_up2")["features"]["grad_sq_mean"]["shift"]
+        self.assertEqual(even, 0.0)
+        self.assertNotEqual(odd, 0.0)
+
+    def test_quantize_moves_texture_and_ramp(self):
+        self.assertNotEqual(self._row("ramp", "quantize_2bit")["features"]["laplacian_var"]["shift"], 0)
+        self.assertNotEqual(self._row("fine_texture", "resize_down2_up2")["features"]["laplacian_var"]["shift"], 0)
+
+    def test_known_answer_gradient(self):
+        # a horizontal ramp of slope s in Y has central-difference |grad| = s inside
+        w = h = 8
+        rgb = [(10 * x,) * 3 for y in range(h) for x in range(w)]
+        f = self.F._frame(w, h, rgb)
+        ft = self.F.features(f)
+        self.assertAlmostEqual(ft["grad_mag_mean"], 10.0, places=6)
+        self.assertAlmostEqual(ft["grad_sq_mean"], 100.0, places=6)
+        self.assertAlmostEqual(ft["laplacian_abs_mean"], 0.0, places=6)
+
+    def test_constructed_and_no_interpretation(self):
+        self.assertIn("CONSTRUCTED", self.rep["frames"])
+        self.assertIn("no interpretation", self.rep["status"])

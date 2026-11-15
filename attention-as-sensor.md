@@ -113,6 +113,29 @@ The sweep has been run only on constructed images in the tests. A ramp whose gra
   - Prompted logs (after the task cue; stored, never a probe): photo2 holds palm creases and weathered/dry texture; photo1 holds a 4-item backlit readout (margins and webs glow, palm center and finger-base pads opaque); road1 and road2 are empty with `entries_pending` true until the 4 shoulder photos are labeled. `entries_pending` keeps "not yet assigned" apart from "nothing noticed".
 - `python3 -m hands_lie_detector.attention.template` builds a log from an order given as `--item` arguments, with every region null (`--log-kind prompted` for a post-cue log).
 
+## FDIP-like feature shift (stdlib slice)
+
+PROPOSED, co-authored. Constructed frames only; readings, no interpretation.
+`hands_lie_detector/attention/fdip_shift.py`; output
+`attention_runs/fdip_shift_constructed_2026-11-15.txt`.
+
+- **Features** (on luminance Y, interior pixels): mean |Laplacian|, Laplacian
+  variance, mean gradient magnitude, mean squared gradient. The names come
+  from the request; FDIP-NET was not read (reference entry 1, PRESS_RELEASE),
+  so these are not its features.
+- **Frames** (CONSTRUCTED, 48 px, seed 0): flat, ramp, step edge on an even
+  column, the same edge one column over, fine checker texture with noise.
+- **Transforms:** 2x2 block-mean down and nearest up; every-second-pixel down
+  and nearest up; quantize to 6, 4, 2 bits; PNG write and decode (lossless,
+  the null); PPM write with maxval 15 and decode. **JPEG re-encode:
+  NOT_AVAILABLE** (no codec in the standard library), logged as a row.
+- **Logged per frame and transform:** before, after, shift, and shift / before
+  (none where before is 0).
+- **Choices not in the request:** the frames; the odd-column edge, added
+  because an even-column edge lines up with every 2x2 block and no resize can
+  touch it (that row reads 0 by construction); Rec.709 Y without
+  linearisation, as in `physics.py`.
+
 ## References
 
 `REFERENCES/attention_as_sensor.md`: three pointers, each with its read depth (one PRESS_RELEASE, two SNIPPET; entry 2's authors and venue CARRIED from memory). None is graded above its depth; the relevance note is PROPOSED.
