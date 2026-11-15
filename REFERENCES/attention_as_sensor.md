@@ -14,6 +14,15 @@ above it: none is cited as support, measurement or finding.
 - **Source:** techxplore, 2026-11-13; HyperAI summary.
 - **Depth: PRESS_RELEASE.** The paper was not read.
 - **Grade: none** (Card 07 ceiling for PRESS_RELEASE: nothing above UNTESTED).
+- **Cross-dataset figures (CARRIED from GPT's examination, unverified).** Not
+  read here; no paper, dataset card or table was seen. As relayed:
+  - within-dataset accuracy 98.7–99.7%;
+  - FF++ about 91% (frame-level);
+  - trained on DFRI, tested on DF-wild: AUROC about 0.4968;
+  - trained on DFRI, tested on RFF-140K: AUROC about 0.5645.
+
+  Which model, split and metric definition each figure belongs to is not
+  stated in the relay. **Grade: none** (CARRIED: nothing above UNTESTED).
 
 ## 2. "Detecting Real-Time Deep-Fake Videos Using Active Illumination"
 

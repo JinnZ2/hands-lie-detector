@@ -201,7 +201,8 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   mode. Backlit frames stay on device. Built and tested on constructed images
   only; readings, no interpretation.
 - **REFERENCES/attention_as_sensor.md** — PROPOSED pointer list for
-  attention-as-sensor: FDIP-NET (PRESS_RELEASE), the active-illumination
+  attention-as-sensor: FDIP-NET (PRESS_RELEASE; cross-dataset figures CARRIED
+  from GPT's examination), the active-illumination
   deepfake paper (title SNIPPET; authors and venue CARRIED from memory), a
   practitioner highlight check (SNIPPET, Adaptive Security snippet). No grades.
 - **REFERENCES/related_fields.md** — PROPOSED pointer list into bioarchaeology's
