@@ -13,7 +13,7 @@ PRIVACY = ("aggregates only: no pixels, crops or per-pixel maps are written. Bac
 
 
 def run(frame, logs, backlit=False, small=False, grid=M.GRID, k=M.SIGNAL_K, seed=0,
-        draws=M.DRAWS):
+        draws=M.DRAWS, edge_t=P.EDGE_T, with_controls=True):
     factor = 1
     if small:
         frame, factor = I.small(frame)
@@ -21,15 +21,16 @@ def run(frame, logs, backlit=False, small=False, grid=M.GRID, k=M.SIGNAL_K, seed
     for lg in logs:
         L.validate(lg, frame.width * factor, frame.height * factor, frame.sha256)
         held.add(lg)
-    field = P.Field(frame)
-    readings = [M.read_observer(field, L.scale(lg, factor), backlit, grid, k, seed, draws)
+    field = P.Field(frame, edge_t)
+    readings = [M.read_observer(field, L.scale(lg, factor), backlit, grid, k, seed, draws,
+                                with_controls)
                 for _, lg in held.items()]
     return {
         "status": "PROPOSED; readings only, no interpretation",
         "input_mode": frame.input_mode,
         "image_sha256": frame.sha256,
         "frame": {"width": frame.width, "height": frame.height, "backlit": backlit},
-        "bounds": {**frame.bounds, **P.bounds(), "grid": grid, "SIGNAL_K": k,
+        "bounds": {**frame.bounds, **P.bounds(edge_t), "grid": grid, "SIGNAL_K": k,
                    "draws": draws, "seed": seed, "small_factor": factor,
                    "frame_edge_fraction": field.frame_edge_fraction() if frame.decoded else
                    P.UNMEASURED},

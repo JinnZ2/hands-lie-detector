@@ -22,3 +22,9 @@ data/images/
 *.pt
 *.pth
 *.ckpt
+# attention-as-sensor frames stay on device
+attention_runs/*.png
+attention_runs/*.ppm
+attention_runs/*.jpg
+attention_runs/*.jpeg
+attention_runs/*.heic

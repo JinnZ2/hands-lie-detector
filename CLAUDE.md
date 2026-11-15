@@ -42,7 +42,9 @@ hands-lie-detector/
 │   │   ├── log.py                # Observer logs, before any task prompt; never merged
 │   │   ├── physics.py            # Gradient, edge, specular/diffuse, transmission
 │   │   ├── maps.py               # Pointer / BIAS / BLIND SPOT; controls; divergence
-│   │   └── run.py                # One run: bounds logged, aggregates only
+│   │   ├── run.py                # One run: bounds logged, aggregates only
+│   │   ├── sweep.py              # Bound sweep: EDGE_T x SIGNAL_K x GRID; HOLDS / SHIFTS
+│   │   └── template.py           # Log from an order; regions void, provenance kept
 │   └── integration/              # Pure Python — no dependencies
 │       ├── domains.py            # Domain zone/load-mode signatures, channels
 │       ├── residual.py           # Residual-zone readout (Test C), conflicts
@@ -359,6 +361,12 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   SIGNAL_K, grid, draws, seed, --small factor) are printed in `bounds`.
 - Outputs are region aggregates only; a test checks no pixel-scale list leaves
   `run`.
+- `sweep` runs all 27 (EDGE_T, SIGNAL_K, GRID) settings and reports, per landing,
+  HOLDS or SHIFTS. Per grid it reports cell stability, and on a lattice it
+  reports stability across all settings. Controls are not run in the sweep.
+- `attention_runs/` holds logs and JSON results; frames stay out of git. The
+  2026-11-15 morning Claude log is a CARRIED template that awaits the order text.
+  The first real run is pending.
 
 ### Band readout (`hands_lie_detector.band`)
 - Zero external dependencies

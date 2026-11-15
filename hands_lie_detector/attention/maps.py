@@ -97,7 +97,8 @@ def spearman(a, b):
     return None if da == 0 or db == 0 else num / (da * db)
 
 
-def read_observer(field, log, backlit=False, grid=GRID, k=SIGNAL_K, seed=0, draws=DRAWS):
+def read_observer(field, log, backlit=False, grid=GRID, k=SIGNAL_K, seed=0, draws=DRAWS,
+                  with_controls=True):
     fr = field.frame
     ff = field.frame_edge_fraction() if fr.decoded else None
     mapped = [e for e in log["entries"] if e.get("region") is not None]
@@ -128,8 +129,10 @@ def read_observer(field, log, backlit=False, grid=GRID, k=SIGNAL_K, seed=0, draw
     return {"observer": log["observer"], "entries": len(log["entries"]),
             "unmapped_entries": len(log["entries"]) - len(mapped),
             "landings": landings, "cells": table, "cell_counts": counts,
-            "controls": controls(field, landings, seed, draws) if fr.decoded else
-            {"state": "NOT_EVALUABLE", "reason": "coordinates-only: no pixels"}}
+            "controls": (controls(field, landings, seed, draws) if fr.decoded and with_controls else
+                         {"state": "NOT_RUN", "reason": "controls not requested (bound sweep)"}
+                         if fr.decoded else
+                         {"state": "NOT_EVALUABLE", "reason": "coordinates-only: no pixels"})}
 
 
 def controls(field, landings, seed=0, draws=DRAWS):

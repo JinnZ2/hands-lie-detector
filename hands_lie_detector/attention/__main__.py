@@ -23,13 +23,15 @@ def main(argv=None):
     p.add_argument("--small", action="store_true", help="downsample to <= 128 px on the long side")
     p.add_argument("--grid", type=int, default=8)
     p.add_argument("--signal-k", type=float, default=1.5)
+    p.add_argument("--edge-t", type=float, default=32.0, help="light-mass boundary threshold")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--json", help="write the full result here (refuses an existing path)")
     a = p.parse_args(argv)
     try:
         frame = (I.load(a.image) if a.image else
                  I.coordinates_only(a.size[0], a.size[1], a.image_sha256))
-        rep = run(frame, [L.read(x) for x in a.log], a.backlit, a.small, a.grid, a.signal_k, a.seed)
+        rep = run(frame, [L.read(x) for x in a.log], a.backlit, a.small, a.grid, a.signal_k, a.seed,
+                  edge_t=a.edge_t)
     except (I.UnsupportedImage, L.LogError) as e:
         print(f"REFUSED: {e}", file=sys.stderr)
         return 2

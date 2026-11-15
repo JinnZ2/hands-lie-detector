@@ -31,10 +31,10 @@ UNMEASURED = "UNMEASURED"
 NOT_APPLICABLE = "NOT_APPLICABLE"
 
 
-def bounds():
+def bounds(edge_t=EDGE_T):
     return {"luminance": "Y = 0.2126R + 0.7152G + 0.0722B on encoded values (no linearisation)",
             "gradient": "central differences on interior pixels; border pixels carry none",
-            "EDGE_T": EDGE_T, "SPEC_Y": SPEC_Y, "SPEC_C": SPEC_C, "DARK_Y": DARK_Y}
+            "EDGE_T": edge_t, "SPEC_Y": SPEC_Y, "SPEC_C": SPEC_C, "DARK_Y": DARK_Y}
 
 
 def luminance(frame):
@@ -58,14 +58,15 @@ def gradient(frame, lum=None):
 class Field:
     """Precomputed luminance and gradient for one decoded frame."""
 
-    def __init__(self, frame):
+    def __init__(self, frame, edge_t=EDGE_T):
         self.frame = frame
+        self.edge_t = edge_t
         self.lum = luminance(frame) if frame.decoded else []
         self.grad = gradient(frame, self.lum) if frame.decoded else []
 
     def frame_edge_fraction(self):
         vals = [v for v in self.grad if v is not None]
-        return sum(v >= EDGE_T for v in vals) / len(vals) if vals else None
+        return sum(v >= self.edge_t for v in vals) / len(vals) if vals else None
 
 
 def region_reading(field, region, backlit=False):
@@ -87,7 +88,7 @@ def region_reading(field, region, backlit=False):
     diff = sum(1 for v in lum if DARK_Y < v < SPEC_Y)
     out = {
         "luminance_gradient": sum(grads) / len(grads) if grads else None,
-        "edge_strength": sum(v >= EDGE_T for v in grads) / len(grads) if grads else None,
+        "edge_strength": sum(v >= field.edge_t for v in grads) / len(grads) if grads else None,
         "specular": spec / len(idx),
         "diffuse": diff / len(idx),
         "pixels": len(idx),

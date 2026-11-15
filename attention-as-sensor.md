@@ -84,6 +84,31 @@ Each choice is printed in the run's `bounds`.
 8. **`--small`:** an integer block-mean downsample until the long side is at most 128 px. Regions are scaled with floor and ceiling so the box keeps covering the same pixels. The dropped remainder rows and columns are stated in `bounds`.
 9. **Output refuses to overwrite** an existing `--json` path.
 
+## Bound sweep
+
+`hands_lie_detector/attention/sweep.py` applies the study-aperture Card 08 rule: test every bound the labels rest on, not only the suspected one.
+
+- **Settings.** It runs all 27 combinations of `EDGE_T` (16, 32, 64), `SIGNAL_K` (1.0, 1.5, 2.0) and `GRID` (6, 8, 12). Controls are not run, since they do not set labels.
+- **Landings.** Each mapped entry's label is read at every setting and reported as `HOLDS` (one label everywhere) or `SHIFTS`. A shifting landing lists every setting where it differs from the default (32, 1.5, 8). Landings do not depend on `GRID`.
+- **Cells.** For each grid, the label counts at every (`EDGE_T`, `SIGNAL_K`) pair, and how many cells hold one label across those 9 settings. Cells are not compared across grids, because the cell geometry changes.
+- **Lattice.** A grid-independent view: points on a regular lattice (at most 64 per side, stated) take their cell's label. Reported: how many points hold each label at all 27 settings, and how many shift.
+
+```sh
+python3 -m hands_lie_detector.attention.sweep --image frame.png --log claude.json [--log ...] [--backlit] [--small] [--json out.json]
+```
+
+The sweep has been run only on constructed images in the tests. A ramp whose gradient sits between `EDGE_T` 16 and 32 is the fixture that must shift, and a flat region is the one that must hold.
+
+## Runs
+
+`attention_runs/` holds logs and results. Frames are never committed (`.gitignore`).
+
+- **First real run: pending.** No PNG and no completed log have arrived.
+- **Claude's log for the 2026-11-15 morning frame** is `attention_runs/claude_2026-11-15_morning.template.json`.
+  - Provenance: CARRIED (chat transcript). Regions are void until drawn.
+  - The order text is not in this build's session transcript, so the template has no entries. It is not a valid log until the order is pasted and `before_task_prompt` is set.
+  - `python3 -m hands_lie_detector.attention.template` builds a log from an order given as `--item` arguments, with every region null.
+
 ## Privacy
 
 - No pixel array, crop or per-pixel map is ever written. Outputs are region aggregates and the image's sha256.

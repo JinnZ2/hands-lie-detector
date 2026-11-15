@@ -277,3 +277,54 @@ class Doc(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Sweep(unittest.TestCase):
+    def test_labels_shift_with_the_edge_threshold_and_hold_elsewhere(self):
+        from hands_lie_detector.attention.sweep import sweep, render
+        tmp = tempfile.mkdtemp()
+        # columns 24..40: a ramp of 24 per pixel (between EDGE_T 16 and 32); flat elsewhere
+        def lum(x):
+            return 20 if x < 24 else (20 + 24 * (x - 24) if x <= 33 else 236)
+        px = [[(min(255, lum(x)),) * 3 for x in range(64)] for _ in range(64)]
+        f = I.load(write(tmp, "r.png", png_bytes(64, 64, px)))
+        rep = sweep(f, [a_log("claude", "c", [[25, 0, 33, 64], [0, 0, 8, 8]], f.sha256)])
+        o = rep["observers"][0]
+        ramp, flat = o["landings"]
+        self.assertEqual(ramp["state"], "SHIFTS")
+        self.assertIn("CALIBRATED_POINTER", ramp["labels"])
+        self.assertIn("BIAS", ramp["labels"])
+        self.assertTrue(any(d["EDGE_T"] == 16.0 for d in ramp["differs_from_default_at"]))
+        self.assertEqual((flat["state"], flat["labels"]), ("HOLDS", ["BIAS"]))
+        self.assertEqual(rep["bounds"]["settings"], 27)
+        self.assertEqual(set(o["cells_by_grid"]), {"6", "8", "12"})
+        lat = o["lattice"]
+        self.assertEqual(sum(lat["held_across_all_settings"].values()) + lat["shifting"],
+                         lat["points"])
+        self.assertGreater(lat["shifting"], 0)
+        self.assertIn("SHIFTS", render(rep))
+
+    def test_coordinates_only_sweep_not_evaluable(self):
+        from hands_lie_detector.attention.sweep import sweep
+        rep = sweep(I.coordinates_only(32, 32), [a_log("claude", "c", [[0, 0, 8, 8]])])
+        self.assertEqual(rep["state"], "NOT_EVALUABLE")
+
+
+class Template(unittest.TestCase):
+    def test_carried_log_has_void_regions_and_is_refused_until_set(self):
+        from hands_lie_detector.attention.template import build
+        lg = build("claude", "m", ["a", "b"], "chat transcript, 2026-11-15 morning")
+        self.assertEqual([e["region"] for e in lg["entries"]], [None, None])
+        self.assertEqual(lg["provenance"]["grade"], "CARRIED")
+        with self.assertRaises(L.LogError):
+            L.validate(lg, 64, 64)            # before_task_prompt unset
+        lg["before_task_prompt"] = True
+        L.validate(lg, 64, 64)
+
+    def test_shipped_template_is_not_a_valid_log_yet(self):
+        t = json.loads((ROOT / "attention_runs" / "claude_2026-11-15_morning.template.json").read_text())
+        self.assertEqual(t["provenance"]["grade"], "CARRIED")
+        self.assertEqual(t["entries"], [])
+        self.assertIn("AWAITING ORDER TEXT", t["_status"])
+        with self.assertRaises(L.LogError):
+            L.validate(t, 64, 64)
