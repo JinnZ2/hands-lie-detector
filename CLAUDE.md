@@ -37,6 +37,12 @@ hands-lie-detector/
 │   ├── band/                     # Pure Python — no dependencies
 │   │   ├── contrast.py           # Map states; concentration, NOT skill
 │   │   └── capture.py            # Five positions; the raking-light protocol
+│   ├── attention/                # Pure Python — no dependencies (PROPOSED)
+│   │   ├── image.py              # PNG/PPM decode; JPEG/HEIC refused → coordinates-only
+│   │   ├── log.py                # Observer logs, before any task prompt; never merged
+│   │   ├── physics.py            # Gradient, edge, specular/diffuse, transmission
+│   │   ├── maps.py               # Pointer / BIAS / BLIND SPOT; controls; divergence
+│   │   └── run.py                # One run: bounds logged, aggregates only
 │   └── integration/              # Pure Python — no dependencies
 │       ├── domains.py            # Domain zone/load-mode signatures, channels
 │       ├── residual.py           # Residual-zone readout (Test C), conflicts
@@ -178,6 +184,17 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   tier 2 still needs position 5. Opacity is not composition. Extends rule zero:
   a backlit palm shows the vein pattern, which a ridge-pitch blur does not
   remove.
+- **attention-as-sensor.md** — PROPOSED, co-authored. An observer's attention
+  read as a probe. Per image, before any task prompt, each observer (Claude,
+  other models, the human carrier) lists what it notices in order, mapped to
+  regions. Logs are separate and never merged. A physics layer reads each
+  region from pixel values: luminance gradient, edge strength, specular vs
+  diffuse, and transmission (backlit frames only, as path opacity). Each cell
+  is labelled CALIBRATED_POINTER, BIAS, BLIND_SPOT or NEITHER, against
+  random-region and shuffled-order controls. Divergence across observers is
+  reported per cell. PNG/PPM only; JPEG and HEIC are refused for coordinates-only
+  mode. Backlit frames stay on device. Built and tested on constructed images
+  only; readings, no interpretation.
 - **REFERENCES/related_fields.md** — PROPOSED pointer list into bioarchaeology's
   entheseal-change literature, each entry marked VERIFIED (abstract) or
   UNVERIFIED. Their labels are recorded occupations; the deposit is bone.
@@ -327,6 +344,21 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   INCONCLUSIVE and reports corpus penetration. A contaminated output is unusable
   as an experiment result and usable as a penetration measurement
 - `commit_stimulus()` records a held-out item by hash; the item is never stored
+
+### Attention-as-sensor (`hands_lie_detector.attention`)
+- Zero external dependencies. Companion to `attention-as-sensor.md`; PROPOSED.
+- `image.load` decodes 8-bit non-interlaced PNG and P6/P3 PPM only. JPEG and
+  HEIC raise `UnsupportedImage` naming coordinates-only mode, where every
+  physics reading is UNMEASURED and every cell NOT_EVALUABLE. `input_mode` is
+  stated in every result.
+- `log.validate` refuses a log without `before_task_prompt: true`, with ranks out
+  of order, or with regions off the frame. `ObserverLogs` refuses a second log
+  per observer; no function merges logs. `slots()` keeps unfilled observer slots
+  null.
+- `maps` labels cells per observer and never pools them. Thresholds (EDGE_T,
+  SIGNAL_K, grid, draws, seed, --small factor) are printed in `bounds`.
+- Outputs are region aggregates only; a test checks no pixel-scale list leaves
+  `run`.
 
 ### Band readout (`hands_lie_detector.band`)
 - Zero external dependencies
