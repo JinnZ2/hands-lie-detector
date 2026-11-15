@@ -215,6 +215,11 @@ contains. `ThicknessReading.measurable` returns `False` for anything but
 `LightCondition.RAKING`, and `report()` prints the failure above the state
 rather than below it.
 
+Note 2026-11-15: a backlit TRANSMISSION readout is proposed in
+`backlit-transmission.md`. It reads total path opacity, not the callus plate
+map, so the statement above stands for the quantity it is about and backlit
+still does not unblock tier 2.
+
 So the scale needs a tier split:
 
 | tier | requires | items |
