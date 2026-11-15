@@ -115,7 +115,7 @@ The sweep has been run only on constructed images in the tests. A ramp whose gra
 
 ## References
 
-`REFERENCES/attention_as_sensor.md`: three pointers, each with its read depth (one PRESS_RELEASE, two SNIPPET). None is graded above its depth; the relevance note is PROPOSED.
+`REFERENCES/attention_as_sensor.md`: three pointers, each with its read depth (one PRESS_RELEASE, two SNIPPET; entry 2's authors and venue CARRIED from memory). None is graded above its depth; the relevance note is PROPOSED.
 
 ## Privacy
 

@@ -15,21 +15,25 @@ above it: none is cited as support, measurement or finding.
 - **Depth: PRESS_RELEASE.** The paper was not read.
 - **Grade: none** (Card 07 ceiling for PRESS_RELEASE: nothing above UNTESTED).
 
-## 2. Farid et al., CVPR 2022
+## 2. "Detecting Real-Time Deep-Fake Videos Using Active Illumination"
 
-- **As delivered:** "Detecting Real-Time Deep-Fake Videos Using Active
-  Illumination". Controlled screen light used as a probe of face geometry.
-- **Depth: SNIPPET.** The PDF at hfarid.org was not read.
-- **Grade: none** (Card 07 ceiling for SNIPPET: nothing above UNTESTED).
+- **As delivered:** controlled screen light used as a probe of face geometry.
+- **Depth, per part:**
+  - **Title: SNIPPET** (search result). The PDF at hfarid.org was not read.
+  - **Authors and venue ("Farid et al., CVPR 2022"): CARRIED**, from Claude's
+    memory, unverified. They were not in the snippet.
+- **Grade: none** (Card 07 ceilings: SNIPPET and CARRIED carry nothing above UNTESTED).
 
 ## 3. Practitioner check (not a study)
 
 - **As delivered:** compare the highlights on a face with the light direction
   shown by background objects.
-- **Depth: SNIPPET, CARRIED** (as delivered). Card 07 declares one depth per
-  source; both labels are kept here as given. CARRIED names no origin beyond
-  the snippet.
+- **Source:** search-result snippet from the Adaptive Security page "Detect AI
+  Deepfakes: Essential Strategies & Tools", read 2026-11-15.
+- **Depth: SNIPPET.** The page itself was not read.
 - **Grade: none.**
+- **Correction, 2026-11-15:** an earlier version also labelled this entry
+  CARRIED. That was a mislabel and is removed.
 
 ---
 
