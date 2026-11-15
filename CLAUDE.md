@@ -40,6 +40,7 @@ hands-lie-detector/
 │   ├── attention/                # Pure Python — no dependencies (PROPOSED)
 │   │   ├── image.py              # PNG/PPM decode; JPEG/HEIC refused → coordinates-only
 │   │   ├── log.py                # Observer logs, before any task prompt; never merged
+│   │   ├── check.py              # Check a stored log; prompted kind never a probe
 │   │   ├── physics.py            # Gradient, edge, specular/diffuse, transmission
 │   │   ├── maps.py               # Pointer / BIAS / BLIND SPOT; controls; divergence
 │   │   ├── run.py                # One run: bounds logged, aggregates only
@@ -364,9 +365,14 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - `sweep` runs all 27 (EDGE_T, SIGNAL_K, GRID) settings and reports, per landing,
   HOLDS or SHIFTS. Per grid it reports cell stability, and on a lattice it
   reports stability across all settings. Controls are not run in the sweep.
+- `log_kind` "prompted" (before_task_prompt false) is stored and validated
+  (`check.py`) for later comparison with free logs, and is never a probe:
+  `validate`, `ObserverLogs`, run and sweep refuse it. `per_photo_order`
+  UNRESOLVED is passed through to run output.
 - `attention_runs/` holds logs and JSON results; frames stay out of git. The
-  2026-11-15 morning Claude log has 4 entries: CARRIED, before_task_prompt true,
-  regions null. Two post-cue items are excluded and recorded in its provenance.
+  2026-11-15 morning Claude log is split per photo (photo1, photo2), 4 entries
+  each, CARRIED, before_task_prompt true, per_photo_order UNRESOLVED, regions
+  and image_sha256 null. The two post-cue items are in matching prompted logs.
   The first real run is pending.
 
 ### Band readout (`hands_lie_detector.band`)

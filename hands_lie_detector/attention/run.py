@@ -25,6 +25,8 @@ def run(frame, logs, backlit=False, small=False, grid=M.GRID, k=M.SIGNAL_K, seed
     readings = [M.read_observer(field, L.scale(lg, factor), backlit, grid, k, seed, draws,
                                 with_controls)
                 for _, lg in held.items()]
+    for r, (_, lg) in zip(readings, held.items()):
+        r["per_photo_order"] = lg.get("per_photo_order")
     return {
         "status": "PROPOSED; readings only, no interpretation",
         "input_mode": frame.input_mode,
@@ -60,6 +62,9 @@ def render(rep):
                        f"r/b={ph.get('transmission_r_over_b')}  ({l['noticed']})")
         out.append("  cells: " + json.dumps(r["cell_counts"]))
         out.append("  controls: " + json.dumps(r["controls"], sort_keys=True))
+        if r.get("per_photo_order") == "UNRESOLVED":
+            out.append("  per_photo_order UNRESOLVED: the shuffled-order control reads an order "
+                       "carried from a reply covering more than this frame")
     d = rep["divergence"]
     out.append("")
     out.append(f"divergence: observers {d['observers']}  all attended {d.get('all_attended')}"

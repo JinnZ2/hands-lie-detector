@@ -17,9 +17,11 @@ import json
 import sys
 
 
-def build(kind, observer_id, items, source, grade="CARRIED", image_sha256=None):
+def build(kind, observer_id, items, source, grade="CARRIED", image_sha256=None,
+          log_kind="free"):
     return {
         "observer": {"kind": kind, "id": observer_id},
+        "log_kind": log_kind,
         "image_sha256": image_sha256,
         "before_task_prompt": None,
         "provenance": {"source": source, "grade": grade,
@@ -38,11 +40,14 @@ def main(argv=None):
     p.add_argument("--grade", default="CARRIED")
     p.add_argument("--item", action="append", default=[], help="one noticed item, in order")
     p.add_argument("--image-sha256")
+    p.add_argument("--log-kind", default="free", choices=("free", "prompted"),
+                   help="prompted: taken after a task cue; stored, never a probe")
     a = p.parse_args(argv)
     if not a.item:
         print("REFUSED: no --item given; an order with no items is not a log", file=sys.stderr)
         return 2
-    json.dump(build(a.kind, a.id, a.item, a.source, a.grade, a.image_sha256), sys.stdout, indent=1)
+    json.dump(build(a.kind, a.id, a.item, a.source, a.grade, a.image_sha256,
+                     a.log_kind), sys.stdout, indent=1)
     print()
     return 0
 

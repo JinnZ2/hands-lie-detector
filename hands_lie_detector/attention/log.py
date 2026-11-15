@@ -10,6 +10,20 @@ A log is valid only if it was taken before any task prompt
 (`before_task_prompt: true`). A list produced after the task was stated is a
 reading of the task, not of the image, and is refused.
 
+Two log kinds (`log_kind`):
+- "free": taken before any task prompt (`before_task_prompt: true`). The only
+  kind a run, a sweep or `ObserverLogs` accepts. A log with no `log_kind` is
+  read as free (logs written before the field existed).
+- "prompted": taken after a task cue (`before_task_prompt: false`). Stored and
+  validated with `validate_stored`, kept beside the free log so free and
+  prompted attention can be compared later. NEVER used as a probe: `validate`
+  and `ObserverLogs.add` refuse it.
+
+`per_photo_order` (optional): "RESOLVED" or "UNRESOLVED". UNRESOLVED marks a
+log whose order was carried from a reply covering several frames, so the order
+is not separable by photo; it is passed through to the run output beside the
+shuffled-order control, never changed.
+
 Each entry is {rank, noticed, region}: region is [x0, y0, x1, y1] in pixel
 coordinates of the image as supplied (x1, y1 exclusive), or null when the
 observer named something that was not mapped to a place. Unmapped entries are
@@ -19,6 +33,8 @@ counted and never placed.
 import json
 
 OBSERVER_KINDS = ("claude", "model", "human")
+LOG_KINDS = ("free", "prompted")
+PER_PHOTO_ORDER = ("RESOLVED", "UNRESOLVED")
 SLOTS = ("claude", "other_models", "human")
 
 
@@ -26,15 +42,29 @@ class LogError(ValueError):
     pass
 
 
-def validate(log, width, height, image_sha256=None):
+def log_kind(log):
+    k = log.get("log_kind", "free")
+    if k not in LOG_KINDS:
+        raise LogError(f"log_kind must be one of {LOG_KINDS}, got {k!r}")
+    return k
+
+
+def _check(log, width, height, image_sha256):
     obs = log.get("observer") or {}
     if obs.get("kind") not in OBSERVER_KINDS:
         raise LogError(f"observer kind must be one of {OBSERVER_KINDS}, got {obs.get('kind')!r}")
     if not obs.get("id"):
         raise LogError("observer id missing (name the model or the person's role, not a merge)")
-    if log.get("before_task_prompt") is not True:
-        raise LogError("before_task_prompt must be true: a list taken after the task prompt "
-                       "reads the task, not the image")
+    kind = log_kind(log)
+    want = {"free": True, "prompted": False}[kind]
+    if log.get("before_task_prompt") is not want:
+        if kind == "free":
+            raise LogError("before_task_prompt must be true: a list taken after the task prompt "
+                           "reads the task, not the image (store it as log_kind \"prompted\")")
+        raise LogError("a prompted log must carry before_task_prompt false")
+    ppo = log.get("per_photo_order")
+    if ppo is not None and ppo not in PER_PHOTO_ORDER:
+        raise LogError(f"per_photo_order must be one of {PER_PHOTO_ORDER} or absent, got {ppo!r}")
     if image_sha256 and log.get("image_sha256") and log["image_sha256"] != image_sha256:
         raise LogError("image_sha256 does not match the image: this log is for another frame")
     entries = log.get("entries")
@@ -52,11 +82,27 @@ def validate(log, width, height, image_sha256=None):
         if (not isinstance(r, list) or len(r) != 4
                 or not all(isinstance(v, int) for v in r)):
             raise LogError(f"entry {e.get('rank')}: region must be [x0, y0, x1, y1] integers or null")
+        if width is None or height is None:
+            raise LogError(f"entry {e.get('rank')}: region given but no frame size to check it "
+                           f"against (pass --size W H)")
         x0, y0, x1, y1 = r
         if not (0 <= x0 < x1 <= width and 0 <= y0 < y1 <= height):
             raise LogError(f"entry {e.get('rank')}: region {r} outside the {width}x{height} image "
                            f"or empty")
     return log
+
+
+def validate(log, width, height, image_sha256=None):
+    """Probe use (run, sweep): free logs only. A prompted log is refused here."""
+    if log_kind(log) == "prompted":
+        raise LogError("log_kind \"prompted\" is stored, never used as a probe: it was taken "
+                       "after a task cue")
+    return _check(log, width, height, image_sha256)
+
+
+def validate_stored(log, width=None, height=None, image_sha256=None):
+    """Storage check for either kind. Does not make a prompted log usable as a probe."""
+    return _check(log, width, height, image_sha256)
 
 
 def slot_of(log):
@@ -71,6 +117,8 @@ class ObserverLogs:
         self._logs = {}
 
     def add(self, log):
+        if log_kind(log) == "prompted":
+            raise LogError("a prompted log is never held as a probe log")
         key = (log["observer"]["kind"], log["observer"]["id"])
         if key in self._logs:
             raise LogError(f"a log for observer {key} is already held; logs are not merged "
@@ -108,3 +156,4 @@ def scale(log, factor):
             x0, y0, x1, y1 = r
             e["region"] = [x0 // factor, y0 // factor, -(-x1 // factor), -(-y1 // factor)]
     return out
+

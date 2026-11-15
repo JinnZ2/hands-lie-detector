@@ -46,7 +46,7 @@ CONSTRAINTS
 | Step | Module | What it does |
 |---|---|---|
 | input | `image.py` | Decodes **PNG** and **PPM**. PNG must be 8-bit and non-interlaced, any colour type, with zlib, filters 0–4 and CRC checked. PPM must be P6 or P3. Refuses JPEG and HEIC by magic bytes and names the alternative: **coordinates-only** mode (`--size W H`), where regions are logged by pixel coordinates and the physics layer reads UNMEASURED. Every result carries `input_mode` (`decoded:PNG`, `decoded:PPM` or `coordinates_only`). |
-| 1 | `log.py` | One log per observer per image. A log is refused unless `before_task_prompt` is true. Entries carry a rank (1..n in listing order), what was noticed, and a region `[x0, y0, x1, y1]` or `null` (unmapped, counted, never placed). Logs are **never merged**: `ObserverLogs` refuses a second log for an observer it holds, and no function combines entries across observers. Observer slots (`claude`, `other_models`, `human`) are null until a log fills them. |
+| 1 | `log.py` | One log per observer per image. A log is refused unless `before_task_prompt` is true. Entries carry a rank (1..n in listing order), what was noticed, and a region `[x0, y0, x1, y1]` or `null` (unmapped, counted, never placed). Logs are **never merged**: `ObserverLogs` refuses a second log for an observer it holds, and no function combines entries across observers. Observer slots (`claude`, `other_models`, `human`) are null until a log fills them. A second kind, `log_kind` "prompted" (`before_task_prompt` false), is stored and validated (`validate_stored`, `check.py`) for later comparison and is **never** a probe: `validate`, `ObserverLogs`, run and sweep refuse it. Optional `per_photo_order` (RESOLVED / UNRESOLVED) is passed through to the run output. |
 | 2 | `physics.py` | Per region, from pixel values only: mean luminance gradient; edge strength (the share of pixels on a light-mass boundary); specular and diffuse shares; transmission as mean R / mean B. Transmission is read only on a frame declared backlit, where it is **path opacity** (`backlit-transmission.md`), and is NOT_APPLICABLE otherwise. |
 | 3 | `maps.py` | Per observer, each landing's edge strength. Two seeded controls: the same regions placed at random (statistic: mean edge strength, with the share of random draws that reach it), and the listing order shuffled (statistic: Spearman rank correlation of order against edge strength, with the share of shuffles that reach its absolute value). |
 | 4 | `maps.py` | The frame is tiled into cells. Each cell, per observer, is labelled: attended with signal is `CALIBRATED_POINTER`; attended without signal is `BIAS`; signal not attended is `BLIND_SPOT`; neither is `NEITHER`. In coordinates-only mode every cell is `NOT_EVALUABLE`. |
@@ -104,11 +104,12 @@ The sweep has been run only on constructed images in the tests. A ramp whose gra
 `attention_runs/` holds logs and results. Frames are never committed (`.gitignore`).
 
 - **First real run: pending.** No PNG and no completed log have arrived.
-- **Claude's log for the 2026-11-15 morning photos** is `attention_runs/claude_2026-11-15_morning.json`.
-  - 4 entries, CARRIED from the chat transcript, with `before_task_prompt` true (photos and greeting only).
-  - Regions are null until drawn. The log is not yet bound to one of the 2 photos.
-  - Excluded: palm creases and weathered texture, attended only after the task cue. They are recorded in the provenance.
-  - `python3 -m hands_lie_detector.attention.template` builds a log from an order given as `--item` arguments, with every region null.
+- **Claude's logs for the 2026-11-15 morning photos**, one per photo: `attention_runs/claude_2026-11-15_morning_photo1.json` and `..._photo2.json`.
+  - The same 4 entries in each, CARRIED from the chat transcript, with `before_task_prompt` true (photos and greeting only).
+  - `per_photo_order` UNRESOLVED: the reply covered the pair, so the order is not separable by photo.
+  - Regions are null until drawn. `image_sha256` is null until each photo's PNG arrives.
+  - Palm creases and weathered texture, attended only after the task cue, are in the matching `_prompted.json` logs (`log_kind` prompted), stored and never used as a probe.
+- `python3 -m hands_lie_detector.attention.template` builds a log from an order given as `--item` arguments, with every region null (`--log-kind prompted` for a post-cue log).
 
 ## Privacy
 

@@ -5,18 +5,27 @@ backlit frames show the vein pattern and stay on device (see
 `attention-as-sensor.md`, Privacy). `.gitignore` keeps image files out of this folder.
 
 State, 2026-11-15:
-- `claude_2026-11-15_morning.json`: Claude's log for the morning photos. It is valid.
-  - 4 entries, in order:
+- Claude's morning log is split into one log per photo, with the same 4 entries in each:
+  - `claude_2026-11-15_morning_photo1.json`
+  - `claude_2026-11-15_morning_photo2.json`
+  - Entries, in order:
     1. sun / low sun glare through windshield
     2. hand acting as light filter (transmission through tissue)
     3. orange-red rim along finger edges
     4. web between fingers (thin tissue glow)
-  - Provenance: CARRIED, from the chat transcript (a reply to 2 hand photos sent with a greeting only).
-  - `before_task_prompt` is true, set by the operator: photos and greeting only, no task.
-  - Regions are null until drawn.
-  - Excluded: palm creases and weathered texture. They were attended only after the "hands don't lie" cue, once a task had been given. They are recorded in the log's provenance, not as entries.
-    - The validator refuses a log with `before_task_prompt` false. A separate log of them would therefore not run as a probe log.
-  - Open: the reply covered **2 photos**, and a log is per image. `image_sha256` is null until the log is bound to one frame, or split per frame.
+  - `log_kind` free, `before_task_prompt` true (photos and greeting only, set by the operator).
+  - `per_photo_order` UNRESOLVED: "reply covered the pair; order not separable by photo".
+    A run passes this through and prints it beside the shuffled-order control.
+  - Provenance CARRIED, from the chat transcript. Regions null until drawn.
+  - `image_sha256` null until each photo's PNG arrives. Which uploaded frame is
+    photo1 and which is photo2 is not recorded.
+- Prompted logs: `claude_2026-11-15_morning_photo1_prompted.json` and `..._photo2_prompted.json`.
+  - 2 entries: palm creases, weathered texture. They were attended only after the
+    "hands don't lie" cue.
+  - `log_kind` prompted, `before_task_prompt` false. Stored and validated for later
+    comparison with the free log; **never used as a probe**. `run`, `sweep` and
+    `ObserverLogs` refuse them.
+  - Check a stored log of either kind: `python3 -m hands_lie_detector.attention.check FILE [--size W H]`.
 - First real run: **pending**. No PNG has arrived, and no regions are drawn.
 
 When a PNG and the logs arrive, from the repository root:

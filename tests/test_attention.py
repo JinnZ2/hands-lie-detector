@@ -321,14 +321,88 @@ class Template(unittest.TestCase):
         lg["before_task_prompt"] = True
         L.validate(lg, 64, 64)
 
-    def test_morning_claude_log_as_filled(self):
-        t = json.loads((ROOT / "attention_runs" / "claude_2026-11-15_morning.json").read_text())
-        self.assertEqual(t["provenance"]["grade"], "CARRIED")
-        self.assertIs(t["before_task_prompt"], True)
-        self.assertEqual([e["region"] for e in t["entries"]], [None] * 4)
-        self.assertEqual(t["entries"][0]["noticed"], "sun / low sun glare through windshield")
-        self.assertEqual(t["provenance"]["excluded"]["items"], ["palm creases", "weathered texture"])
-        noticed = " ".join(e["noticed"] for e in t["entries"])
-        self.assertNotIn("crease", noticed)
-        L.validate(t, 64, 64)
-        self.assertFalse((ROOT / "attention_runs" / "claude_2026-11-15_morning.template.json").exists())
+    def test_morning_logs_split_per_photo(self):
+        runs = ROOT / "attention_runs"
+        self.assertFalse((runs / "claude_2026-11-15_morning.json").exists())
+        self.assertFalse((runs / "claude_2026-11-15_morning.template.json").exists())
+        orders = []
+        for ph in ("photo1", "photo2"):
+            t = json.loads((runs / f"claude_2026-11-15_morning_{ph}.json").read_text())
+            self.assertEqual(t["frame_label"], ph)
+            self.assertEqual(t["log_kind"], "free")
+            self.assertIs(t["before_task_prompt"], True)
+            self.assertIsNone(t["image_sha256"])
+            self.assertEqual(t["per_photo_order"], "UNRESOLVED")
+            self.assertEqual(t["per_photo_order_note"],
+                             "reply covered the pair; order not separable by photo")
+            self.assertEqual(t["provenance"]["grade"], "CARRIED")
+            self.assertEqual([e["region"] for e in t["entries"]], [None] * 4)
+            self.assertNotIn("crease", " ".join(e["noticed"] for e in t["entries"]))
+            orders.append([e["noticed"] for e in t["entries"]])
+            L.validate(t, 64, 64)
+            pr = json.loads((runs / f"claude_2026-11-15_morning_{ph}_prompted.json").read_text())
+            self.assertEqual(pr["log_kind"], "prompted")
+            self.assertIs(pr["before_task_prompt"], False)
+            self.assertEqual([e["noticed"] for e in pr["entries"]],
+                             ["palm creases", "weathered texture"])
+            L.validate_stored(pr)
+            with self.assertRaises(L.LogError):
+                L.validate(pr, 64, 64)
+        self.assertEqual(orders[0], orders[1])
+        self.assertEqual(orders[0][0], "sun / low sun glare through windshield")
+
+
+class PromptedKind(unittest.TestCase):
+    def test_prompted_is_stored_never_a_probe(self):
+        pr = a_log("claude", "c", [[0, 0, 8, 8]])
+        pr["log_kind"] = "prompted"
+        pr["before_task_prompt"] = False
+        L.validate_stored(pr, 32, 32)
+        with self.assertRaises(L.LogError):
+            L.validate(pr, 32, 32)
+        with self.assertRaises(L.LogError):
+            L.ObserverLogs().add(pr)
+        from hands_lie_detector.attention.run import run
+        with self.assertRaises(L.LogError):
+            run(I.coordinates_only(32, 32), [pr])
+
+    def test_kind_and_before_task_prompt_must_agree(self):
+        lg = a_log("claude", "c", [None])
+        lg["log_kind"] = "prompted"          # still before_task_prompt true
+        with self.assertRaises(L.LogError):
+            L.validate_stored(lg)
+        lg = a_log("claude", "c", [None])
+        lg["before_task_prompt"] = False     # free kind by default
+        with self.assertRaises(L.LogError):
+            L.validate_stored(lg)
+        lg = a_log("claude", "c", [None])
+        lg["log_kind"] = "other"
+        with self.assertRaises(L.LogError):
+            L.validate_stored(lg)
+
+    def test_stored_region_needs_a_size(self):
+        lg = a_log("claude", "c", [[0, 0, 8, 8]])
+        with self.assertRaises(L.LogError):
+            L.validate_stored(lg)
+        L.validate_stored(lg, 32, 32)
+
+    def test_per_photo_order_values_and_passthrough(self):
+        lg = a_log("claude", "c", [[0, 0, 8, 8], [8, 8, 16, 16]])
+        lg["per_photo_order"] = "maybe"
+        with self.assertRaises(L.LogError):
+            L.validate(lg, 32, 32)
+        lg["per_photo_order"] = "UNRESOLVED"
+        from hands_lie_detector.attention.run import run, render
+        rep = run(I.coordinates_only(32, 32), [lg], with_controls=False)
+        self.assertEqual(rep["observers"][0]["per_photo_order"], "UNRESOLVED")
+        self.assertIn("per_photo_order UNRESOLVED", render(rep))
+
+    def test_check_cli(self):
+        import contextlib
+        import io
+        from hands_lie_detector.attention.check import main
+        p = ROOT / "attention_runs" / "claude_2026-11-15_morning_photo1_prompted.json"
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            self.assertEqual(main([str(p)]), 0)
+        self.assertIn("never used as a probe", buf.getvalue())

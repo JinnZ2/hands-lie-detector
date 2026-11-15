@@ -3,22 +3,21 @@
   "kind": "claude",
   "id": "claude-opus-5.5"
  },
+ "log_kind": "free",
+ "frame_label": "photo2",
  "image_sha256": null,
  "before_task_prompt": true,
+ "per_photo_order": "UNRESOLVED",
+ "per_photo_order_note": "reply covered the pair; order not separable by photo",
  "provenance": {
   "source": "chat transcript, 2026-11-15 morning, reply to 2 hand photos sent with greeting only",
   "grade": "CARRIED",
   "regions": "void until drawn",
   "before_task_prompt": "true: photos + greeting only; no task (set 2026-11-15 by the operator)",
-  "excluded": {
-   "items": [
-    "palm creases",
-    "weathered texture"
-   ],
-   "reason": "attended only after the \"hands don't lie\" cue (task given)",
-   "handling": "not in this log; a separate log with before_task_prompt = false if wanted"
-  },
-  "status": "CARRIED; regions null until drawn"
+  "status": "CARRIED; regions null until drawn",
+  "split": "split 2026-11-15 from claude_2026-11-15_morning.json (one log covering 2 photos) into one log per photo; same 4 entries in each",
+  "image_sha256": "null until this photo's PNG arrives",
+  "prompted_items": "palm creases, weathered texture: in claude_2026-11-15_morning_photo2_prompted.json"
  },
  "entries": [
   {
