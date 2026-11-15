@@ -104,9 +104,10 @@ The sweep has been run only on constructed images in the tests. A ramp whose gra
 `attention_runs/` holds logs and results. Frames are never committed (`.gitignore`).
 
 - **First real run: pending.** No PNG and no completed log have arrived.
-- **Claude's log for the 2026-11-15 morning frame** is `attention_runs/claude_2026-11-15_morning.template.json`.
-  - Provenance: CARRIED (chat transcript). Regions are void until drawn.
-  - The order text is not in this build's session transcript, so the template has no entries. It is not a valid log until the order is pasted and `before_task_prompt` is set.
+- **Claude's log for the 2026-11-15 morning photos** is `attention_runs/claude_2026-11-15_morning.json`.
+  - 4 entries, CARRIED from the chat transcript, with `before_task_prompt` true (photos and greeting only).
+  - Regions are null until drawn. The log is not yet bound to one of the 2 photos.
+  - Excluded: palm creases and weathered texture, attended only after the task cue. They are recorded in the provenance.
   - `python3 -m hands_lie_detector.attention.template` builds a log from an order given as `--item` arguments, with every region null.
 
 ## Privacy

@@ -1,0 +1,45 @@
+{
+ "observer": {
+  "kind": "claude",
+  "id": "claude-opus-5.5"
+ },
+ "image_sha256": null,
+ "before_task_prompt": true,
+ "provenance": {
+  "source": "chat transcript, 2026-11-15 morning, reply to 2 hand photos sent with greeting only",
+  "grade": "CARRIED",
+  "regions": "void until drawn",
+  "before_task_prompt": "true: photos + greeting only; no task (set 2026-11-15 by the operator)",
+  "excluded": {
+   "items": [
+    "palm creases",
+    "weathered texture"
+   ],
+   "reason": "attended only after the \"hands don't lie\" cue (task given)",
+   "handling": "not in this log; a separate log with before_task_prompt = false if wanted"
+  },
+  "status": "CARRIED; regions null until drawn"
+ },
+ "entries": [
+  {
+   "rank": 1,
+   "noticed": "sun / low sun glare through windshield",
+   "region": null
+  },
+  {
+   "rank": 2,
+   "noticed": "hand acting as light filter (transmission through tissue)",
+   "region": null
+  },
+  {
+   "rank": 3,
+   "noticed": "orange-red rim along finger edges",
+   "region": null
+  },
+  {
+   "rank": 4,
+   "noticed": "web between fingers (thin tissue glow)",
+   "region": null
+  }
+ ]
+}

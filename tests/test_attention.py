@@ -321,10 +321,14 @@ class Template(unittest.TestCase):
         lg["before_task_prompt"] = True
         L.validate(lg, 64, 64)
 
-    def test_shipped_template_is_not_a_valid_log_yet(self):
-        t = json.loads((ROOT / "attention_runs" / "claude_2026-11-15_morning.template.json").read_text())
+    def test_morning_claude_log_as_filled(self):
+        t = json.loads((ROOT / "attention_runs" / "claude_2026-11-15_morning.json").read_text())
         self.assertEqual(t["provenance"]["grade"], "CARRIED")
-        self.assertEqual(t["entries"], [])
-        self.assertIn("AWAITING ORDER TEXT", t["_status"])
-        with self.assertRaises(L.LogError):
-            L.validate(t, 64, 64)
+        self.assertIs(t["before_task_prompt"], True)
+        self.assertEqual([e["region"] for e in t["entries"]], [None] * 4)
+        self.assertEqual(t["entries"][0]["noticed"], "sun / low sun glare through windshield")
+        self.assertEqual(t["provenance"]["excluded"]["items"], ["palm creases", "weathered texture"])
+        noticed = " ".join(e["noticed"] for e in t["entries"])
+        self.assertNotIn("crease", noticed)
+        L.validate(t, 64, 64)
+        self.assertFalse((ROOT / "attention_runs" / "claude_2026-11-15_morning.template.json").exists())

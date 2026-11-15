@@ -365,7 +365,8 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
   HOLDS or SHIFTS. Per grid it reports cell stability, and on a lattice it
   reports stability across all settings. Controls are not run in the sweep.
 - `attention_runs/` holds logs and JSON results; frames stay out of git. The
-  2026-11-15 morning Claude log is a CARRIED template that awaits the order text.
+  2026-11-15 morning Claude log has 4 entries: CARRIED, before_task_prompt true,
+  regions null. Two post-cue items are excluded and recorded in its provenance.
   The first real run is pending.
 
 ### Band readout (`hands_lie_detector.band`)
