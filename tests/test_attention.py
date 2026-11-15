@@ -344,8 +344,6 @@ class Template(unittest.TestCase):
             pr = json.loads((runs / f"claude_2026-11-15_morning_{ph}_prompted.json").read_text())
             self.assertEqual(pr["log_kind"], "prompted")
             self.assertIs(pr["before_task_prompt"], False)
-            self.assertEqual([e["noticed"] for e in pr["entries"]],
-                             ["palm creases", "weathered texture"])
             L.validate_stored(pr)
             with self.assertRaises(L.LogError):
                 L.validate(pr, 64, 64)
@@ -430,7 +428,7 @@ class FrameRecord(unittest.TestCase):
             self.assertIs(fx[ph]["backlit"], True)
             self.assertIn("on device", fx[ph]["physics_run"])
             self.assertIsNone(fx[ph]["image_sha256"])
-        self.assertEqual(len(rows), 4)
+        self.assertEqual(len(rows), 6)
 
     def test_free_log_refused_on_prompted_only_frame(self):
         from hands_lie_detector.attention import frames as F
@@ -477,3 +475,45 @@ class FrameRecord(unittest.TestCase):
         other.write_bytes(png_bytes(4, 3, [[(1, 2, 3)] * 4] * 3))
         with self.assertRaises(L.LogError):
             F.fill(self.tmp, "photo1", other)
+
+
+class PromptedFix(unittest.TestCase):
+    def _r(self, name):
+        return json.loads((ROOT / "attention_runs" / name).read_text())
+
+    def test_photo2_keeps_creases_photo1_backlit_readout(self):
+        p2 = self._r("claude_2026-11-15_morning_photo2_prompted.json")
+        self.assertEqual([e["noticed"] for e in p2["entries"]],
+                         ["palm creases (dense, thumb base + across palm)", "weathered/dry texture"])
+        p1 = self._r("claude_2026-11-15_morning_photo1_prompted.json")
+        self.assertEqual([e["noticed"] for e in p1["entries"]],
+                         ["finger margins glow (thin)", "finger webs glow (thin)",
+                          "palm center opaque", "finger-base pads opaque"])
+        self.assertNotIn("crease", " ".join(e["noticed"] for e in p1["entries"]))
+        self.assertEqual(p1["provenance"]["removed"]["items"], ["palm creases", "weathered texture"])
+
+    def test_road_logs_empty_pending_not_nothing_noticed(self):
+        for lbl in ("road1", "road2"):
+            r = self._r(f"claude_2026-11-15_{lbl}_prompted.json")
+            self.assertEqual(r["entries"], [])
+            self.assertIs(r["entries_pending"], True)
+            self.assertEqual(r["per_photo_order"], "UNRESOLVED")
+            L.validate_stored(r)
+            with self.assertRaises(L.LogError):
+                L.validate(r, 64, 64)
+
+    def test_entries_pending_rules(self):
+        lg = a_log("claude", "c", [None])
+        lg["log_kind"], lg["before_task_prompt"] = "prompted", False
+        lg["entries_pending"], lg["entries_pending_reason"] = True, "x"
+        with self.assertRaises(L.LogError):          # pending with entries
+            L.validate_stored(lg)
+        lg["entries"] = []
+        L.validate_stored(lg)
+        del lg["entries_pending_reason"]
+        with self.assertRaises(L.LogError):          # no reason
+            L.validate_stored(lg)
+        free = a_log("claude", "c", [])
+        free["entries_pending"], free["entries_pending_reason"] = True, "x"
+        with self.assertRaises(L.LogError):          # free log cannot be pending
+            L.validate_stored(free)

@@ -29,11 +29,21 @@ State, 2026-11-15:
   - `log_kind` free, `before_task_prompt` true (photos and greeting only, set by the operator).
   - `per_photo_order` UNRESOLVED: "reply covered the pair; order not separable by photo".
   - Provenance CARRIED, from the chat transcript. Regions null until drawn.
-- Prompted logs: `claude_2026-11-15_morning_photo1_prompted.json`, `..._photo2_prompted.json`.
-  - 2 entries: palm creases, weathered texture, attended only after the "hands don't lie" cue.
-  - `log_kind` prompted, `before_task_prompt` false. Stored for later comparison with
-    the free logs; **never used as a probe** (`run`, `sweep` and `ObserverLogs` refuse them).
-- Road set: no logs yet. Any log for road1 or road2 must be prompted.
+- Prompted logs (all items after the "hands don't lie" cue; source: chat transcript 2026-11-15).
+  `log_kind` prompted, `before_task_prompt` false. Stored for later comparison with the
+  free logs; **never used as a probe** (`run`, `sweep` and `ObserverLogs` refuse them).
+  - `claude_2026-11-15_morning_photo2_prompted.json` (IMG_4071): palm creases (dense,
+    thumb base + across palm); weathered/dry texture. Read on photo2: the reply named
+    the "second photo".
+  - `claude_2026-11-15_morning_photo1_prompted.json` (IMG_4070): backlit readout, in order:
+    finger margins glow (thin); finger webs glow (thin); palm center opaque; finger-base
+    pads opaque. Creases and texture were removed (the reply said glare washes photo1 out);
+    the removal is recorded in the log's provenance.
+  - `claude_2026-11-15_road1_prompted.json`, `..._road2_prompted.json`: **empty**,
+    `entries_pending` true. The road readout covered 4 shoulder photos (palm, dorsal,
+    2 lateral), and which 2 are IMG_4074/IMG_4076 is not in the transcript, so
+    `per_photo_order` is UNRESOLVED until labeled. Empty here means "not yet assigned",
+    not "nothing noticed".
 - First real run: **pending**. No PNG has arrived, and no regions are drawn. Both morning
   frames are backlit, so that run happens on the device holding the frames; only its
   JSON aggregates are committed.

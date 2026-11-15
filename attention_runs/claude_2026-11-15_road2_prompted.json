@@ -1,0 +1,25 @@
+{
+ "observer": {
+  "kind": "claude",
+  "id": "claude-opus-5.5"
+ },
+ "log_kind": "prompted",
+ "frame_label": "road2",
+ "source_file": "IMG_4076",
+ "backlit": null,
+ "image_sha256": null,
+ "image_sha256_source": null,
+ "before_task_prompt": false,
+ "per_photo_order": "UNRESOLVED",
+ "per_photo_order_note": "road readout covered 4 shoulder photos (palm, dorsal, 2 lateral); which 2 are IMG_4074/IMG_4076 is not in the transcript",
+ "entries_pending": true,
+ "entries_pending_reason": "readout not assignable to this frame until the 4 shoulder photos are labeled",
+ "provenance": {
+  "source": "chat transcript, 2026-11-15; all items after the \"hands don't lie\" cue",
+  "grade": "CARRIED",
+  "regions": "void until drawn",
+  "status": "EMPTY until labeled; not 'nothing noticed'",
+  "use": "stored for comparison; never used as a probe"
+ },
+ "entries": []
+}

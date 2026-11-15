@@ -24,6 +24,10 @@ log whose order was carried from a reply covering several frames, so the order
 is not separable by photo; it is passed through to the run output beside the
 shuffled-order control, never changed.
 
+`entries_pending: true` (prompted logs only, with `entries_pending_reason`):
+the entries list is empty because the readout is not yet assigned to this
+frame, which is not the same as "nothing noticed" (an empty list without it).
+
 Each entry is {rank, noticed, region}: region is [x0, y0, x1, y1] in pixel
 coordinates of the image as supplied (x1, y1 exclusive), or null when the
 observer named something that was not mapped to a place. Unmapped entries are
@@ -77,6 +81,13 @@ def _check(log, width, height, image_sha256):
     entries = log.get("entries")
     if not isinstance(entries, list):
         raise LogError("entries must be a list (an empty list is legal: nothing noticed)")
+    if log.get("entries_pending") is not None:
+        if log["entries_pending"] is not True or entries:
+            raise LogError("entries_pending must be true with an empty entries list (entries not "
+                           "yet assigned to this frame), or absent")
+        if log_kind(log) != "prompted" or not log.get("entries_pending_reason"):
+            raise LogError("entries_pending is allowed on a prompted log only, with "
+                           "entries_pending_reason")
     ranks = [e.get("rank") for e in entries]
     if ranks != list(range(1, len(entries) + 1)):
         raise LogError(f"ranks must be 1..n in listing order, got {ranks}")

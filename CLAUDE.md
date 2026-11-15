@@ -376,7 +376,8 @@ trainer.fit("data/images", "data/labels.csv", epochs=30)
 - `attention_runs/` holds logs and JSON results; frames stay out of git. The
   2026-11-15 morning Claude log is split per photo (photo1, photo2), 4 entries
   each, CARRIED, before_task_prompt true, per_photo_order UNRESOLVED, regions
-  and image_sha256 null. The two post-cue items are in matching prompted logs.
+  and image_sha256 null. Prompted logs: photo2 creases/texture, photo1 a
+  4-item backlit readout, road1/road2 empty with entries_pending (unlabeled).
   `frames.json` labels photo1 = IMG_4070, photo2 = IMG_4071 (backlit: physics
   run on device), road1/road2 = IMG_4074/IMG_4076 (prompted logs only).
   image_sha256 comes only from `frames fill` on a decoded file, with

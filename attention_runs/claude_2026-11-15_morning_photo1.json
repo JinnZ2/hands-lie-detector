@@ -20,7 +20,7 @@
   "status": "CARRIED; regions null until drawn",
   "split": "split 2026-11-15 from claude_2026-11-15_morning.json (one log covering 2 photos) into one log per photo; same 4 entries in each",
   "image_sha256": "null until filled by `frames fill` from the decoded file (PNG, or JPEG once the decoder lands); image_sha256_source logs which",
-  "prompted_items": "palm creases, weathered texture: in claude_2026-11-15_morning_photo1_prompted.json",
+  "prompted_items": "backlit readout (4 items) in claude_2026-11-15_morning_photo1_prompted.json",
   "frame": "photo1 = IMG_4070 (operator label, 2026-11-15); backlit: physics run stays on device"
  },
  "entries": [

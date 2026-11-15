@@ -110,7 +110,7 @@ The sweep has been run only on constructed images in the tests. A ramp whose gra
   - The same 4 entries in each, CARRIED from the chat transcript, with `before_task_prompt` true (photos and greeting only).
   - `per_photo_order` UNRESOLVED: the reply covered the pair, so the order is not separable by photo.
   - Regions are null until drawn.
-  - Palm creases and weathered texture, attended only after the task cue, are in the matching `_prompted.json` logs (`log_kind` prompted), stored and never used as a probe.
+  - Prompted logs (after the task cue; stored, never a probe): photo2 holds palm creases and weathered/dry texture; photo1 holds a 4-item backlit readout (margins and webs glow, palm center and finger-base pads opaque); road1 and road2 are empty with `entries_pending` true until the 4 shoulder photos are labeled. `entries_pending` keeps "not yet assigned" apart from "nothing noticed".
 - `python3 -m hands_lie_detector.attention.template` builds a log from an order given as `--item` arguments, with every region null (`--log-kind prompted` for a post-cue log).
 
 ## References

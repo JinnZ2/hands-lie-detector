@@ -10,10 +10,10 @@
  "image_sha256": null,
  "image_sha256_source": null,
  "before_task_prompt": false,
- "per_photo_order": "UNRESOLVED",
- "per_photo_order_note": "reply covered the pair; order not separable by photo",
+ "per_photo_order": "RESOLVED",
+ "per_photo_order_note": "reply named the \"second photo\" for these items",
  "provenance": {
-  "source": "chat transcript, 2026-11-15 morning, reply to 2 hand photos sent with greeting only",
+  "source": "chat transcript, 2026-11-15; all items after the \"hands don't lie\" cue",
   "grade": "CARRIED",
   "regions": "void until drawn",
   "before_task_prompt": "false: attended only after the \"hands don't lie\" cue (task given)",
@@ -21,17 +21,18 @@
   "pairs_with": "claude_2026-11-15_morning_photo2.json",
   "image_sha256": "null until filled by `frames fill` from the decoded file (PNG, or JPEG once the decoder lands); image_sha256_source logs which",
   "status": "CARRIED; regions null until drawn",
-  "frame": "photo2 = IMG_4071 (operator label, 2026-11-15); backlit: physics run stays on device"
+  "frame": "photo2 = IMG_4071 (operator label, 2026-11-15); backlit: physics run stays on device",
+  "frame_basis": "read on photo2: \"second photo\" named in the reply (operator fix, 2026-11-15)"
  },
  "entries": [
   {
    "rank": 1,
-   "noticed": "palm creases",
+   "noticed": "palm creases (dense, thumb base + across palm)",
    "region": null
   },
   {
    "rank": 2,
-   "noticed": "weathered texture",
+   "noticed": "weathered/dry texture",
    "region": null
   }
  ]
